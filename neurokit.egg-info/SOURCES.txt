@@ -1,0 +1,17 @@
+setup.cfg
+setup.py
+neurokit/__init__.py
+neurokit/bio.py
+neurokit/miscellaneous.py
+neurokit/signal.py
+neurokit/statistics.py
+neurokit.egg-info/PKG-INFO
+neurokit.egg-info/SOURCES.txt
+neurokit.egg-info/dependency_links.txt
+neurokit.egg-info/requires.txt
+neurokit.egg-info/top_level.txt
+neurokit/eeg/__init__.py
+neurokit/eeg/eeg.py
+neurokit/eeg/load_data.py
+neurokit/eeg/microstates.py
+neurokit/eeg/time_frequency.py
