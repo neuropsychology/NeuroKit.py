@@ -18,7 +18,7 @@ First, import the needed modules.
 	    		   misc=['PHOTO'])
 
 .. figure:: Tuto_EEG_1.png
-   :target: https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/Tuto_EEG_1.png
+   :target: https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/
    :scale: 50 %
    :alt: eeg preprocessing channels
    :align: right
