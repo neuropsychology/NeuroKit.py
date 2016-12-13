@@ -17,8 +17,6 @@ First, import the needed modules.
     			   eog=('HEOG', 'VEOG'),
 	    		   misc=['PHOTO'])
 
-.. figure:: Tuto_EEG_1.png
-   :target: https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/
-   :scale: 50 %
+.. figure:: img/Tuto_EEG_1.png
    :alt: eeg preprocessing channels
    :align: right
