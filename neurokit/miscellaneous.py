@@ -42,6 +42,10 @@ def read_data(filename, extension="", participant_id="", path="", localization="
     if os.path.isfile(file) is False:
         file = path + filename + extension
     if os.path.isfile(file) is False:
+        file = path + filename + ".xlsx"
+    if os.path.isfile(file) is False:
+        file = path + filename + ".csv"
+    if os.path.isfile(file) is False:
         file = path + participant_id + filename + extension
     if os.path.isfile(file) is False:
         if ".csv" in file:

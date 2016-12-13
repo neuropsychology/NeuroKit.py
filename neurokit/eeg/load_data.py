@@ -6,26 +6,105 @@ from ..signal import select_events
 import numpy as np
 import pandas as pd
 import mne
+import os
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_load_raw(filename, path="", experiment="", eog=('HEOG', 'VEOG'), misc="auto", reference=None, montage="easycap-M1", preload=True):
+    """
+    Load EEG data into raw file.
+    
+    Parameters
+    ----------
+    filename = str
+        File name (with or without the extension).
+    path = str
+        Data Directory.
+    experiment = str
+        Experiment name to be appenned after the filename (using an underscore; e.g., "participant_task1").
+    eog = list
+        Names of channels or list of indices that should be designated EOG channels. Values should correspond to the vhdr file Default is ('HEOG', 'VEOG').
+    misc = list
+        Names of channels or list of indices that should be designated MISC channels. Values should correspond to the electrodes in the vhdr file. If ‘auto’, units in vhdr file are used for inferring misc channels. Default is 'auto'.
+    reference = str or list
+        re-reference using specific sensors.
+    montage = str
+        see 
+    preload = bool
+        If True, all data are loaded at initialization. If False, data are not read until save.
 
 
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def load_brainvision_raw(participant, path="data/", experiment="", system="brainvision", reference=None):
+    Returns
+    ----------
+    raw = mne.io.Raw
+        Raw data in FIF format.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> raw = nk.eeg_load_raw("", trigger_list)
+
+    Authors
+    ----------
+    Dominique Makowski, the mne dev team.
+
+    Dependencies
+    ----------
+    - mne
     """
-    """
-    if system == "brainvision":
+    file = path + filename + experiment
+    
+    # Find correct file
+    extension = filename.split(".")
+    if len(extension) == 1:
+        extension = None
+    else:
+        extension = "." + extension[-1]
+    
+    if extension is None:
         extension = ".vhdr"
-    raw = mne.io.read_raw_brainvision(path + participant + "/" + participant + "_" + experiment + extension, eog=('HEOG', 'VEOG'), misc=['PHOTO'], montage="easycap-M1", preload=True)
+    elif os.path.exists(file + extension) is False:
+        extension = ".raw"
+    elif os.path.exists(file + extension) is False:
+        extension = ".set"
+    elif os.path.exists(file + extension) is False:
+        extension = ".fif"
+    else:
+        print("NeuroKit Error: eeg_load_raw(): couldn't find compatible format of data.")
+        return()
+        
+    # Load the data
+    try:
+        if extension == ".vhdr":
+            raw = mne.io.read_raw_brainvision(file + extension, eog=eog, misc=misc, montage=montage, preload=preload)
+        elif extension == ".raw":
+            raw = mne.io.read_raw_egi(file + extension, eog=eog, misc=misc, montage=montage, preload=preload)
+        elif extension == ".set":
+            raw = mne.io.read_raw_eeglab(file + extension, eog=eog, misc=misc, montage=montage, preload=preload)
+        elif extension == ".fif":
+            raw = mne.io.read_raw_fif(file + extension, eog=eog, misc=misc, montage=montage, preload=preload)
+        else:
+            print("NeuroKit Error: eeg_load_raw(): couldn't find compatible reader of data.")
+    except FileNotFoundError:
+        print("NeuroKit Error: eeg_load_raw(): something went wrong, check your the file name that is inside your info files (such as .vhdr, .vmrk, ...)")
+        return()
+    except:
+        print("NeuroKit Error: eeg_load_raw(): error in data loading.")
+        return()
+        
+
+    # Re-reference if needed
     if reference is None:
         raw.set_eeg_reference()
     else:
         raw.set_eeg_reference(reference)
+        
     return(raw)
 
 # ==============================================================================
@@ -83,26 +162,64 @@ def eeg_create_events(events_onset, events_list):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def add_events(raw, participant, path="data/", stimdata_extension=".xlsx", experiment="", stim_channel="PHOTO", treshold=0.04, upper=False, number=90, pause=None, after=0, before=None, conditions=None, order_column="Order"):
+def eeg_add_events(raw, stim_channel, filename, path="", experiment="", treshold=0.04, upper=False, number=None, pause=None, after=0, before=None, conditions=None, order_column="Order"):
     """
+    Create MNE compatible events.
+
+    Parameters
+    ----------
+    raw = mne.io.Raw
+        Raw EEG data.
+    stim_channel = str
+        Name of the stimuli channel.
+    filename = str
+        Name of the dataframe that contain the events.
+    ...
+
+
+    Returns
+    ----------
+    raw = mne.io.Raw
+        The raw file with events.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> events_onset = nk.create_mne_events(events_onset, trigger_list)
+
+    Authors
+    ----------
+    Dominique Makowski
+
+    Dependencies
+    ----------
+    None
     """
+    import neurokit as nk
+    
+    file = filename + "_" + experiment
+    df = nk.read_data(file, path=path)
+    # Sort the dataframe
+    try:
+        df = df.sort_values(order_column)
+    except KeyError:
+        print("NeuroKit Warning: add_events(): Wrong order_column provided. Dataframe will remain unsorted.")
+    
+    
+        
     signal, time_index = raw.copy().pick_channels([stim_channel])[:]
     if pause is not None:
         after = pause
         before = pause
-    events_onset, events_time = select_events(signal[0],
+        number = int(number/2)
+    events_onset, events_time = nk.select_events(signal[0],
                                             treshold=treshold,
                                             upper=upper,
                                             time_index=time_index,
-                                            number=int(number/2),
+                                            number=number,
                                             after=after,
                                             before=before)
-    if stimdata_extension == ".xlsx":
-        trigger_list = pd.read_excel(path + participant + "/" + participant + "_" + experiment + stimdata_extension)
-    elif stimdata_extension == ".csv":
-        trigger_list = pd.read_csv(path + participant + "/" + participant + "_" + experiment + stimdata_extension)
-    else:
-        print("NeuroKit Error: add_events(): Wrong stimdata_extension extension")
+
 
     # Sort the df
     try:
