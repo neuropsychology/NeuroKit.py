@@ -18,5 +18,5 @@ First, import the needed modules.
 	    		   misc=['PHOTO'])
 
 .. figure:: img/Tuto_EEG_1.png
-   :alt: eeg preprocessing channels
+   :alt: 1
    :align: right
