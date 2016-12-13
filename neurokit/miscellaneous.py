@@ -82,7 +82,7 @@ def read_data(filename, extension="", participant_id="", path="", localization="
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def save_data(df, filename="data", extension="all", participant_id="", path="", localization="US", index=False, print_warning=True):
+def save_data(df, filename="data", extension="all", participant_id="", path="", localization="US", index=False, print_warning=True, index_label=None):
     """
     Save the datafile into a pandas' dataframe.
 
@@ -120,11 +120,11 @@ def save_data(df, filename="data", extension="all", participant_id="", path="", 
         if ext == ".csv":
             if os.path.exists(path + "/csv/") is False:
                 os.makedirs(path + "/csv/")
-            df.to_csv(path + "/csv/" + participant_id + "_" + filename + ext, sep=sep, index=index, decimal=decimal, encoding="utf-8")
+            df.to_csv(path + "/csv/" + participant_id + "_" + filename + ext, sep=sep, index=index, index_label=index_label, decimal=decimal, encoding="utf-8")
         elif ext == ".xlsx":
             if os.path.exists(path + "/excel/") is False:
                 os.makedirs(path + "/excel/")
-            df.to_excel(path + "/excel/" + participant_id + "_" + filename + ext, encoding="utf-8")
+            df.to_excel(path + "/excel/" + participant_id + "_" + filename + ext, index=index, index_label=index_label, encoding="utf-8")
         else:
             if print_warning is True:
                 print("NeuroKit Error: save_data(): wrong extension specified.")
