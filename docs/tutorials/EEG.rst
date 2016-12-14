@@ -13,13 +13,17 @@ Reading Data
 We have the following directory organization:
 
 - analysis_script.py
+
 - Data/
 
    - Participant1/
    
       - Participant1_Task.xlsx
+	  
 	  - Participant1_Task.eeg
+	  
 	  - Participant1_Task.vhdr
+	  
 	  - Participant1_Task.vmrk
 
 First, import the needed modules. Then, load the EEG data in an ``mne`` raw object.
