@@ -47,12 +47,12 @@ We can then watch the plot and identify the bad channels by clicking on them (or
 	# Inspect all channels
 	raw.plot()
 	
-	# Mark bad channels
+	# Mark bad channels and, eventually, interpolate them
 	raw.info['bads'] = []
+	raw.interpolate_bads(reset_bads=False)
 
 .. figure:: img/Tuto_EEG_1.png
    :alt: eeg preprocessing channels see plot
-   :align: right
    
 We can then mark events for further epoching.
 
@@ -69,11 +69,12 @@ We can then mark events for further epoching.
 		conditions=["Condition", "Emotion"])
 
 
+
 Filtering and Artifact Removal
 ------------------------------
 
 
-First, filter the data for ERP. Then, apply an ICA, apply an SSP correction if you want and finally, mark bad eog using a 50ms window.
+First, filter the data for ERP. Then, apply an ICA, apply an SSP correction if you want and finally, mark bad EOGs using a 50ms window.
 
 .. code-block:: python
 
@@ -89,7 +90,7 @@ First, filter the data for ERP. Then, apply an ICA, apply an SSP correction if y
 	# Window
 	raw_erp = nk.eeg_eog_window(raw_erp)
 
-Then, create epochs of 1s and save them into a file.
+Then, create epochs of 1s duration and save them into a file.
 
 .. code-block:: python
 
@@ -98,6 +99,7 @@ Then, create epochs of 1s and save them into a file.
 
 	# Save the epochs
 	epochs_erp.save("Data/Participant1/Participant1_erp_epo.fif")
+
 
 
 Event Related Potentials (ERPs)
@@ -114,4 +116,18 @@ Reading Data
 
 	# Read epochs
 	epochs = mne.read_epochs("Data/Participant1/Participant1_erp_epo.fif")
-	
+
+Then, average those epochs by emotion condition. Finally, create a butterfly topographic plot of  these ERPs.
+
+.. code-block:: python
+
+	# Evoked
+	negative = epochs["Negative"].average()
+	neutral = epochs["Neutral"].average()
+
+	# Topo evoked plot
+	nk.eeg_topo_erp([negative, neutral], line_colors=("red", "blue"))
+
+
+.. figure:: img/Tuto_EEG_2.png
+   :alt: eeg butterfly plot erp
