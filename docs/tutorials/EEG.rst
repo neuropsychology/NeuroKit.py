@@ -109,6 +109,11 @@ Event Related Potentials (ERPs)
 Reading Data 
 ------------
 
+.. code-block:: python
 
-	
+	import neurokit as nk
+	import mne
+
+	# Read epochs
+	epochs = mne.read_epochs("Data/Participant1/Participant1_erp_epo.fif")
 	
