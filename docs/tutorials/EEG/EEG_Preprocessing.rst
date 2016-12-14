@@ -42,13 +42,13 @@ We can then mark events for further epoching.
 
     # Add events based on the photo channel and name them accordingly with the task log
 	raw, events, event_id = nk.eeg_add_events(raw,
-											  stim_channel="PHOTO",
-											  treshold=0.04,
-											  upper=False,
-											  number=96,
-											  events_from_file="Participant1_Task",
-											  path="Data/Participant1/",
-											  conditions=["Condition", "Emotion"])
+		stim_channel="PHOTO",
+		treshold=0.04,
+		upper=False,
+		number=96,
+		events_from_file="Participant1_Task",
+		path="Data/Participant1/",
+		conditions=["Condition", "Emotion"])
 											  
 											  
 Filtering and Artifact Removal

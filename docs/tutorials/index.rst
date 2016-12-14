@@ -1,3 +1,6 @@
+Tutorials
+=========
+
 Contents:
 
 .. toctree::
