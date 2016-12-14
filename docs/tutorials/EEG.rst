@@ -27,7 +27,7 @@ We have the following directory organization:
 		- Participant1_Task.vmrk
 		
 
-First, import the needed modules. Then, load the EEG data in an ``mne`` raw object.
+In the ``analysis_script.py`` file, first import the needed modules. Then, load the EEG data in an ``mne`` raw object.
 
 
 .. code-block:: python
