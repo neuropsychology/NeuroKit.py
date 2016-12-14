@@ -82,4 +82,11 @@ Then, create epochs of 1s and save them into a file.
 	epochs_erp.save("Data/Participant1/Participant1_erp_epo.fif")
 
 	
+
+	
+Event Related Potentials (ERPs)
+===============================
+
+
+	
 	

@@ -1,2 +1,0 @@
-Evoked Related Potentials  (ERPs)
-=================================
