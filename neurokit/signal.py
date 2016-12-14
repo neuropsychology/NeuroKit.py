@@ -245,7 +245,7 @@ def select_events(signal, treshold, upper=True, time_index=None, number="all", a
 
         return(events_onset, events_time)
     else:
-        return(events_onset)
+        return(events_onset, events_time)
 
 
 

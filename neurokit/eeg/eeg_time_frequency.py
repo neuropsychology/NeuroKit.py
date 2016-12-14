@@ -1,7 +1,7 @@
 """
 Time-frequency submodule.
 """
-from .eeg import eeg_select_electrodes
+from .eeg_preprocessing import eeg_select_electrodes
 from ..miscellaneous import Time
 
 import numpy as np

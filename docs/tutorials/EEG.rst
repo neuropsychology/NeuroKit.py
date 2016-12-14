@@ -112,22 +112,40 @@ Reading Data
 .. code-block:: python
 
 	import neurokit as nk
+	import pandas as pd
 	import mne
 
 	# Read epochs
 	epochs = mne.read_epochs("Data/Participant1/Participant1_erp_epo.fif")
+	
 
-Then, average those epochs by emotion condition. Finally, create a butterfly topographic plot of  these ERPs.
+
+Create Evoked Data
+------------------
+
+Then, average those epochs by emotion condition into evoked data objects. Finally, create a butterfly topographic plot of these ERPs.
 
 .. code-block:: python
 
-	# Evoked
+	# Create evoked data
 	negative = epochs["Negative"].average()
 	neutral = epochs["Neutral"].average()
 
-	# Topo evoked plot
-	nk.eeg_topo_erp([negative, neutral], line_colors=("red", "blue"))
+	# Topographic plot of the evoked data
+	nk.eeg_topo_erp([neutral, negative], line_colors=("grey", "red"))
 
 
 .. figure:: img/Tuto_EEG_2.png
    :alt: eeg butterfly plot erp
+   
+.. code-block:: python
+
+	# Select the centroparietal sensors
+	negative = negative.pick_channels(nk.eeg_select_electrodes(include="CP"))
+	neutral = neutral.pick_channels(nk.eeg_select_electrodes(include="CP"))
+
+	# Convert to dataframe
+	evoked = pd.DataFrame({"Negative": negative.to_data_frame().mean(axis=1),
+					   "Neutral": neutral.to_data_frame().mean(axis=1)})
+
+	evoked.plot()
