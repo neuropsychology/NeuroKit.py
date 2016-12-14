@@ -11,9 +11,12 @@ Reading Data
 ------------
 
 We have the following directory organization:
+
 - analysis_script.py
 - Data/
+
    - Participant1/
+   
       - Participant1_Task.xlsx
 	  - Participant1_Task.eeg
 	  - Participant1_Task.vhdr
