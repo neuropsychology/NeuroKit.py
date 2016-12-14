@@ -16,15 +16,16 @@ We have the following directory organization:
 
 - Data/
 
-   - Participant1/
-   
-      - Participant1_Task.xlsx
-	  
-	  - Participant1_Task.eeg
-	  
-	  - Participant1_Task.vhdr
-	  
-	  - Participant1_Task.vmrk
+	- Participant1/
+		
+		- Participant1_Task.xlsx
+		
+		- Participant1_Task.eeg
+		
+		- Participant1_Task.vhdr
+		
+		- Participant1_Task.vmrk
+		
 
 First, import the needed modules. Then, load the EEG data in an ``mne`` raw object.
 
