@@ -10,11 +10,22 @@ Preprocessing
 Reading Data 
 ------------
 
-First, import the needed modules.
+We have the following directory organization:
+- analysis_script.py
+- Data/
+   - Participant1/
+      - Participant1_Task.xlsx
+	  - Participant1_Task.eeg
+	  - Participant1_Task.vhdr
+	  - Participant1_Task.vmrk
+
+First, import the needed modules. Then, load the EEG data in an ``mne`` raw object.
 
 
 .. code-block:: python
 
+   import neurokit as nk
+	
    # Load the participant's file into a raw object
    raw = nk.eeg_load_raw("Participant1_Task",
                   path="Data/Participant1/",
@@ -86,6 +97,10 @@ Then, create epochs of 1s and save them into a file.
 	
 Event Related Potentials (ERPs)
 ===============================
+
+
+Reading Data 
+------------
 
 
 	
