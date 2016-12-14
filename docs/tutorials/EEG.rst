@@ -25,7 +25,6 @@ We have the following directory organization:
 		- Participant1_Task.vhdr
 		
 		- Participant1_Task.vmrk
-		
 
 In the ``analysis_script.py`` file, first import the needed modules. Then, load the EEG data in an ``mne`` raw object.
 
@@ -45,7 +44,7 @@ We can then watch the plot and identify the bad channels by clicking on them (or
 
 .. code-block:: python
 
-    # Inspect all channels
+	# Inspect all channels
 	raw.plot()
 	
 	# Mark bad channels
@@ -68,8 +67,8 @@ We can then mark events for further epoching.
 		events_from_file="Participant1_Task",
 		path="Data/Participant1/",
 		conditions=["Condition", "Emotion"])
-											  
-											  
+
+
 Filtering and Artifact Removal
 ------------------------------
 
