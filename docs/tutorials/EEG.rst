@@ -84,7 +84,7 @@ First, filter the data for ERP. Then, apply an ICA, apply an SSP correction if y
 	# ICA
 	raw_erp = nk.eeg_eog_ica(raw_erp)
 
-	# SSP (de-comment this line to do it)
+	# SSP (uncomment this line to apply this correction)
 	# raw = mak.eeg_eog_ssp(raw)
 
 	# Window
