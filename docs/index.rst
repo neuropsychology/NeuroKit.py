@@ -6,7 +6,7 @@ Contents:
 .. toctree::
    :maxdepth: 1
 
-   tutorials/EEG
+   tutorials/index
    api
    
 
