@@ -32,14 +32,14 @@ In the ``analysis_script.py`` file, first import the needed modules. Then, load 
 
 .. code-block:: python
 
-   import neurokit as nk
+	import neurokit as nk
 	
-   # Load the participant's file into a raw object
-   raw = nk.eeg_load_raw("Participant1_Task",
-                  path="Data/Participant1/",
-                  eog=('HEOG', 'VEOG'),
-                  misc=['PHOTO'],
-                  reference=['TP7', 'TP9'])
+	# Load the participant's file into a raw object
+	raw = nk.eeg_load_raw("Participant1_Task",
+		path="Data/Participant1/",
+		eog=('HEOG', 'VEOG'),
+		misc=['PHOTO'],
+		reference=['TP7', 'TP9'])
 
 We can then watch the plot and identify the bad channels by clicking on them (or, by adding their names to the list).
 
@@ -49,7 +49,7 @@ We can then watch the plot and identify the bad channels by clicking on them (or
 	raw.plot()
 	
 	# Mark bad channels
-    raw.info['bads'] = []
+	raw.info['bads'] = []
 
 .. figure:: img/Tuto_EEG_1.png
    :alt: eeg preprocessing channels see plot
@@ -100,9 +100,7 @@ Then, create epochs of 1s and save them into a file.
 	# Save the epochs
 	epochs_erp.save("Data/Participant1/Participant1_erp_epo.fif")
 
-	
 
-	
 Event Related Potentials (ERPs)
 ===============================
 
