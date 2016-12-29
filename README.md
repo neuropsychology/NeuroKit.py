@@ -31,7 +31,7 @@ Features:
 - **Other**
   - Fractal/chaos/entropy indices computation
 
-\*Warning: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html)). Go master **mne** first!
+\*Warning: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html). Go master **mne** first!
 
 ## Install
 
