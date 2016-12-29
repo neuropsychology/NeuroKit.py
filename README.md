@@ -15,14 +15,23 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 
 ---
 
-**Warning: these functions might be, for now, NOT GENERALIZABLE to your data as I've intented them specifically for my personal use. However, with time, I'll try to open and expand them as much as I can.**
+**Warning: This package is under HEAVY development.**
 
 ## Description
 
 Features:
 
-- EEG (wrapper functions based on [mne](http://martinos.org/mne/stable/index.html))
-- EDA
+- **EEG***
+  - Data loading
+  - Preprocessing
+  - Filtering
+  - Microstates (under development)
+- **EDA**
+- **Statistics**
+- **Other**
+  - Fractal/chaos/entropy indices computation
+
+\*Warning: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html)). Go master **mne** first!
 
 ## Install
 
@@ -34,6 +43,14 @@ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 
 ## Example
 
+#### Fractal/chaos/entropy indices computation
+```python
+signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
+results = fractal_dimensions(signal)
+print(results["Entropy"])
+```
+
+#### Other
 ```python
 import neurokit as nk
 mylist = ["a","a","b","a","a","a","c","c","b","b"]
