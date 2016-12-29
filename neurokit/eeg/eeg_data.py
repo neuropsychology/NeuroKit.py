@@ -70,11 +70,11 @@ def eeg_load_raw(filename, path="", experiment="", eog=('HEOG', 'VEOG'), misc="a
 
     if extension is None:
         extension = ".vhdr"
-    elif os.path.exists(file + extension) is False:
+    if os.path.exists(file + extension) is False:
         extension = ".raw"
-    elif os.path.exists(file + extension) is False:
+    if os.path.exists(file + extension) is False:
         extension = ".set"
-    elif os.path.exists(file + extension) is False:
+    if os.path.exists(file + extension) is False:
         extension = ".fif"
     else:
         print("NeuroKit Error: eeg_load_raw(): couldn't find compatible format of data.")
@@ -89,9 +89,10 @@ def eeg_load_raw(filename, path="", experiment="", eog=('HEOG', 'VEOG'), misc="a
         elif extension == ".set":
             raw = mne.io.read_raw_eeglab(file + extension, eog=eog, misc=misc, montage=montage, preload=preload)
         elif extension == ".fif":
-            raw = mne.io.read_raw_fif(file + extension, eog=eog, misc=misc, montage=montage, preload=preload)
+            raw = mne.io.read_raw_fif(file + extension, preload=preload)
         else:
             print("NeuroKit Error: eeg_load_raw(): couldn't find compatible reader of data.")
+            return()
     except FileNotFoundError:
         print("NeuroKit Error: eeg_load_raw(): something went wrong, check your the file name that is inside your info files (such as .vhdr, .vmrk, ...)")
         return()
@@ -100,11 +101,12 @@ def eeg_load_raw(filename, path="", experiment="", eog=('HEOG', 'VEOG'), misc="a
         return()
 
 
-    # Re-reference if needed
-    if reference is None:
-        raw.set_eeg_reference()
-    else:
-        raw.set_eeg_reference(reference)
+    # Re-reference if needed and if not MEG data
+    if True not in ["MEG" in chan for chan in raw.info["ch_names"]]:
+        if reference is None:
+            raw.set_eeg_reference()
+        else:
+            raw.set_eeg_reference(reference)
 
     return(raw)
 
@@ -164,7 +166,7 @@ def eeg_create_events(events_onset, events_list):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_add_events(raw, stim_channel, treshold=0.04, upper=False, number=None, after=0, before=None, events_list=None, events_from_file=None, path="", experiment="", conditions=None, order_column="Order"):
+def eeg_add_events(raw, stim_channel, treshold=0.04, upper=False, number=None, after=0, before=None, events_list=None, events_from_file=None, path="", experiment="", conditions=None, order_column="Order", events_channel="STI 014"):
     """
     Create MNE compatible events.
 
@@ -264,36 +266,60 @@ def eeg_add_events(raw, stim_channel, treshold=0.04, upper=False, number=None, a
 
 
     events, event_id = eeg_create_events(events_onset, events_list)
-    raw.add_events(events, stim_channel="STI 014")
+    raw.add_events(events, stim_channel=events_channel)
 
     return(raw, events, event_id)
 
 
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_load(participant, path="", experiment="", system="brainvision", reference=None, stimdata_extension=".xlsx", stim_channel="PHOTO", treshold=0.04, upper=False, number=45, pause=None, after=0, before=None, conditions=None, order_column="Order"):
-    """
-    """
-    raw = load_brainvision_raw(participant, path=path, experiment=experiment, system=system, reference=reference)
 
-    raw, events, event_id = add_events(raw=raw,
-                                           participant=participant,
-                                           path=path,
-                                           stimdata_extension=stimdata_extension,
-                                           experiment=experiment,
-                                           stim_channel=stim_channel,
-                                           treshold=treshold,
-                                           upper=upper,
-                                           number=number,
-                                           pause=pause,
-                                           after=after,
-                                           before=before,
-                                           conditions=conditions,
-                                           order_column=order_column)
-    return(raw, events, event_id)
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_add_channel(raw, raw_events, new_channel, new_channel_type, new_channel_events_onset, new_channel_frequency):
+    """
+    new_channel_type = str
+        Currently supported fields are ‘ecg’, ‘bio’, ‘stim’, ‘eog’, ‘misc’, ‘seeg’, ‘ecog’, ‘mag’, ‘eeg’, ‘ref_meg’, ‘grad’, ‘hbr’ or ‘hbo’.
+    """
+
+    if raw.info["sfreq"] != new_channel_frequency:
+        print("NeuroKit Error: eeg_add_channel(): different sampking rates detected between eeg data and new channel.")
+        return()
+
+    if len(np.array(raw_events).shape) == 1:
+        raw_events_onset = list(raw_events)
+    elif len(np.array(raw_events).shape) == 2:
+        raw_events_onset = list(raw_events[:,0])
+    else:
+        print("NeuroKit Error: eeg_add_channel(): raw_events must be a list of onsets or an events object returned by eeg_add_events().")
+        return()
+
+    event1_new = new_channel_events_onset[0]
+    event1_raw = raw_events_onset[0]
+
+    index = np.array(new_channel.index)
+    index = index - (event1_new - event1_raw)
+    new_channel.index = index
+
+    if event1_new > event1_raw:
+        channel = list(new_channel.ix[0:])
+    if event1_new < event1_raw:
+        channel = [np.nan] * (event1_raw-event1_new) + list(new_channel)
+
+    random_channel, time_index = raw.copy().pick_channels([raw.info['ch_names'][0]])[:]
+    if len(channel) > len(random_channel[0]):
+        channel = list(channel)[:len(random_channel[0])]
+    if len(channel) < len(random_channel[0]):
+        channel = list(channel) + [np.nan] * (len(len(random_channel[0])-len(channel)))
+
+    info = mne.create_info([new_channel_type], new_channel_frequency, ch_types=new_channel_type)
+    channel = mne.io.RawArray([channel], info)
+
+    raw.add_channels([channel], force_update_info=True)
+
+    return(raw)

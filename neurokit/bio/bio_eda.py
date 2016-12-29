@@ -1,117 +1,15 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
+import os
 import datetime
-
-from .statistics import z_score  # process_EDA()
-from .miscellaneous import get_creation_date  # acq_to_df()
 
 import cvxopt as cv  # process_EDA()
 import cvxopt.solvers  # process_EDA()
-import bioread  # acq_to_df()
 
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def acq_to_df(file, sampling_rate=1000, method="mean"):
-    """
-    Format a BIOPAC's AcqKnowledge file into a pandas' dataframe.
-
-    Parameters
-    ----------
-    file =  str
-        the path of a BIOPAC's AcqKnowledge file
-    sampling_rate = int
-        final sampling rate (samples/second)
-    method = str
-        "mean" or "pad", resampling method
-
-    Returns
-    ----------
-    df = pandas.DataFrame()
-        the dataframe
+from ..statistics import z_score  # process_EDA()
 
 
-    Example
-    ----------
-    >>> import neuropsydia as n
-    >>> n.start(False)
-    >>>
-    >>> df = acq_to_df('file.acq')
-
-    Authors
-    ----------
-    Dominique Makowski
-
-    Dependencies
-    ----------
-    - pandas
-    - bioread
-    - datetime
-    """
-    # Read file
-    creation_date = get_creation_date(file)
-    file = bioread.read(file)
-
-    # Convert creation date
-    creation_date = datetime.datetime.fromtimestamp(creation_date)
-
-
-    # Get the channel frequencies
-    freq_list = []
-    for channel in file.named_channels:
-        freq_list.append(file.named_channels[channel].samples_per_second)
-
-    # Get data with max frequency and the others
-    data = {}
-    data_else = {}
-    for channel in file.named_channels:
-        if file.named_channels[channel].samples_per_second == max(freq_list):
-            data[channel] = file.named_channels[channel].data
-        else:
-            data_else[channel] = file.named_channels[channel].data
-
-    # Create index
-    time = []
-    beginning_date = creation_date - datetime.timedelta(0, max(file.time_index))
-    for timestamps in file.time_index:
-        time.append(beginning_date + datetime.timedelta(0, timestamps))
-
-    df = pd.DataFrame(data, index=time)
-
-    # Create resampling factor
-    sampling_rate = str(int(1000/sampling_rate)) + "L"
-
-
-    # max frequency must be 1000
-    for channel in data_else:
-        channel_frequency = file.named_channels[channel].samples_per_second
-        serie = data_else[channel]
-        index = list(np.arange(0, max(file.time_index), 1/channel_frequency))
-        index = index[:len(serie)]
-        # Create index
-        time = []
-        for timestamps in index:
-            time.append(beginning_date + datetime.timedelta(0, timestamps))
-        data_else[channel] = pd.Series(serie, index=time)
-    df2 = pd.DataFrame(data_else)
-
-
-    # Resample
-    if method == "mean":
-        df2 = df2.resample(sampling_rate).mean()
-        df = df.resample(sampling_rate).mean()
-    if method == "pad":
-        df2 = df2.resample(sampling_rate).pad()
-        df = df.resample(sampling_rate).pad()
-    df = pd.concat([df, df2], 1)
-
-    return(df)
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================

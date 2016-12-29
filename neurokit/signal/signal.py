@@ -1,7 +1,4 @@
 # -*- coding: utf-8 -*-
-from .statistics import z_score  # process_EDA()
-from .miscellaneous import get_creation_date  # acq_to_df()
-
 import pandas as pd
 import numpy as np
 
@@ -128,7 +125,7 @@ def binarize_signal(signal, treshold, upper=True):
 # ==============================================================================
 # ==============================================================================
 
-def find_events_onset(signal, treshold, upper=True, time_index=None):
+def find_events_onset(signal, treshold, upper=False, time_index=None):
     """
     Find the onsets of all events based on a continuous signal.
 
@@ -172,7 +169,7 @@ def find_events_onset(signal, treshold, upper=True, time_index=None):
                 if time_index is not None:
                     events_time.append(time_index[i])
     if time_index is None:
-        return(events_onset)
+        return(events_onset, events_time)
     else:
         return(events_onset, events_time)
 
@@ -186,7 +183,7 @@ def find_events_onset(signal, treshold, upper=True, time_index=None):
 # ==============================================================================
 # ==============================================================================
 
-def select_events(signal, treshold, upper=True, time_index=None, number="all", after=0, before=None):
+def select_events(signal, treshold, upper=False, time_index=None, number="all", after=0, before=None):
     """
     Find and select events based on a continuous signal.
 
@@ -227,17 +224,23 @@ def select_events(signal, treshold, upper=True, time_index=None, number="all", a
     """
     events_onset, events_time = find_events_onset(signal, treshold=treshold, upper=upper, time_index=time_index)
 
-    if isinstance(number, int) and time_index is not None:
+    if isinstance(number, int):
         after_times = []
         after_onsets = []
         before_times = []
         before_onsets = []
         if after != None:
-            events_time = np.array(events_time)
+            if events_time == []:
+                events_time = np.array(events_onset)
+            else:
+                events_time = np.array(events_time)
             after_onsets = list(np.array(events_onset)[events_time>after])[:number]
             after_times = list(events_time[events_time>after])[:number]
         if before != None:
-            events_time = np.array(events_time)
+            if events_time == []:
+                events_time = np.array(events_onset)
+            else:
+                events_time = np.array(events_time)
             before_onsets = list(np.array(events_onset)[events_time<before])[:number]
             before_times = list(events_time[events_time<before])[:number]
         events_onset = before_onsets + after_onsets

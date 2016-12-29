@@ -4,83 +4,8 @@ from ..miscellaneous import remove_following_duplicates
 
 import numpy as np
 import pandas as pd
-import mne
 import nolds  # Fractal
 import re
-
-
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_plot_all(raw, events, event_id, eog_reject=600e-6, save=True, name="all", topo=False, path=""):
-    """
-    """
-    reject = {
-#        "eeg": 4000e-13,
-        "eog": eog_reject  # Adjust with caution
-        }
-    # picks
-    picks = mne.pick_types(raw.info,
-                       meg=False,
-                       eeg=True,
-                       eog=True,
-                       stim=False,
-                       exclude='bads',
-#                       selection=O_cluster + PO_cluster
-                       )
-
-    # epochs
-    epochs = mne.Epochs(raw,
-                        events=events,
-                        event_id=event_id,
-                        tmin=-0.2,
-                        tmax=1,
-                        picks=picks,
-                        add_eeg_ref=True,
-                        reject_by_annotation=True,
-                        reject=reject,  # Adjust values carefully
-                        proj=True,  # With SSP projections
-                        detrend=1,  # "None", 1: Linear detrend, 0 DC detrend,
-                        baseline=(None, 0)  #
-                        )
-
-    # Drop bads
-    epochs.drop_bad()
-
-
-    # Plot
-    if topo is False:
-        fig = mne.combine_evoked([epochs.average()]).plot_joint()
-        if save is True:
-            fig.savefig(path + str(name) +  '.png', format='png', dpi=1000)
-
-
-    if topo is True:
-        fig = mne.viz.plot_evoked_topo([epochs.average()],
-        #                                  fig_background="black",
-                                          fig_facecolor="black",
-        #                                  conditions = ['Negative', 'Neutral'],
-    #                                      scalings=dict(eeg=1e1),
-                                          layout=mne.channels.find_layout(raw.info),
-                                          font_color="black",
-                                          axis_facecolor="black",
-    #                                      proj = "interactive",
-                                          color='red'
-        #                                  layout_scale = 2
-                                          )
-        if save is True:
-            fig.savefig(path + str(name) +  '.png', format='png', dpi=1000)
-
-
-
-
 
 
 

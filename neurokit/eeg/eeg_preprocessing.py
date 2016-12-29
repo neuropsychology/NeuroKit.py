@@ -30,6 +30,7 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="iir"):
                method=method)
     return(raw)
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -38,34 +39,64 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="iir"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_eog_ica(raw, method='fastica', n_components=20, random_state=23, plot_sources=False, plot=False):
+def eeg_ica(raw, eog=True, ecg=True, method='fastica', n_components=30, random_state=23, plot=False):
     """
     Apply ICA.
+    Supposing you have 2 EOG channels and one ECG channel.
     """
     ica = mne.preprocessing.ICA(n_components=n_components,
                                 method=method,  # for comparison with EEGLAB try "extended-infomax" here
                                 random_state=random_state  # random seed
                                 )
 
-    picks = mne.pick_types(raw.info, meg=False, eeg=True, eog=True, ecg=False, stim=False, exclude='bads')
+    picks = mne.pick_types(raw.info, meg=False, eeg=True, eog=False, ecg=False, stim=False, exclude='bads', bio=False)
     ica.fit(raw, picks=picks, decim=3)
 
-    # create one EOG trials
-    eog_epochs = mne.preprocessing.create_eog_epochs(raw,
-                                                     picks=picks)
-    # find via correlation the ICA components
-    eog_inds, scores = ica.find_bads_eog(eog_epochs)
+    if eog is True:
+        # create one EOG epoch
+        eog_epochs = mne.preprocessing.create_eog_epochs(raw,
+                                                         picks=mne.pick_types(raw.info,
+                                                                              meg=False,
+                                                                              eeg=True,
+                                                                              eog=True,
+                                                                              ecg=False)
+                                                         )
+        # detect EOG via correlation
+        eog_inds, eog_scores = ica.find_bads_eog(eog_epochs)
+        if plot is True:
+            ica.plot_scores(eog_scores, exclude=eog_inds, title='eog components')
+        ica.exclude.extend(eog_inds)
 
-    if plot_sources==True:
-        ica.plot_sources(raw)
+    if ecg is True:
+        # create one ECG epoch
+        ecg_epochs = mne.preprocessing.create_ecg_epochs(raw,
+                                                         picks=mne.pick_types(raw.info,
+                                                                              meg=False,
+                                                                              eeg=True,
+                                                                              eog=False,
+                                                                              ecg=True)
+                                                         )
+        # generate ECG epochs use detection via phase statistics
+        ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
+        if plot is True:
+            ica.plot_scores(ecg_scores, exclude=ecg_inds, title='ecg components')
+        ica.exclude.extend(ecg_inds)
 
-    ica.exclude.extend(eog_inds)
-    raw = ica.apply(raw)
 
     if plot is True:
+        ica.plot_sources(raw)
         ica.plot_components()[0]
-    return(raw)
 
+        eog_evoked = eog_epochs.average()
+        ica.plot_sources(eog_evoked, exclude=ecg_inds)  # plot ECG sources + selection
+        ica.plot_overlay(eog_evoked, exclude=ecg_inds)  # plot ECG cleaning
+
+        ecg_evoked = ecg_epochs.average()
+        ica.plot_sources(ecg_evoked, exclude=ecg_inds)  # plot ECG sources + selection
+        ica.plot_overlay(ecg_evoked, exclude=ecg_inds)  # plot ECG cleaning
+
+    raw = ica.apply(raw)
+    return(raw, ica)
 
 
 
