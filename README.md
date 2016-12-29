@@ -47,7 +47,7 @@ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 ```python
 import neurokit as nk
 signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
-results = fractal_dimensions(signal)
+results = nk.fractal_dimensions(signal)
 print(results["Entropy"])
 ```
 
