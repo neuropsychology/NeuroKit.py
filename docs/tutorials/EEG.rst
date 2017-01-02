@@ -10,7 +10,7 @@ Preprocessing
 Reading Data 
 ------------
 
-We have the following directory organization:
+Assuming that we have the following directory organization:
 
 - analysis_script.py
 
@@ -150,23 +150,49 @@ Then, average those epochs by emotion condition into evoked data objects. Finall
 
 	evoked.plot()
 	
-	
+
 Microstates Analysis
 ====================
 
 
 
-# Data Loading and Preprocessing
---------------------------------
+Data Loading and Preprocessing
+------------------------------
 
+Assuming that we have the following directory organization:
+
+- microstates_analysis_script.py
+
+- Data/
+
+	- Participant1/
+		
+		- meg/
+		
+			- rest_raw.xlsx
+		
+	- Participant2/
+		
+		- meg/
+		
+			- rest_raw.xlsx
+		
+	- Participant3/
+		
+		- meg/
+		
+			- rest_raw.xlsx
+		
+	- ...
+
+	
 .. code-block:: python
 
 	import neurokit as nk
 	import os
 	
-	# Path to the data data.
-	path = r"D:/Data/"
-
+	# Data path.
+	path = r"./Data/"
 
 	# Foler names where resting state data lies are corresponding to participants
 	participants = os.listdir(path)
@@ -175,7 +201,7 @@ Microstates Analysis
 	raws_list = []  # Initialize empty list
 	for participant in participants:
 		# Load the participant's file into a raw object
-		raw = nk.eeg_load_raw(filename="rest_raw", path=path)
+		raw = nk.eeg_load_raw(filename="rest_raw", path=path + participant + "/meg/")
 		# Filter and downsample
 		raw = nk.eeg_filter(raw, lowpass=1, highpass=70)
 		raw = raw.resample(125)
@@ -185,27 +211,27 @@ Microstates Analysis
 		raws_list.append(raw)
 
 
-# Compute Microstates
----------------------
+Compute the Microstates
+-----------------------
 
 .. code-block:: python
 
 	results, method = nk.eeg_microstates(raws_list,
-										 names=participants,
-										 scale=True,
-										 n_microstates=4,
-										 occurence_rejection_treshold=0.05,
-										 max_refitting=5,
-										 good_fit_treshold=0,
-										 pca=True,
-										 n_pca_comp=32,
-										 pca_solver="auto",
-										 nonlinearity=True,
-										 verbose=True,
-										 plot=True)
+		 names=participants,
+		 scale=True,
+		 n_microstates=4,
+		 occurence_rejection_treshold=0.05,
+		 max_refitting=5,
+		 good_fit_treshold=0,
+		 pca=True,
+		 n_pca_comp=32,
+		 pca_solver="auto",
+		 nonlinearity=True,
+		 verbose=True,
+		 plot=True)
 
-# Plot Microstates
-------------------
+Plot the Microstates
+--------------------
 
 .. code-block:: python
 
