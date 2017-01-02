@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..miscellaneous import Time
-from ..miscellaneous import remove_following_duplicates
+from ..miscellaneous import find_following_duplicates
 
 import numpy as np
 import pandas as pd
@@ -101,7 +101,7 @@ def eeg_fractal_dim(epochs, entropy=True, hurst=True, dfa=False, lyap_r=False, l
     for i in range(len(events)):
         list_events.append(events[i] + "_" + str(epochs[i]))
 
-    list_events = remove_following_duplicates(list_events)
+    list_events = list_events[np.where(find_following_duplicates(list_events))]
     list_events = [re.sub('_\d+', '', i) for i in list_events]
     df["Epoch"] = list_events
     return(df)

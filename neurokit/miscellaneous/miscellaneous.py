@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import time as builtin_time
 import pandas as pd
+import numpy as np
 
 import os
 import platform
@@ -250,18 +251,19 @@ class Time():
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def remove_following_duplicates(mylist):
+def find_following_duplicates(mylist):
     """
-    Remove the duplicates that are following themselves, returning a list of ordered items.
+    Find the duplicates that are following themselves.
 
     Parameters
     ----------
     mylist =  list
-        A list
+        A list.
 
     Returns
     ----------
-    The list without following duplicates.
+    list
+        A list containing True for each unique and False for following duplicates.
 
     Example
     ----------
@@ -278,15 +280,24 @@ def remove_following_duplicates(mylist):
     None
     """
     mylist = mylist.copy()
+
+
+    uniques = []
     index = 0
     while index != len(mylist):
+        uniques.append(True)
         try:
             while mylist[index] == mylist[index+1]:
+                uniques.append(False)
                 mylist.pop(index+1)
-        except:
+        except:  # When index out of range
             pass
         index += 1
-    return(mylist)
+
+    # Find index of uniques
+    indices = np.where(uniques)
+
+    return(uniques)
 
 # ==============================================================================
 # ==============================================================================

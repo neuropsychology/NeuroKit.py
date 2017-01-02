@@ -149,3 +149,64 @@ Then, average those epochs by emotion condition into evoked data objects. Finall
 					   "Neutral": neutral.to_data_frame().mean(axis=1)})
 
 	evoked.plot()
+	
+	
+Microstates Analysis
+====================
+
+
+
+# Data Loading and Preprocessing
+--------------------------------
+
+.. code-block:: python
+
+	import neurokit as nk
+	import os
+	
+	# Path to the data data.
+	path = r"D:/Data/"
+
+
+	# Foler names where resting state data lies are corresponding to participants
+	participants = os.listdir(path)
+
+	# Preprocessing
+	raws_list = []  # Initialize empty list
+	for participant in participants:
+		# Load the participant's file into a raw object
+		raw = nk.eeg_load_raw(filename="rest_raw", path=path)
+		# Filter and downsample
+		raw = nk.eeg_filter(raw, lowpass=1, highpass=70)
+		raw = raw.resample(125)
+		# Select only meg channels
+		raw = raw.copy().pick_types(meg=True)
+		# Add data to list
+		raws_list.append(raw)
+
+
+# Compute Microstates
+---------------------
+
+.. code-block:: python
+
+	results, method = nk.eeg_microstates(raws_list,
+										 names=participants,
+										 scale=True,
+										 n_microstates=4,
+										 occurence_rejection_treshold=0.05,
+										 max_refitting=5,
+										 good_fit_treshold=0,
+										 pca=True,
+										 n_pca_comp=32,
+										 pca_solver="auto",
+										 nonlinearity=True,
+										 verbose=True,
+										 plot=True)
+
+# Plot Microstates
+------------------
+
+.. code-block:: python
+
+	nk.eeg_plot_microstates(method)
