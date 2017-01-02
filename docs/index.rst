@@ -8,6 +8,7 @@ Contents:
 
    tutorials/index
    api
+   about
    
 
 
