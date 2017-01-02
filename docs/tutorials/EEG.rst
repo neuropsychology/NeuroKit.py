@@ -169,19 +169,19 @@ Assuming that we have the following directory organization:
 		
 		- meg/
 		
-			- rest_raw.xlsx
+			- rest_raw.fif
 		
 	- Participant2/
 		
 		- meg/
 		
-			- rest_raw.xlsx
+			- rest_raw.fif
 		
 	- Participant3/
 		
 		- meg/
 		
-			- rest_raw.xlsx
+			- rest_raw.fif
 		
 	- ...
 
@@ -216,19 +216,7 @@ Compute the Microstates
 
 .. code-block:: python
 
-	results, method = nk.eeg_microstates(raws_list,
-		 names=participants,
-		 scale=True,
-		 n_microstates=4,
-		 occurence_rejection_treshold=0.05,
-		 max_refitting=5,
-		 good_fit_treshold=0,
-		 pca=True,
-		 n_pca_comp=32,
-		 pca_solver="auto",
-		 nonlinearity=True,
-		 verbose=True,
-		 plot=True)
+	results, method = nk.eeg_microstates(raws_list, names=participants)
 
 Plot the Microstates
 --------------------
