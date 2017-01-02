@@ -29,7 +29,7 @@ Features:
 - **EDA**
 - **Statistics**
 - **Other**
-  - Load and convert biopac's AcqKnowledge files to pandas' dataframe
+  - Load and convert biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - Fractal/chaos/entropy indices computation
 
 \**Warning*: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html). Go master **mne** first! :wink:
