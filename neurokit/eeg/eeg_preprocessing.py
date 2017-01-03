@@ -49,15 +49,24 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', n_components=30, random_s
                                 random_state=random_state  # random seed
                                 )
 
-    picks = mne.pick_types(raw.info, meg=False, eeg=True, eog=False, ecg=False, stim=False, exclude='bads', bio=False)
+    # Check if MEG or EEG data
+    if True in set(["MEG" in ch for ch in raw.info["ch_names"]]):
+        meg = True
+        eeg = False
+    else:
+        meg = False
+        eeg = True
+
+    picks = mne.pick_types(raw.info, meg=meg, eeg=eeg, eog=False, ecg=False, stim=False, exclude='bads', bio=False)
+
     ica.fit(raw, picks=picks, decim=3)
 
     if eog is True:
         # create one EOG epoch
         eog_epochs = mne.preprocessing.create_eog_epochs(raw,
                                                          picks=mne.pick_types(raw.info,
-                                                                              meg=False,
-                                                                              eeg=True,
+                                                                              meg=meg,
+                                                                              eeg=eeg,
                                                                               eog=True,
                                                                               ecg=False)
                                                          )
@@ -71,8 +80,8 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', n_components=30, random_s
         # create one ECG epoch
         ecg_epochs = mne.preprocessing.create_ecg_epochs(raw,
                                                          picks=mne.pick_types(raw.info,
-                                                                              meg=False,
-                                                                              eeg=True,
+                                                                              meg=meg,
+                                                                              eeg=eeg,
                                                                               eog=False,
                                                                               ecg=True)
                                                          )

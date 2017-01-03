@@ -27,11 +27,10 @@ import sklearn.metrics
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_gfp_features(data, gfp_peaks, freq, verbose=True):
+def eeg_gfp_features(data, gfp_peaks, duration, verbose=True):
     """
     Compute GFP features.
     """
-    duration = len(data)/freq
     gfp_mean_peak_frequency = len(gfp_peaks)/duration
     gfp_mean_peak_duration = 1000/gfp_mean_peak_frequency
     if verbose is True:
@@ -125,15 +124,34 @@ def eeg_gfp_process(raws_list, names=None, scale=True):
         # Initialize an empty dict for each observation of the list
         results[names[subject[0]]] = {}
 
+        # Check if MEG or EEG data
+        if True in set(["MEG" in ch for ch in subject[1].info["ch_names"]]):
+            meg = True
+            eeg = False
+        else:
+            meg = False
+            eeg = True
+
+        # Save ECG channel
+        try:
+            results[names[subject[0]]]["ecg"] = np.array(subject[1].copy().pick_types(meg=False, eeg=False, ecg=True).to_data_frame())
+        except:
+            results[names[subject[0]]]["ecg"] =  np.nan
+
+        # Select appropriate channels
+        results[names[subject[0]]]["info"] = subject[1].pick_types(meg=meg, eeg=eeg).info
+        data = subject[1].pick_types(meg=meg, eeg=eeg)
+
         # Convert to numpy array
-        data = np.array(subject[1].to_data_frame())
+        data = np.array(data.to_data_frame())
 
         # find GFP peaks
         data, gfp, gfp_peaks = eeg_gfp_peaks(data)
         results[names[subject[0]]]["microstates_times"] = gfp_peaks
+        results[names[subject[0]]]["run_duration"] = len(data) / subject[1].info["sfreq"]
 
         # Compute and store mean GFP peak frequency
-        results[names[subject[0]]]["microstates_mean_duration"] = eeg_gfp_features(data, gfp_peaks, freq=subject[1].info["sfreq"], verbose=False)
+        results[names[subject[0]]]["microstates_mean_duration"] = eeg_gfp_features(data, gfp_peaks, duration=results[names[subject[0]]]["run_duration"], verbose=False)
         results[names[subject[0]]]["data_sfreq"] = subject[1].info["sfreq"]
 
         # Select brain state at peaks
@@ -171,7 +189,7 @@ def eeg_gmd_process():
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_microstates_features(results, method, nonlinearity=True, verbose=True):
+def eeg_microstates_features(results, method, ecg=True, nonlinearity=True, verbose=True):
     """
     Compute statistics and features for/of the microstates.
     """
@@ -196,24 +214,27 @@ def eeg_microstates_features(results, method, nonlinearity=True, verbose=True):
 
 
             try:
+
                 # Coverage
                 results[subject]["parameters"][microstate]["coverage"] = occurences[microstate]/len(results[subject]["microstates"])
+
                 # Duration
                 uniques = find_following_duplicates(results[subject]["microstates"])
-                results[subject]["microstates_times"][uniques]
+                uniques_times = results[subject]["microstates_times"][np.where(uniques)]
+                uniques_ms = results[subject]["microstates"][np.where(uniques)]
+                times = uniques_times[np.array(np.where(uniques_ms==microstate))]
+                times_1 = np.take(uniques_times, np.array(np.where(uniques_ms==microstate)) + 1, mode='clip')
+                results[subject]["parameters"][microstate]["duration"] = np.mean(times_1 - times)/results[subject]["data_sfreq"]*1000
+
+                # Occurence
+                results[subject]["parameters"][microstate]["occurence"] = uniques_ms[np.array(np.where(uniques_ms==microstate))] / results[subject]["run_duration"]
+
             except KeyError:
                 results[subject]["parameters"][microstate]["coverage"] = 0
-
-                # Duration
-
-                #mylist = ["a","a","b","a","a","a","c","c","b","b"]
-#np.where(find_following_duplicates(mylist))
-# duration
-# occurence
-
-
+                results[subject]["parameters"][microstate]["duration"] = np.nan
 
     return(results)
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -222,10 +243,20 @@ def eeg_microstates_features(results, method, nonlinearity=True, verbose=True):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_microstates(raws_list, names=None, scale=True, n_microstates=4, occurence_rejection_treshold=0.05, max_refitting=5, good_fit_treshold=0, pca=False, n_pca_comp=32, pca_solver="auto", nonlinearity=True, verbose=True, plot=True):
+def eeg_microstates(raws, names=None, n_microstates=4, clustering_method="kmeans", scale=True, occurence_rejection_treshold=0.05, max_refitting=5, good_fit_treshold=0, feature_reduction="pca", n_features=32, nonlinearity=True, verbose=True, plot=True):
     """
     Run the full microstates analysis.
     """
+    # Transform dict into list if necessary
+    if isinstance(raws, dict):
+        raws_list = []
+        names_list= []
+        for name in raws:
+            names_list.append(name)
+            raws_list.append(raws[name])
+        if names is None:
+            names = names_list
+
 
     if verbose is True:
         print("""
@@ -248,25 +279,36 @@ def eeg_microstates(raws_list, names=None, scale=True, n_microstates=4, occurenc
         data_all.append(results[subject]["data"])
     data_all = np.concatenate(data_all, axis=0)
 
-    if pca is True:
+    # Feature reduction
+    if feature_reduction == "pca":
         if verbose is True:
             print("- Applying PCA...")
-        # Create PCA method
-        pca = sklearn.decomposition.PCA(n_components=n_pca_comp, svd_solver=pca_solver)
-
-        # Apply PCA to decompose the data
+        pca = sklearn.decomposition.PCA(n_components=n_features)
         data_training = pca.fit_transform(data_all)
-        pca_explained_variance = np.sum(pca.explained_variance_ratio_)
+        explained_variance = np.sum(pca.explained_variance_ratio_)
+    elif feature_reduction == "agglom":
+        if verbose is True:
+            print("- Applying Feature Agglomeration...")
+        agglom = sklearn.cluster.FeatureAgglomeration(n_clusters=n_features)
+        data_training = agglom.fit_transform(data_all)
     else:
         data_training = data_all.copy()
+
 
     # Create training set
     training_set = data_training.copy()
 
     if verbose is True:
         print("- Initializing the clustering algorithm...")
-     # Initalize clustering algorithm
-    algorithm = sklearn.cluster.KMeans(init='k-means++', n_clusters=n_microstates, n_init=25)
+    if clustering_method == "kmeans":
+        algorithm = sklearn.cluster.KMeans(init='k-means++', n_clusters=n_microstates, n_init=25)
+    elif clustering_method == "spectral":
+        algorithm = sklearn.cluster.SpectralClustering(n_clusters=n_microstates, n_init=25)
+    elif clustering_method == "agglom":
+        algorithm = sklearn.cluster.AgglomerativeClustering(n_clusters=n_microstates)
+    else:
+        print("NeuroKit Error: eeg_microstates(): clustering_method must be 'kmeans', 'spectral' or 'agglom'")
+
 
 
     refitting = 0  # Initialize the number of refittings
@@ -301,7 +343,11 @@ def eeg_microstates(raws_list, names=None, scale=True, n_microstates=4, occurenc
     method = {}
     method["algorithm"] = algorithm
     method["data"] = data_all
-    method["raw.info_example"] = raws_list[0].info
+    method["raw.info_example"] = results[subject]["info"]
+    method["feature_reduction_method"] = str(feature_reduction)
+    method["n_features"] = n_features
+    method["clustering_method"] = clustering_method
+    method["n_microstates"] = len(data_all)
 
     # Predict the more likely cluster for each observation on the initial set
     predicted = algorithm.predict(data_training)
@@ -323,8 +369,8 @@ def eeg_microstates(raws_list, names=None, scale=True, n_microstates=4, occurenc
     method["microstates_good_fit"] = np.where(method["silhouette_coefs"]>good_fit_treshold, predicted, "Bad")
     method["percentage_bad_fit"] = dict(collections.Counter(method["microstates_good_fit"]))["Bad"]/len(predicted)
 
-    if pca is True:
-        # Plot clustering result on the two first principal components
+    if feature_reduction is not None:
+        # Plot clustering result on the two first features
         if plot is True:
             to_plot = pd.DataFrame({"Princomp1": data_training[:, 0], "Princomp3": data_training[:, 2],"Princomp2": data_training[:, 1], "Princomp4": data_training[:, 3], "Cluster": method["microstates_good_fit"]})
             pd.tools.plotting.radviz(to_plot, "Cluster")
@@ -367,17 +413,24 @@ def eeg_microstates(raws_list, names=None, scale=True, n_microstates=4, occurenc
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_plot_microstates(method, path="", plot=True, save=True, dpi=300, contours=3, colorbar=False):
+def eeg_plot_microstates(method, path="", extension=".png", explicit_name=False, show_sensors_position=False, show_sensors_name=False, plot=True, save=True, dpi=300, contours=3, colorbar=False):
     """
     Plot the microstates.
     """
+    figures = []
     for microstate in set(method["microstates_good_fit"]):
         if microstate != "Bad":
             values = np.mean(method["data"][np.where(method["microstates_good_fit"] == microstate)], axis=0)
             values = np.array(values, ndmin=2).T
             evoked = mne.EvokedArray(values, method["raw.info_example"], 0)
-            fig = evoked.plot_topomap(times=0, title=microstate, size=6, contours=contours, time_format="", show=plot, colorbar=colorbar)
-            if save is True:
-                fig.savefig(path + "microstate_" + microstate + ".png", dpi=dpi)
+            fig = evoked.plot_topomap(times=0, title=microstate, size=6, contours=contours, time_format="", show=plot, colorbar=colorbar, show_names=show_sensors_name, sensors=show_sensors_position)
 
-    return()
+            figures.append(fig)
+
+            if save is True:
+                if explicit_name is False:
+                    name = path + "microstate_" + microstate + extension
+                else:
+                    name = path + "microstate_" + microstate + "_" + method["n_microstates"] + "_" + method["feature_reduction_method"] + method["n_features"] + "_" + method["clustering_method"] + extension
+                fig.savefig(name, dpi=dpi)
+    return(figures)

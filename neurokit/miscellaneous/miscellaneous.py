@@ -283,16 +283,15 @@ def find_following_duplicates(mylist):
 
 
     uniques = []
-    index = 0
-    while index != len(mylist):
-        uniques.append(True)
-        try:
-            while mylist[index] == mylist[index+1]:
+    for i in range(len(mylist)):
+        if i == 0:
+            uniques.append(True)
+        else:
+            if mylist[i] == mylist[i-1]:
                 uniques.append(False)
-                mylist.pop(index+1)
-        except:  # When index out of range
-            pass
-        index += 1
+            else:
+                uniques.append(True)
+
 
     # Find index of uniques
     indices = np.where(uniques)
