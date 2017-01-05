@@ -8,6 +8,7 @@ import scipy
 import scipy.stats
 import math
 
+from sklearn import preprocessing
 
 
 # ==============================================================================
@@ -652,7 +653,7 @@ def identify_outliers(serie, treshold=2.58):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def z_score(raw_score):
+def z_score(raw_scores, center=True, scale=True):
     """
     Transform an numeric pandas' array or list into Z scores (scaled and centered scores).
 
@@ -676,11 +677,6 @@ def z_score(raw_score):
     ----------
     - scipy
     """
-    array = pd.Series(raw_score)
-
-    mean = array.mean()
-    sd = array.std(ddof=0)
-
-    Z = (array-mean)/sd
-
-    return(list(Z))
+    array = np.array(raw_scores)
+    Z_scores = preprocessing.scale(raw_scores, with_mean=center, with_std=scale)
+    return(Z_scores)

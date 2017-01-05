@@ -4,6 +4,8 @@ Microstates submodule.
 from ..signal import fractal_dimensions
 from ..miscellaneous import find_following_duplicates
 from ..miscellaneous import load_object
+from ..statistics import feature_reduction
+from ..statistics import z_score
 
 import numpy as np
 import pandas as pd
@@ -160,7 +162,7 @@ def eeg_gfp(raws, gflp_method="GFPL1", scale=True, normalize=True, smoothing=Non
 
             # Store the data and scale parameters
             if scale is True:
-                gfp[participant][run]["data"] = sklearn.preprocessing.scale(data_peaks)
+                gfp[participant][run]["data"] = z_score(data_peaks)
             else:
                 gfp[participant][run]["data"] = data_peaks
 
@@ -313,7 +315,7 @@ def eeg_microstates_features(results, method, ecg=True, nonlinearity=True, verbo
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_microstates(gfp, n_microstates=4, clustering_method="kmeans", n_jobs=1, n_init=25, occurence_rejection_treshold=0.05, max_refitting=5, clustering_metrics=True, good_fit_treshold=0, feature_reduction="PCA", n_features=32, nonlinearity=True, verbose=True):
+def eeg_microstates(gfp, n_microstates=4, clustering_method="kmeans", n_jobs=1, n_init=25, occurence_rejection_treshold=0.05, max_refitting=5, clustering_metrics=True, good_fit_treshold=0, feature_reduction_method="PCA", n_features=32, nonlinearity=True, verbose=True):
     """
     Run the full microstates analysis.
 
@@ -378,40 +380,13 @@ def eeg_microstates(gfp, n_microstates=4, clustering_method="kmeans", n_jobs=1, 
             method["data_smoothing"] = results[participant][run]["data_smoothing"]
     data_all = np.concatenate(data_all, axis=0)
 
+
     # Feature reduction
-    if feature_reduction == "PCA":
-        if verbose is True:
-            print("- Applying PCA...")
-        feature_red_method = sklearn.decomposition.PCA(n_components=n_features)
-        data_processed = feature_red_method.fit_transform(data_all)
-    elif feature_reduction == "agglom":
-        if verbose is True:
-            print("- Applying Feature Agglomeration...")
-        feature_red_method = sklearn.cluster.FeatureAgglomeration(n_clusters=n_features)
-        data_processed = feature_red_method.fit_transform(data_all)
-    elif feature_reduction == "ica":
-        if verbose is True:
-            print("- Applying ICA...")
-        feature_red_method = sklearn.decomposition.FastICA(n_components=n_features)
-        data_processed = feature_red_method.fit_transform(data_all)
-    elif feature_reduction == "kernelPCA":
-        if verbose is True:
-            print("- Applying Kernel Principal component analysis (KPCA)...")
-        feature_red_method = sklearn.decomposition.KernelPCA(n_components=n_features, kernel='linear')
-        data_processed = feature_red_method.fit_transform(data_all)
-    elif feature_reduction == "sparsePCA":
-        if verbose is True:
-            print("- Applying Sparse Principal Components Analysis (SparsePCA)...")
-        feature_red_method = sklearn.decomposition.SparsePCA(n_components=n_features)
-        data_processed = feature_red_method.fit_transform(data_all)
-    elif feature_reduction == "incrementalPCA":
-        if verbose is True:
-            print("- Applying Incremental principal components analysis (IPCA)...")
-        feature_red_method = sklearn.decomposition.IncrementalPCA(n_components=n_features)
-        data_processed = feature_red_method.fit_transform(data_all)
-    else:
-        feature_red_method = None
-        data_processed = data_all.copy()
+    if verbose is True:
+        print("- Applying Feature Reduction...")
+    data_processed = feature_reduction(data_all,
+                                       method=feature_reduction_method,
+                                       n_features=n_features)
 
     try:
         # Fit clustering aglorithm
@@ -434,7 +409,7 @@ def eeg_microstates(gfp, n_microstates=4, clustering_method="kmeans", n_jobs=1, 
 
     method["algorithm"] = algorithm
     method["raw.info_example"] = results[participant][run]["data_info"]  # Take the info of the last participant nad last run
-    method["feature_reduction_method"] = feature_reduction
+    method["feature_reduction_method"] = feature_reduction_method
     method["n_features"] = n_features
     method["data"] = data_all
     method["clustering_method"] = clustering_method
@@ -511,7 +486,7 @@ def eeg_microstates(gfp, n_microstates=4, clustering_method="kmeans", n_jobs=1, 
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_plot_microstates(method, path="", extension=".png", show_sensors_position=False, show_sensors_name=False, plot=True, save=True, dpi=150, contours=0, colorbar=False, separate=False):
+def eeg_microstates_plot(method, path="", extension=".png", show_sensors_position=False, show_sensors_name=False, plot=True, save=True, dpi=150, contours=0, colorbar=False, separate=False):
     """
     Plot the microstates.
     """
@@ -570,3 +545,32 @@ def eeg_plot_microstates(method, path="", extension=".png", show_sensors_positio
             os.remove(name)
 
     return(figures)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_microstates_relabel(method, results, microstates_labels, reverse_microstates=None):
+    """
+    Relabel the microstates.
+    """
+
+    microstates = list(method['microstates'])
+
+    for index, microstate in enumerate(method['microstates']):
+
+        if microstate in list(reverse_microstates.keys()):
+            microstates[index] = reverse_microstates[microstate]
+            method["data"][index] = -1*method["data"][index]
+
+        if microstate in list(microstates_labels.keys()):
+            microstates[index] = microstates_labels[microstate]
+
+    method['microstates'] = np.array(microstates)
+
+    return(results, method)
