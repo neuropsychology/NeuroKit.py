@@ -28,6 +28,8 @@ Features:
   - Microstates (under development)
 - **EDA**
 - **Statistics**
+  - Feature reduction (PCA, ICA...)
+  - Z scores
 - **Other**
   - Load and convert biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - Fractal/chaos/entropy indices computation
@@ -51,9 +53,9 @@ results = nk.fractal_dimensions(signal)
 print(results["Entropy"])
 ```
 
-#### Other
+#### Z-scores
 ```python
 import neurokit as nk
-mylist = ["a","a","b","a","a","a","c","c","b","b"]
-nk.remove_following_duplicates(mylist)
+raw_scores = [1, 2, 8, 6, 2, 4]
+z_scores = nk.z_score(raw_scores)
 ```
