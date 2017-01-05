@@ -25,9 +25,11 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="iir"):
                          phase='zero',
                          method=method
                          )
-    raw.filter(lowpass,
-               highpass,
-               method=method)
+
+    if lowpass is not None and highpass is not None:
+        raw.filter(lowpass,
+                   highpass,
+                   method=method)
     return(raw)
 
 

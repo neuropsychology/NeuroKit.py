@@ -15,11 +15,13 @@ Contents:
 Installation
 ------------
 
-Installation can be easily done with ``pip``:
+.. note::
 
-.. code:: bash
+	Installation can be easily done with ``pip``:
 
-    $ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
+	.. code:: bash
+
+		$ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 
 
 Index

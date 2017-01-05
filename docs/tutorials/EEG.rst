@@ -1,7 +1,7 @@
-EEG
+M/EEG
 ###
 
-Welcome to the course for EEG processing using ``neurokit``.
+Welcome to the course for EEG and MEG processing using ``neurokit``.
 
 Preprocessing
 =============
@@ -10,21 +10,23 @@ Preprocessing
 Reading Data 
 ------------
 
-Assuming that we have the following directory organization:
+.. note::
 
-- analysis_script.py
+	Assuming that we have the following directory organization:
 
-- Data/
+	- analysis_script.py
 
-	- Participant1/
-		
-		- Participant1_Task.xlsx
-		
-		- Participant1_Task.eeg
-		
-		- Participant1_Task.vhdr
-		
-		- Participant1_Task.vmrk
+	- Data/
+
+		- Participant1/
+			
+			- Participant1_Task.xlsx
+			
+			- Participant1_Task.eeg
+			
+			- Participant1_Task.vhdr
+			
+			- Participant1_Task.vmrk
 
 In the ``analysis_script.py`` file, first import the needed modules. Then, load the EEG data in an ``mne`` raw object.
 
