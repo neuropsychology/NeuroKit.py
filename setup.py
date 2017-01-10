@@ -18,6 +18,7 @@ install_requires = [
     'mne>=0.13.0',
     'nolds',
     'bioread',
+    'plotly',
     'sklearn'],
 dependency_links=[],
 long_description = open('README.md').read(),
