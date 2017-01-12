@@ -21,12 +21,13 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 
 Features:
 
-- **EEG***
+- **M/EEG***
   - Data loading
   - Preprocessing
   - Filtering
   - Microstates (under development)
-- **EDA**
+- **Electrodermal Activity (EDA)**
+- **Electro-Cardiography (ECG)**
 - **Statistics**
   - Feature reduction (PCA, ICA...)
   - Z scores
