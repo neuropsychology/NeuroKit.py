@@ -677,6 +677,12 @@ def z_score(raw_scores, center=True, scale=True):
     ----------
     - scipy
     """
-    array = np.array(raw_scores)
-    Z_scores = preprocessing.scale(raw_scores, with_mean=center, with_std=scale)
+    df = pd.DataFrame(raw_scores)
+
+    mean = df.mean(axis=0)
+    sd = df.std(axis=0)
+    Z_scores = (df - mean)/sd
+
+    Z_scores = np.array(df)
+
     return(Z_scores)
