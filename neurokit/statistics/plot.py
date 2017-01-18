@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-import matplotlib
-matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 # ==============================================================================
@@ -32,7 +30,7 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", fig_siz
     ----------
     - matplotlib
     """
-    plot = plt.figure(figsize=figsize)
+    plot = plt.figure(figsize=fig_size)
     if colors == "default":
         colors = ["#f44336", "#9C27B0", "#3F51B5","#03A9F4", "#009688", "#8BC34A", "#FFEB3B", "#FF9800", "#795548"]
     if labels is None:
