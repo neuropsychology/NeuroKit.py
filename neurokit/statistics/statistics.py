@@ -498,3 +498,41 @@ def z_score(raw_scores, center=True, scale=True):
     Z_scores = np.array(df)
 
     return(Z_scores)
+    
+    
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def normal_range(mean, sd, treshold=1.28):
+    """
+    Returns a bottom and a top limit based on a treshold.
+
+    Parameters
+    ----------
+    treshold = float
+        maximum deviation (in terms of standart deviation). Following a gaussian distribution, 2.58 = keeping 99%, 2.33 = keeping 98%, 1.96 = 95% and 1.28 = keeping 90%.
+
+    Returns
+    ----------
+    NA
+
+    Example
+    ----------
+    NA
+
+    Authors
+    ----------
+    Dominique Makowski
+
+    Dependencies
+    ----------
+    - numpy
+    """
+    bottom = mean - sd*treshold
+    top = mean + sd*treshold
+    return(bottom, top)
