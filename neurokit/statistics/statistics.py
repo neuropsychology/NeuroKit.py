@@ -1,9 +1,6 @@
 # -*- coding: utf-8 -*-
 import numpy as np
 import pandas as pd
-import plotly
-import plotly.offline as py
-import plotly.graph_objs as go
 import scipy
 import scipy.stats
 import math
@@ -19,7 +16,7 @@ from sklearn import preprocessing
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def correlation(var1, var2, data=None, r_type="pearson", plot=True, jitter_points=False, output=True):
+def correlation(var1, var2, data=None, r_type="pearson", jitter_points=False, output=True):
     """
     Performs a correlation.
 
@@ -109,46 +106,6 @@ def correlation(var1, var2, data=None, r_type="pearson", plot=True, jitter_point
 
 
 
-        if plot is True:
-
-            line = slope*var1+intercept
-
-            if jitter_points is True:
-                jitter1 = np.random.random_sample(len(var1))
-                jitter2 = np.random.random_sample(len(var2))
-                jitter1 =  np.std(var1)/6 * jitter1
-                jitter2 =  np.std(var2)/6 * jitter2
-                x = np.array(var1)+jitter1
-                y = np.array(var2)+jitter2
-            else:
-                x = var1
-                y = var2
-            trace1 = go.Scatter(
-                      x=x,
-                      y=y,
-                      mode='markers',
-                      marker=go.Marker(color='rgb(255, 127, 14)'),
-                      name='Data points'
-                      )
-
-            trace2 = go.Scatter(
-                              x=var1,
-                              y=line,
-                              mode='lines',
-                              marker=go.Marker(color='rgb(31, 119, 180)'),
-                              name='Regression line'
-                              )
-            layout = go.Layout(
-                      xaxis=dict(
-                        showgrid=True
-                        ),
-                      yaxis=dict(
-                        showgrid=True
-                        )
-                    )
-            plot = go.Figure(data=[trace1, trace2], layout=layout)
-            py.plot(plot)
-
     if output is True:
         print(result["APA_output"])
     return(result)
@@ -204,7 +161,7 @@ def select_variables(df, dtype="numeric"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def t_test(var1, var2, data=None, var1_name="VARIABLE-1", var2_name="VARIABLE-2", independent=False, output=True, plot=True, bayesian=False, bootstrapped=True, N_resamples=1000, significance_treshold=0.05):
+def t_test(var1, var2, data=None, var1_name="VARIABLE-1", var2_name="VARIABLE-2", independent=False, output=True, bayesian=False, bootstrapped=True, N_resamples=1000, significance_treshold=0.05):
     """
     Performs a t-test.
 
@@ -314,12 +271,6 @@ def t_test(var1, var2, data=None, var1_name="VARIABLE-1", var2_name="VARIABLE-2"
     else:
         result['interpretation_d'] = "Following Cohen's (1988) recommandations, the effect size for this analysis could be characterized as very large (d = %.2f)." %(result['d'])
 
-    if plot is True:
-        if independent is True:
-            figure = plotly.tools.FigureFactory.create_distplot([var1, var2], group_labels=[factor1, factor2])
-        else:
-            figure = plotly.tools.FigureFactory.create_distplot([var1, var2], group_labels=[var1_name, var2_name])
-        py.plot(figure)
 
     if bayesian is True:
 #        from theano import config
@@ -394,145 +345,6 @@ def t_test(var1, var2, data=None, var1_name="VARIABLE-1", var2_name="VARIABLE-2"
 
 
 
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def bayesian_model(y, x, data=None, correlation=False, family="Normal", robust = True, samples = 1000, plot_posterior=True, plot_regression=True, plot_samples = "default", print_summary=True, alpha = 0.05):
-    """
-    Performs a Bayesian regression.
-
-    Parameters
-    ----------
-    NA
-
-    Returns
-    ----------
-    NA
-
-    Example
-    ----------
-    NA
-
-    Authors
-    ----------
-    Dominique Makowski
-
-    Dependencies
-    ----------
-    - pandas
-    - numpy
-    - plotly
-    - scipy
-    - pymc3
-    """
-
-    print("Starting Bayesian estimation...")
-    from theano import config
-    config.warn.sum_div_dimshuffle_bug = False
-    import pymc3
-
-
-
-    y_name = "y"
-    x_name = "x"
-
-    if isinstance(y,str):
-        y_name = y
-        try:
-            y = data[y]
-        except:
-            pass
-    if isinstance(x,str):
-        x_name = x
-        try:
-            x = data[x]
-        except:
-            pass
-
-
-    if correlation == True:
-        #Center and scale
-        x = x - np.mean(x)
-        x = x / np.std(x)
-
-        y = y - np.mean(y)
-        y = y / np.std(y)
-
-
-
-
-    data = {y_name:y,
-            x_name:x}
-    formula = y_name + ' ~ ' + x_name
-
-
-
-
-
-
-
-
-
-
-    with pymc3.Model() as model: # model specifications in PyMC3 are wrapped in a with-statement
-        if family == "Normal":
-            family = pymc3.glm.families.Normal()
-            if robust == True:
-                family = pymc3.glm.families.StudentT()
-
-        pymc3.glm.glm(formula, data, family=family)
-        start = pymc3.find_MAP()
-        step = pymc3.NUTS(scaling=start) # Instantiate MCMC sampling algorithm
-        trace = pymc3.sample(samples, step, progressbar=True) # draw 2000 posterior samples using NUTS sampling
-
-#    trace = trace[int(samples/4):]
-    #PLOT POSTERIOR DISTRIBUTION
-    if plot_posterior == True:
-        pymc3.traceplot(trace)
-
-    #PLOT LINES
-    if plot_regression == True:
-        plot_data= []
-        plot_data.append(go.Scatter(x=x,
-                        y=y,
-                        mode = 'markers'))
-
-
-
-        if plot_samples == "default":
-            if len(trace) > 100:
-                plot_samples = 100
-                samples_range = np.random.randint(0, len(trace), plot_samples)
-            else:
-                plot_samples = samples
-                samples_range = range(len(trace))
-        else:
-            samples_range = np.random.randint(0, len(trace), plot_samples)
-
-
-
-        for i in samples_range:
-            print(i)
-            plot_data.append(go.Scatter(x=x,
-                            y=trace[i]['Intercept'] + trace[i]['x'] * x,
-                            mode = 'lines',
-                            opacity=0.25,
-                            line = {"color":"grey",
-                                    "width":5}))
-        layout = go.Layout(showlegend=False)
-        figure = go.Figure(data = plot_data,layout=layout)
-        py.plot(figure)
-
-    if print_summary == True:
-        print(pymc3.summary(trace,alpha=alpha))
-    return(trace)
 
 
 # ==============================================================================
