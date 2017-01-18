@@ -13,6 +13,7 @@ import matplotlib.pyplot as plt
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
+<<<<<<< HEAD
 def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distribution_means=None, distribution_sds=None, treshold=1.28, fig_size=(15, 15), show=True, save=False, path="", dpi=300):
     """
     Polar bar chart.
@@ -32,6 +33,7 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
     ----------
     - matplotlib
     """
+
     # Parameters
     if colors == "default":
         colors = ["#f44336", "#9C27B0", "#3F51B5","#03A9F4", "#009688", "#8BC34A", "#FFEB3B", "#FF9800", "#795548"]
@@ -41,7 +43,7 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
     N = len(scores)
     theta = np.linspace(0.0, 2 * np.pi, N, endpoint=False)
     width = 2 * np.pi / N
-    
+   
     
     
     
