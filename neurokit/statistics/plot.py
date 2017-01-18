@@ -13,7 +13,7 @@ import matplotlib.pyplot as plt
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def polar_bar_plot(scores, labels=None, labels_size=15, colors="default", fig_size=(15, 15), show=True, save=False, path="", dpi=300):
+def plot_polarbar(scores, labels=None, labels_size=15, colors="default", fig_size=(15, 15), show=True, save=False, path="", dpi=300):
     """
     Polar bar chart.
     Parameters
