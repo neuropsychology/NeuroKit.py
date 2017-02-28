@@ -495,8 +495,6 @@ def z_score(raw_scores, center=True, scale=True):
     sd = df.std(axis=0)
     Z_scores = (df - mean)/sd
 
-    Z_scores = np.array(df)
-
     return(Z_scores)
     
     
