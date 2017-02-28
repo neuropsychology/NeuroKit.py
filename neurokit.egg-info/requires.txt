@@ -3,3 +3,6 @@ scipy>=0.10.0
 pandas>=0.18.0
 mne>=0.13.0
 nolds
+bioread
+matplotlib
+sklearn
