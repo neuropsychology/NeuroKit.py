@@ -20,7 +20,7 @@ install_requires = [
     'bioread',
     'matplotlib',
     'sklearn'],
-dependency_links=[],
+dependency_links=['https://github.com/njvack/bioread/zipball/master'],
 long_description = open('README.md').read(),
 keywords = "python signal processing EEG EDA",
 url = "https://github.com/neuropsychology/NeuroKit.py",

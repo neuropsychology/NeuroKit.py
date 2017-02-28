@@ -21,6 +21,15 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 
 **Warning: This package is under development.**
 
+## Installation
+
+Run the following:
+
+```bash
+pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
+```
+
+
 ## Description
 
 Features:
@@ -40,15 +49,9 @@ Features:
   - Fractal/chaos/entropy indices computation
 
 \**Warning*: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html). Go master **mne** first! :wink:
-## Install
 
-Run the following:
 
-```bash
-pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
-```
-
-## Example
+## Examples
 
 #### Fractal/chaos/entropy indices computation
 ```python
