@@ -17,7 +17,6 @@ install_requires = [
     'pandas>=0.18.0',
     'mne>=0.13.0',
     'nolds',
-    'bioread',
     'matplotlib',
     'sklearn'],
 dependency_links=['https://github.com/njvack/bioread/zipball/master'],
