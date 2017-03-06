@@ -344,9 +344,6 @@ def t_test(var1, var2, data=None, var1_name="VARIABLE-1", var2_name="VARIABLE-2"
 
 
 
-
-
-
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -355,11 +352,9 @@ def t_test(var1, var2, data=None, var1_name="VARIABLE-1", var2_name="VARIABLE-2"
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
+def z_score(raw_scores, center=True, scale=True):
     """
-    Calculates d', beta, c & ad'.
-
-    see http://lindeloev.net/?p=29
+    Transform an numeric pandas' array or list into Z scores (scaled and centered scores).
 
     Parameters
     ----------
@@ -381,34 +376,90 @@ def dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
     ----------
     - scipy
     """
-    Z = scipy.stats.norm.ppf
-    # Floors an ceilings are replaced by half hits and half FA's
-    half_Hit = 0.5/(n_Hit + n_Miss)
-    half_FA = 0.5/(n_FA + n_CR)
+    df = pd.DataFrame(raw_scores)
 
-    # Calculate hitrate and avoid d' infinity
-    Hit_Rate = n_Hit/(n_Hit+n_Miss)
-    if Hit_Rate == 1:
-        Hit_Rate = 1-half_Hit
-    if Hit_Rate == 0:
-        Hit_Rate = half_Hit
+    mean = df.mean(axis=0)
+    sd = df.std(axis=0)
+    Z_scores = (df - mean)/sd
 
-    # Calculate false alarm rate and avoid d' infinity
-    FA_Rate = n_FA/(n_FA+n_CR)
-    if FA_Rate == 1:
-        FA_Rate = 1-half_FA
-    if FA_Rate == 0:
-        FA_Rate = half_FA
+    return(Z_scores)
 
-    # Return d', beta, c and Ad'
-    out = {}
-    out['Hit_Rate'] = Hit_Rate
-    out['FA_Rate'] = FA_Rate
-    out['d'] = Z(Hit_Rate) - Z(FA_Rate)
-    out['beta'] = math.exp(Z(FA_Rate)**2 - Z(Hit_Rate)**2)/2
-    out['c'] = -(Z(Hit_Rate) + Z(FA_Rate))/2
-    out['Ad'] = scipy.stats.norm.cdf(out['d']/math.sqrt(2))
-    return(out)
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
+    """
+    Computes d', beta, aprime, b''d and c.
+
+    See https://www.rdocumentation.org/packages/neuropsychology/topics/dprime and http://lindeloev.net/calculating-d-in-python-and-php/
+
+    Parameters
+    ----------
+    NA
+
+    Returns
+    ----------
+    NA
+
+    Example
+    ----------
+    NA
+
+    Authors
+    ----------
+    Dominique Makowski
+
+    Dependencies
+    ----------
+    - scipy
+    """
+    n_Hit = 9
+    n_Miss = 2
+    n_FA = 4
+    n_CR = 6
+
+    # Ratios
+    hit_rate = n_Hit/(n_Hit + n_Miss)
+    fa_rate = n_FA/(n_FA + n_CR)
+
+
+  # Adjusted ratios
+    hit_rate_adjusted = (n_Hit+ 0.5)/((n_Hit+ 0.5) + n_Miss + 1)
+    fa_rate_adjusted = (n_FA+ 0.5)/((n_FA+ 0.5) + n_CR + 1)
+
+
+    # dprime
+    dprime = scipy.stats.norm.ppf(hit_rate_adjusted) - scipy.stats.norm.ppf(hit_rate_adjusted)
+
+    # beta
+    zhr = scipy.stats.norm.ppf(hit_rate_adjusted)
+    zfar = scipy.stats.norm.ppf(fa_rate_adjusted)
+    beta = np.exp(-zhr*zhr/2 + zfar*zfar/2)
+
+    # aprime
+    a = 1/2+((hit_rate-fa_rate)*(1+hit_rate-fa_rate) / (4*hit_rate*(1-fa_rate)))
+    b = 1/2-((fa_rate-hit_rate)*(1+fa_rate-hit_rate) / (4*fa_rate*(1-hit_rate)))
+
+    if fa_rate > hit_rate:
+        aprime = b
+    elif fa_rate < hit_rate:
+        aprime = a
+    else:
+        aprime = 0.5
+
+    # bppd
+    bppd = ((1-hit_rate)*(1-fa_rate)-hit_rate*fa_rate) / ((1-hit_rate)*(1-fa_rate)+hit_rate*fa_rate)
+
+    # c
+    c = -(scipy.stats.norm.ppf(hit_rate_adjusted) + scipy.stats.norm.ppf(fa_rate_adjusted))/2
+
+    return(dict(dprime=dprime, beta=beta, aprime=aprime, bppd=bppd, c=c))
 
 
 # ==============================================================================
@@ -457,47 +508,9 @@ def identify_outliers(serie, treshold=2.58):
 
 
 
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def z_score(raw_scores, center=True, scale=True):
-    """
-    Transform an numeric pandas' array or list into Z scores (scaled and centered scores).
 
-    Parameters
-    ----------
-    NA
 
-    Returns
-    ----------
-    NA
 
-    Example
-    ----------
-    NA
-
-    Authors
-    ----------
-    Dominique Makowski
-
-    Dependencies
-    ----------
-    - scipy
-    """
-    df = pd.DataFrame(raw_scores)
-
-    mean = df.mean(axis=0)
-    sd = df.std(axis=0)
-    Z_scores = (df - mean)/sd
-
-    return(Z_scores)
-    
-    
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
