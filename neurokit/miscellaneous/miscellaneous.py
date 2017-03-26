@@ -228,7 +228,7 @@ def get_creation_date(path_to_file):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def find_closest_in_list(number, array):
+def closest_in_list(number, array, direction="both", strictly=False):
     """
     Find the closest number in the array from x.
 
@@ -238,6 +238,10 @@ def find_closest_in_list(number, array):
         The number
     array = list
         The list to look in
+    direction = str
+        "both" for smaller or greater, "greater" for only greater numbers and "smaller" for the closest smaller
+    strictly = bool
+        False for stricly superior or inferior or True for including equal
 
     Returns
     ----------
@@ -257,6 +261,17 @@ def find_closest_in_list(number, array):
     ----------
     None
     """
-    closest = min(array, key=lambda x:abs(x-number))
-    return(closest)
+    if direction == "both":
+        closest = min(array, key=lambda x:abs(x-number))
+    if direction == "smaller":
+        if strictly is True:
+            closest = max(x for x in array if x < number)
+        else:
+            closest = max(x for x in array if x <= number)
+    if direction == "greater":
+        if strictly is True:
+            closest = min(filter(lambda x: x > number, array))
+        else:
+            closest = min(filter(lambda x: x >= number, array))
 
+    return(closest)
