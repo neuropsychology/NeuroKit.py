@@ -1,7 +1,7 @@
 """
 Loading data submodule.
 """
-from ..signal import select_events
+from ..signal import find_events
 from ..miscellaneous import read_data
 from .eeg_preprocessing import *
 
@@ -126,7 +126,7 @@ def eeg_create_events(events_onset, events_list):
     Parameters
     ----------
     events_onset = list
-        Events onset (from find_events() or select_events()).
+        Events onset (from find_events() or find_events()).
     events_list = list
         A list of equal length containing the stimuli types/conditions.
 
@@ -252,7 +252,7 @@ def eeg_add_events(raw, stim_channel, treshold=0.04, upper=False, number=None, a
     signal, time_index = raw.copy().pick_channels([stim_channel])[:]
 
     # Select events based on the treshold value
-    events_onset, events_time = select_events(signal[0],
+    events_onset, events_time = find_events(signal[0],
                                             treshold=treshold,
                                             upper=upper,
                                             time_index=time_index,
