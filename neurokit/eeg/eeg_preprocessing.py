@@ -1,7 +1,6 @@
 """
 Preprocessing EEG submodule.
 """
-from ..signal import select_events
 from ..miscellaneous import read_data
 
 import numpy as np
