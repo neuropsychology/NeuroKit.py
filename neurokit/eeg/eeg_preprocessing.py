@@ -1,8 +1,6 @@
 """
 Preprocessing EEG submodule.
 """
-from ..miscellaneous import read_data
-
 import numpy as np
 import mne
 
