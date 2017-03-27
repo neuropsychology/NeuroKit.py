@@ -21,9 +21,9 @@ import os
 import sys
 import mock
 
-sys.path.insert(0, os.path.abspath('../..'))
+sys.path.insert(0, os.path.abspath('../'))
 
-MOCK_MODULES = ['numpy', 'scipy', 'pandas', 'mne', 'nolds', 'bioread', "sklearn"]
+MOCK_MODULES = ['numpy', 'scipy', 'pandas', 'mne', 'nolds', 'bioread', "sklearn", "matplotlib"]
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
@@ -70,7 +70,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'NeuroKit.py'
-copyright = '2016, Dominique Makowski'
+copyright = '2017, Dominique Makowski'
 author = 'Dominique Makowski'
 
 # The version info for the project you're documenting, acts as replacement for

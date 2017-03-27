@@ -124,8 +124,7 @@ def binarize_signal(signal, treshold, upper=True):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-
-def find_events_onset(signal, treshold, upper=False, time_index=None):
+def find_events_onset(signal, treshold, upper=True, time_index=None, min_length=1):
     """
     Find the onsets of all events based on a continuous signal.
 
@@ -162,6 +161,7 @@ def find_events_onset(signal, treshold, upper=False, time_index=None):
 
     events_time = []
     events_onset = []
+    length = []
     for i in range(len(binary_data)):
         if i > 0:
             if binary_data[i]==1 and binary_data[i-1]==0:
