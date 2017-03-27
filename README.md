@@ -1,6 +1,7 @@
 <p align="center"><img src="https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/neurokit.png" width="400" align="center" alt="neurokit python logo"></p>
 
----
+<h2 align="center">Neuroscience made easy!</h2>
+
 
 # NeuroKit.py 
 A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, EDA, ECG, EMG...).
