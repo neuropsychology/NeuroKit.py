@@ -30,10 +30,15 @@ Run the following:
 pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 ```
 
+## Contribute
+- You need some help? You found a bug? You would like to request a new feature? 
+  Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
+- Want to add yourself a feature? Correct a bug? You're more than welcome to contribute!
+  Check [this page](http://ecole-de-neuropsychologie.readthedocs.io/en/latest/Contributing/Contribute/) to see how to submit your changes on github.
 
 ## Description
 
-This package is there to provide a high level integration of complex statistical routines
+This package is there to provide a high level integration of complex statistical routines to researchers and clinicians with not much experience in programming, statistics or signal theory.
 
 Features:
 
@@ -60,11 +65,7 @@ Features:
 \**Warning*: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html). Go master **mne** first! :wink:
 
 
-## Contribute
-- You need some help? You found a bug? You would like to request a new feature? 
-  Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
-- Want to add yourself a feature? Correct a bug? You're more than welcome to contribute!
-  Check [this page](http://ecole-de-neuropsychologie.readthedocs.io/en/latest/Contributing/Contribute/) to see how to submit your changes on github.
+
 
 
 ## Examples
