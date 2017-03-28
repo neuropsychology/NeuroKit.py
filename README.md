@@ -77,7 +77,6 @@ Features:
 #### ECG and RSP processing with a Biopac:copyright:'s Acqknowledge file.
 ```python
 import neurokit as nk
-
 acq = nk.acq_to_df("myfile.acq")
 ecg_features = nk.process_ecg(ecg=acq["ECG, X, RSPEC-R"], rsp=acq["RSP, X, RSPEC-R"])
 
