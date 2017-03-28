@@ -37,23 +37,24 @@ This package is there to provide a high level integration of complex statistical
 
 Features:
 
-- **M/EEG***
+- **M/EEG*** (under development)
   - Data loading
   - Preprocessing
   - Filtering
-  - Microstates (under development)
-- **Biosignals
-  - `process_ecg()` : Extract ECG features
-    - Filtered signal
-	- Heart rate
-	- R peaks
-	- Heart rate variability (HRV)
+  - Microstates
+- **Biosignals**
+  - **`acq_to_df()`** : Load and convert biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
+  - **`process_ecg()`** : Extract ECG and RSP features
+    - Filtering
+    - Heart rate
+    - R peaks
+    - Heart rate variability (HRV)
   - Electrodermal Activity (EDA)
+    - Under development
 - **Statistics**
   - Feature reduction (PCA, ICA...)
   - Z scores
-- **Other**
-  - Load and convert biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
+- **Miscellaneous**
   - Fractal/chaos/entropy indices computation
 
 \**Warning*: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html). Go master **mne** first! :wink:
