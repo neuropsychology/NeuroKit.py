@@ -38,7 +38,7 @@ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 
 ## Description
 
-This package is there to provide a high level integration of complex statistical routines to researchers and clinicians with not much experience in programming, statistics or signal theory.
+This package provides a high level integration of complex statistical routines for researchers and clinicians with not much experience in programming, statistics or signal theory.
 
 Features:
 
