@@ -42,11 +42,15 @@ This package is there to provide a high level integration of complex statistical
 
 Features:
 
-- **M/EEG*** (under development)
+- **M/EEG** (under development)
   - Data loading
+    - Under development
   - Preprocessing
+    - Under development
   - Filtering
+    - Under development
   - Microstates
+    - Under development
 - **Biosignals**
   - **`acq_to_df()`** : Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`process_ecg()`** : Extract ECG and RSP features
@@ -62,7 +66,6 @@ Features:
 - **Miscellaneous**
   - Fractal/chaos/entropy indices computation
 
-\**Warning*: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html). Go master **mne** first! :wink:
 
 
 
