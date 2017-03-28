@@ -48,7 +48,7 @@ Features:
   - Filtering
   - Microstates
 - **Biosignals**
-  - **`acq_to_df()`** : Load and convert biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
+  - **`acq_to_df()`** : Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`process_ecg()`** : Extract ECG and RSP features
     - Filtering
     - Heart rate
@@ -69,6 +69,20 @@ Features:
 
 
 ## Examples
+
+
+#### ECG and RSP processing with a Biopac:copyright:'s Acqknowledge file.
+```python
+import neurokit as nk
+
+acq = nk.acq_to_df("myfile.acq")
+ecg_features = nk.process_ecg(ecg=acq["ECG, X, RSPEC-R"], rsp=acq["RSP, X, RSPEC-R"])
+
+# Plot all the heart beats
+import pandas as pd
+pd.DataFrame(ecg_features["Heart_Beats"]).T.plot()
+```
+
 
 #### Fractal/chaos/entropy indices computation
 ```python
