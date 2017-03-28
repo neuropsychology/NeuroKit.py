@@ -33,7 +33,7 @@ def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resamplin
     sampling_rate = int
         final sampling rate (samples/second).
     resampling_method = str
-        "mean" or "pad", resampling method.
+        "mean", "pad" or "bfill", the resampling method.
 
     Returns
     ----------
@@ -43,10 +43,9 @@ def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resamplin
 
     Example
     ----------
-    >>> import neuropsydia as n
-    >>> n.start(False)
+    >>> import neurokit as nk
     >>>
-    >>> df = acq_to_df('file.acq')
+    >>> df = nk.acq_to_df('file.acq')
 
     Authors
     ----------
@@ -126,6 +125,10 @@ def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resamplin
         if data_else:
             df2 = df2.resample(sampling_rate).pad()
         df = df.resample(sampling_rate).pad()
+    if resampling_method == "bfill":
+        if data_else:
+            df2 = df2.resample(sampling_rate).bfill()
+        df = df.resample(sampling_rate).bfill()
     if data_else:
         df = pd.concat([df, df2], 1)
 

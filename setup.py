@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 name = "neurokit",
 description = ("A Python Toolbox for Statistics and Signal Processing (EEG, EDA, ECG, EMG...)."),
-version = "0.0.6",
+version = "0.0.7",
 license = "MIT",
 author = "Dominique Makowski",
 author_email = "dom.makowski@gmail.com",
@@ -20,7 +20,8 @@ install_requires = [
     'nolds',
     'matplotlib',
     'sklearn',
-    'biosppy'],
+    'biosppy',
+    "hrv"],
 dependency_links=[],
 long_description = open('README.md').read(),
 keywords = "python signal processing EEG EDA",
