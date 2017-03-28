@@ -60,23 +60,12 @@ Features:
 \**Warning*: mainly wrapper functions based on [mne](http://martinos.org/mne/stable/index.html). Go master **mne** first! :wink:
 
 
-# Contribute
+## Contribute
 - You need some help? You found a bug? You would like to request a new feature? 
   Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
 - Want to add yourself a feature? Correct a bug? You're more than welcome to contribute!
   Check [this page](http://ecole-de-neuropsychologie.readthedocs.io/en/latest/Contributing/Contribute/) to see how to submit your changes on github.
 
-## Citation
-You can cite NeuroKit with the following:
-```
-Makowski, D. (2016). NeuroKit: A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, EDA, ECG, EMG...).
-Memory and Cognition Lab' Day, 01 November, Paris, France
-```
-*Note: The authors do not give any warranty. If this software causes your keyboard to blow up, your brain to liquefy, your toilet to clog or a zombie plague to leak, the authors CANNOT IN ANY WAY be held responsible.*
-
-## Credits
-Note that important credits go to the developpers of the many packages upon which NeuroKit is built. Those include, among others, [mne](http://mne-tools.github.io/stable/index.html) (M/EEG), [bioSPPy](https://github.com/PIA-Group/BioSPPy), [hrv](https://github.com/rhenanbartels/hrv)...
-Please include them in citations.
 
 ## Examples
 
@@ -95,3 +84,15 @@ raw_scores = [1, 2, 8, 6, 2, 4]
 z_scores = nk.z_score(raw_scores)
 ```
 
+
+## Citation
+You can cite NeuroKit with the following:
+```
+Makowski, D. (2016). NeuroKit: A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, EDA, ECG, EMG...).
+Memory and Cognition Lab' Day, 01 November, Paris, France
+```
+*Note: The authors do not give any warranty. If this software causes your keyboard to blow up, your brain to liquefy, your toilet to clog or a zombie plague to leak, the authors CANNOT IN ANY WAY be held responsible.*
+
+## Credits
+Note that important credits go to the developpers of the many packages upon which NeuroKit is built. Those include, among others, [mne](http://mne-tools.github.io/stable/index.html) (M/EEG), [bioSPPy](https://github.com/PIA-Group/BioSPPy), [hrv](https://github.com/rhenanbartels/hrv)...
+Please include them in citations.
