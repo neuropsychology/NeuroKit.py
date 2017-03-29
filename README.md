@@ -42,7 +42,7 @@ This package provides a high level integration of complex statistical routines f
 
 Features:
 
-- **M/EEG** (under development)
+- **M/EEG**
   - Data loading
     - Under development
   - Preprocessing
