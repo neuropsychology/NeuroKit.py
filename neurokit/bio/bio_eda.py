@@ -1,15 +1,18 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
-import os
-import datetime
-
-import cvxopt as cv  # process_EDA()
-import cvxopt.solvers  # process_EDA()
-
-from ..statistics import z_score  # process_EDA()
+import biosppy
 
 
+import cvxopt as cv
+import cvxopt.solvers
+
+from ..statistics import z_score
+
+
+
+
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -18,7 +21,76 @@ from ..statistics import z_score  # process_EDA()
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def process_EDA(EDA_raw, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=0.4, gamma=1e-2, solver=None, options={'reltol':1e-9}):
+def process_eda(eda, sampling_rate=1000, cvxEDA=True):
+    """
+    Automated processing of EDA signal.
+
+    Parameters
+    ----------
+    eda =  array
+        EDA signal array.
+    sampling_rate = int
+        Sampling rate (samples/second).
+    cvxEDA = bool
+        Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
+
+    Returns
+    ----------
+    eda_features = dict
+        Dict containing EDA extracted features.
+
+        Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided).
+
+        This function is mainly a wrapper for the biosspy.ecg.ecg() and the hrv.hrv() functions. Credits go to their authors.
+
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>>
+    >>> eda_features = nk.process_eda(eda_signal)
+
+    Authors
+    ----------
+    Dominique Makowski, the bioSSPy dev team, the cvxEDA dev team
+
+    Dependencies
+    ----------
+    - biosppy
+    - numpy
+    - pandas
+    - cvxopt
+    """
+    eda_features = {"EDA_Raw": eda}
+
+    # Convex optimization
+    if cvxEDA is True:
+        eda = convex_optimization_eda(eda, sampling_rate=sampling_rate)
+        eda_features["EDA_cvx"] = eda
+
+    # Compute several features using biosppy
+    biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False))
+
+    eda_features["EDA_Filtered"] = biosppy_eda["filtered"]
+    eda_features["SCR_Onsets"] = biosppy_eda['onsets']
+    eda_features["SCR_Peaks_Indexes"] = biosppy_eda['peaks']
+    eda_features["SCR_Peaks_Amplitudes"] = biosppy_eda['amplitudes']
+
+    return(eda_features)
+
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def convex_optimization_eda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
     """
     A convex optimization approach to electrodermal activity processing (CVXEDA)
 
@@ -27,41 +99,31 @@ def process_EDA(EDA_raw, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha
 
     Parameters
     ----------
-       EDA_raw
-           observed EDA signal (we recommend normalizing it: EDA_raw = zscore(EDA_raw))
+       eda
+           observed EDA signal.
        sampling_rate
-           sampling rate (samples/seconds) of EDA_raw
+           sampling rate (samples/seconds).
        tau0
-           slow time constant of the Bateman function
+           slow time constant of the Bateman function.
        tau1
-           fast time constant of the Bateman function
+           fast time constant of the Bateman function.
        delta_knot
-           time between knots of the tonic spline function
+           time between knots of the tonic spline function.
        alpha
-           penalization for the sparse SMNA driver
+           penalization for the sparse SMNA driver.
        gamma
-           penalization for the tonic spline coefficients
+           penalization for the tonic spline coefficients.
        solver
            sparse QP solver to be used, see cvxopt.solvers.qp
+       verbose = bool
+           Print progress?
        options
            solver options, see http://cvxopt.org/userguide/coneprog.html#algorithm-parameters
 
     Returns
     ----------
        phasic
-           phasic component
-       tonic
-           tonic component
-       p
-           sparse SMNA driver of phasic component
-       l
-           coefficients of tonic spline
-       d
-           offset and slope of the linear drift term
-       e
-           model residuals
-       obj
-           value of objective function being minimized (eq 15 of paper)
+           phasic component.
 
     Authors
     ----------
@@ -79,12 +141,14 @@ def process_EDA(EDA_raw, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha
     - cvxopt
     - numpy
     """
-    frequency = 1/(sampling_rate/100)
+#    frequency = 1/(sampling_rate/100)
+    frequency = 1/sampling_rate
 
-    EDA_raw = z_score(EDA_raw)
+    z_eda = z_score(eda)
+    z_eda = np.array(z_eda)[:,0]
 
-    n = len(EDA_raw)
-    EDA_raw = cv.matrix(EDA_raw)
+    n = len(z_eda)
+    z_eda = cv.matrix(z_eda)
 
     # bateman ARMA model
     a1 = 1./min(tau1, tau0) # a1 > a0
@@ -116,9 +180,10 @@ def process_EDA(EDA_raw, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha
     nC = C.size[1]
 
     # Solve the problem:
-    # .5*(M*q + B*l + C*d - EDA_raw)^2 + alpha*sum(A,1)*p + .5*gamma*l'*l
+    # .5*(M*q + B*l + C*d - z_eda)^2 + alpha*sum(A,1)*p + .5*gamma*l'*l
     # s.t. A*q >= 0
-
+    if verbose is False:
+        options["show_progress"] = False
     old_options = cv.solvers.options.copy()
     cv.solvers.options.clear()
     cv.solvers.options.update(options)
@@ -128,7 +193,7 @@ def process_EDA(EDA_raw, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha
         G = cv.sparse([[-A,z(2,n),M,z(nB+2,n)],[z(n+2,nC),C,z(nB+2,nC)],
                     [z(n,1),-1,1,z(n+nB+2,1)],[z(2*n+2,1),-1,1,z(nB,1)],
                     [z(n+2,nB),B,z(2,nB),cv.spmatrix(1.0, range(nB), range(nB))]])
-        h = cv.matrix([z(n,1),.5,.5,EDA_raw,.5,.5,z(nB,1)])
+        h = cv.matrix([z(n,1),.5,.5,z_eda,.5,.5,z(nB,1)])
         c = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T,z(nC,1),1,gamma,z(nB,1)])
         res = cv.solvers.conelp(c, G, h, dims={'l':n,'q':[n+2,nB+2],'s':[]})
         obj = res['primal objective']
@@ -137,22 +202,23 @@ def process_EDA(EDA_raw, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha
         Mt, Ct, Bt = M.T, C.T, B.T
         H = cv.sparse([[Mt*M, Ct*M, Bt*M], [Mt*C, Ct*C, Bt*C],
                     [Mt*B, Ct*B, Bt*B+gamma*cv.spmatrix(1.0, range(nB), range(nB))]])
-        f = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T - Mt*EDA_raw,  -(Ct*EDA_raw), -(Bt*EDA_raw)])
+        f = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T - Mt*z_eda,  -(Ct*z_eda), -(Bt*z_eda)])
         res = cv.solvers.qp(H, f, cv.spmatrix(-A.V, A.I, A.J, (n,len(f))),
                             cv.matrix(0., (n,1)), solver=solver)
-        obj = res['primal objective'] + .5 * (EDA_raw.T * EDA_raw)
+        obj = res['primal objective'] + .5 * (z_eda.T * z_eda)
     cv.solvers.options.clear()
     cv.solvers.options.update(old_options)
 
     l = res['x'][-nB:]
     d = res['x'][n:n+nC]
-    t = B*l + C*d
+    tonic = B*l + C*d
     q = res['x'][:n]
     p = A * q
-    r = M * q
-    e = EDA_raw - r - t
+    phasic = M * q
+    e = z_eda - phasic - tonic
 
-    results = (np.array(a).ravel() for a in (r, t, p, l, d, e, obj))
+    phasic = np.array(phasic)[:,0]
+#    results = (np.array(a).ravel() for a in (r, t, p, l, d, e, obj))
 
-    return(results)
+    return(phasic)
 

@@ -18,7 +18,7 @@ from ..miscellaneous import get_creation_date
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resampling_method="mean"):
+def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resampling_method="pad"):
     """
     Format a BIOPAC's AcqKnowledge file into a pandas' dataframe.
 
