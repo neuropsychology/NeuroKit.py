@@ -116,9 +116,9 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
             rsp_rate = rsp_rate.resample(resampling_rate).bfill()
 
         if len(rsp_rate) >= len(ecg):
-        ecg_features["RSP_Rate"] = rsp_rate[0:len(rsp)]
-    else:
-        ecg_features["RSP_Rate"] = list(rsp_rate) + [rsp_rate[-1]]*(len(rsp)-len(rsp_rate))
+            ecg_features["RSP_Rate"] = rsp_rate[0:len(rsp)]
+        else:
+            ecg_features["RSP_Rate"] = list(rsp_rate) + [rsp_rate[-1]]*(len(rsp)-len(rsp_rate))
 
 
 
