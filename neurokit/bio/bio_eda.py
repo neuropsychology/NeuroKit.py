@@ -39,9 +39,9 @@ def process_eda(eda, sampling_rate=1000, cvxEDA=True):
     eda_features = dict
         Dict containing EDA extracted features.
 
-        Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided).
+        Contains the EDA raw signal, the filtered signal, the phasic compnent (if cvxEDA is True), the SCR onsets, peak indexes and amplitudes.
 
-        This function is mainly a wrapper for the biosspy.ecg.ecg() and the hrv.hrv() functions. Credits go to their authors.
+        This function is mainly a wrapper for the biosspy.eda.eda() and cvxEDA() functions. Credits go to their authors.
 
 
     Example
