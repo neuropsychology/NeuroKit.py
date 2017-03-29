@@ -119,7 +119,10 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     ecg_features["HRV"] = hrv.classical.time_domain(rri)
 
     # Calculate frequency domain indexes
-    ecg_features["HRV"].update(hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0))
+    try:
+        ecg_features["HRV"].update(hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0))
+    except:
+        print("NeuroKit Error: process_ecg(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
 
 
     return(ecg_features)

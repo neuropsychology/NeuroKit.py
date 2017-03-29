@@ -21,7 +21,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def process_eda(eda, sampling_rate=1000, cvxEDA=True):
+def process_eda(eda, sampling_rate=1000, use_cvxEDA=True):
     """
     Automated processing of EDA signal.
 
@@ -31,7 +31,7 @@ def process_eda(eda, sampling_rate=1000, cvxEDA=True):
         EDA signal array.
     sampling_rate = int
         Sampling rate (samples/second).
-    cvxEDA = bool
+    use_cvxEDA = bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
 
     Returns
@@ -64,7 +64,7 @@ def process_eda(eda, sampling_rate=1000, cvxEDA=True):
     eda_features = {"EDA_Raw": eda}
 
     # Convex optimization
-    if cvxEDA is True:
+    if use_cvxEDA is True:
         eda = cvxEDA(eda, sampling_rate=sampling_rate)
         eda_features["EDA_Phasic"] = eda
 
