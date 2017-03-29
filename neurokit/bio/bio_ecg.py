@@ -8,6 +8,7 @@ import biosppy
 import datetime
 import hrv
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -86,8 +87,12 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         heart_rate = heart_rate.resample(resampling_rate).bfill()
 
     # Store Heart Rate
-#    ecg_features["Heart_Rate"] = scipy.signal.resample(heart_rate, len(ecg))  # Looks more bad than by truncating as below
-    ecg_features["Heart_Rate"] = heart_rate[0:len(ecg)]
+    if len(heart_rate) >= len(ecg):
+        ecg_features["Heart_Rate"] = heart_rate[0:len(ecg)]
+    else:
+        ecg_features["Heart_Rate"] = list(heart_rate) + [heart_rate[-1]]*(len(ecg)-len(heart_rate))
+#        ecg_features["Heart_Rate"] = scipy.signal.resample(heart_rate, len(ecg))  # Looks more badly when resampling with scipy
+
     ecg_features["Heart_Beats"] = biosppy_ecg["templates"]
 
     # RSP
@@ -110,7 +115,11 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         if resampling_method == "bfill":
             rsp_rate = rsp_rate.resample(resampling_rate).bfill()
 
+        if len(rsp_rate) >= len(ecg):
         ecg_features["RSP_Rate"] = rsp_rate[0:len(rsp)]
+    else:
+        ecg_features["RSP_Rate"] = list(rsp_rate) + [rsp_rate[-1]]*(len(rsp)-len(rsp_rate))
+
 
 
     # HRV
