@@ -120,7 +120,7 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
             ecg_features["RSP_Rate"] = rsp_rate[0:len(rsp)]
         else:
             ecg_features["RSP_Rate"] = [rsp_rate[-1]]*(len(rsp)-len(rsp_rate)) + list(rsp_rate)
-        ecg_features["RSP_Rate"] = np.array(ecg_features["RSP_Rate"])
+        ecg_features["RSP_Rate"] = np.array(ecg_features["RSP_Rate"])*60  # From Hz to respiration per seconds
 
 
 
