@@ -13,7 +13,7 @@ from .bio_eda import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", cvxEDA=True):
+def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True):
     """
     Automated processing of bio signal.
 
@@ -62,7 +62,7 @@ def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         bio_features.update(process_ecg(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method))
 
     if eda is not None:
-        bio_features.update(process_eda(eda=eda, sampling_rate=sampling_rate, cvxEDA=cvxEDA))
+        bio_features.update(process_eda(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA))
 
     return(bio_features)
 
