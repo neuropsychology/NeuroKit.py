@@ -65,7 +65,7 @@ def process_eda(eda, sampling_rate=1000, cvxEDA=True):
 
     # Convex optimization
     if cvxEDA is True:
-        eda = convex_optimization_eda(eda, sampling_rate=sampling_rate)
+        eda = cvxEDA(eda, sampling_rate=sampling_rate)
         eda_features["EDA_Phasic"] = eda
 
     # Compute several features using biosppy
@@ -90,7 +90,7 @@ def process_eda(eda, sampling_rate=1000, cvxEDA=True):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def convex_optimization_eda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
+def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
     """
     A convex optimization approach to electrodermal activity processing (CVXEDA)
 
@@ -123,7 +123,7 @@ def convex_optimization_eda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10
     Returns
     ----------
        phasic
-           phasic component.
+           The phasic component.
 
     Authors
     ----------
