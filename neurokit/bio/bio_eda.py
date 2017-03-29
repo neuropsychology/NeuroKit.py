@@ -66,7 +66,7 @@ def process_eda(eda, sampling_rate=1000, cvxEDA=True):
     # Convex optimization
     if cvxEDA is True:
         eda = convex_optimization_eda(eda, sampling_rate=sampling_rate)
-        eda_features["EDA_cvx"] = eda
+        eda_features["EDA_Phasic_cvx"] = eda
 
     # Compute several features using biosppy
     biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False))
