@@ -101,14 +101,17 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         # Convert seconds to datetime deltas
         time_index = [datetime.timedelta(seconds=x) for x in biosppy_rsp["resp_rate_ts"]]
         time_index = np.array(time_index) + time_now
-        heart_rate = pd.Series(biosppy_rsp["resp_rate"], index=time_index)
+        rsp_rate = pd.Series(biosppy_rsp["resp_rate"], index=time_index)
 
         if resampling_method == "mean":
-            heart_rate = heart_rate.resample(resampling_rate).mean()
+            rsp_rate = rsp_rate.resample(resampling_rate).mean()
         if resampling_method == "pad":
-            heart_rate = heart_rate.resample(resampling_rate).pad()
+            rsp_rate = rsp_rate.resample(resampling_rate).pad()
         if resampling_method == "bfill":
-            heart_rate = heart_rate.resample(resampling_rate).bfill()
+            rsp_rate = rsp_rate.resample(resampling_rate).bfill()
+
+        ecg_features["RSP_Rate"] = rsp_rate[0:len(rsp)]
+
 
     # HRV
     rri = np.diff(ecg_features["ECG_Rpeaks_Indexes"])
