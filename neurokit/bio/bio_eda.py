@@ -141,7 +141,6 @@ def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
     - cvxopt
     - numpy
     """
-#    frequency = 1/(sampling_rate/100)
     frequency = 1/sampling_rate
 
     z_eda = z_score(eda)
@@ -182,6 +181,7 @@ def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
     # Solve the problem:
     # .5*(M*q + B*l + C*d - z_eda)^2 + alpha*sum(A,1)*p + .5*gamma*l'*l
     # s.t. A*q >= 0
+
     if verbose is False:
         options["show_progress"] = False
     old_options = cv.solvers.options.copy()
