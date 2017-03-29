@@ -70,14 +70,14 @@ def binarize_signal(signal, treshold, cut="higher"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def localize_events(signal, treshold, cut="higher", time_index=None):
+def localize_events(events_channel, treshold, cut="higher", time_index=None):
     """
     Find the onsets of all events based on a continuous signal.
 
     Parameters
     ----------
-    signal = array or list
-        The signal channel.
+    events_channel = array or list
+        The trigger channel .
     treshold = float
         The treshold.
     cut = str
@@ -93,7 +93,7 @@ def localize_events(signal, treshold, cut="higher", time_index=None):
     Example
     ----------
     >>> import neurokit as nk
-    >>> events_onset = nk.events_onset(signal, treshold=4)
+    >>> events_onset = nk.events_onset(events_channel, treshold=4)
 
     Authors
     ----------
@@ -103,21 +103,21 @@ def localize_events(signal, treshold, cut="higher", time_index=None):
     ----------
     None
     """
-    signal = binarize_signal(signal, treshold=treshold, cut=cut)
+    events_channel = binarize_signal(events_channel, treshold=treshold, cut=cut)
 
-    events = {"onsets":[], "length":[]}
+    events = {"onsets":[], "duration":[]}
     if time_index is not None:
         events["onsets_time"] = []
 
     index = 0
-    for key, g in (groupby(signal)):
-        length = len(list(g))
+    for key, g in (groupby(events_channel)):
+        duration = len(list(g))
         if key == 1:
             events["onsets"].append(index)
-            events["length"].append(length)
+            events["duration"].append(duration)
             if time_index is not None:
                 events["onsets_time"].append(time_index[index])
-        index += length
+        index += duration
     return(events)
 
 
@@ -129,14 +129,14 @@ def localize_events(signal, treshold, cut="higher", time_index=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def find_events(signal, treshold, cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
+def find_events(events_channel, treshold, cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
     """
     Find and select events based on a continuous signal.
 
     Parameters
     ----------
-    signal = array or list
-        The signal channel.
+    events_channel = array or list
+        The trigger channel.
     treshold = float
         The treshold.
     cut = str
@@ -160,7 +160,7 @@ def find_events(signal, treshold, cut="higher", time_index=None, number="all", a
     Example
     ----------
     >>> import neurokit as nk
-    >>> events_onset = nk.select_events(signal, treshold=4)
+    >>> events_onset = nk.select_events(events_channel, treshold=4)
 
     Authors
     ----------
@@ -170,17 +170,17 @@ def find_events(signal, treshold, cut="higher", time_index=None, number="all", a
     ----------
     None
     """
-    events = localize_events(signal, treshold=treshold, cut=cut, time_index=time_index)
+    events = localize_events(events_channel, treshold=treshold, cut=cut, time_index=time_index)
 
     # Remove less than duration
     toremove = []
     for event in range(len(events["onsets"])):
-        if events["length"][event] < min_duration:
+        if events["duration"][event] < min_duration:
             toremove.append(False)
         else:
             toremove.append(True)
     events["onsets"] = np.array(events["onsets"])[np.array(toremove)]
-    events["length"] = np.array(events["length"])[np.array(toremove)]
+    events["duration"] = np.array(events["duration"])[np.array(toremove)]
     if time_index is not None:
         events["onsets_time"] = np.array(events["onsets_time"])[np.array(toremove)]
 
@@ -199,7 +199,7 @@ def find_events(signal, treshold, cut="higher", time_index=None, number="all", a
                 events["onsets_time"] = np.array(events["onsets_time"])
             after_onsets = list(np.array(events["onsets"])[events["onsets_time"]>after])[:number]
             after_times = list(np.array(events["onsets_time"])[events["onsets_time"]>after])[:number]
-            after_length = list(np.array(events["length"])[events["onsets_time"]>after])[:number]
+            after_length = list(np.array(events["duration"])[events["onsets_time"]>after])[:number]
         if before != None:
             if events["onsets_time"] == []:
                 events["onsets_time"] = np.array(events["onsets"])
@@ -207,10 +207,10 @@ def find_events(signal, treshold, cut="higher", time_index=None, number="all", a
                 events["onsets_time"] = np.array(events["onsets_time"])
             before_onsets = list(np.array(events["onsets"])[events["onsets_time"]<before])[:number]
             before_times = list(np.array(events["onsets_time"])[events["onsets_time"]<before])[:number]
-            before_length = list(np.array(events["length"])[events["onsets_time"]<before])[:number]
+            before_length = list(np.array(events["duration"])[events["onsets_time"]<before])[:number]
         events["onsets"] = before_onsets + after_onsets
         events["onsets_time"] = before_times + after_times
-        events["length"] = before_length + after_length
+        events["duration"] = before_length + after_length
 
     return(events)
 

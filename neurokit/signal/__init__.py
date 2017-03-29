@@ -2,6 +2,6 @@
 signal submodule.
 """
 
-from .signal import *
 from .events import *
+from .evoked import *
 from .fractal import *
