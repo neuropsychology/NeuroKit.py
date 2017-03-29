@@ -54,7 +54,7 @@ Features:
 - **Biosignals**
   - **`acq_to_df()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`process_ecg()`**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
-  - **`process_eda()`**: Extract Electrodermal Activity (EDA) features (Phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
+  - **`process_eda()`**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
 - **Statistics**
   - **`z_score()`**: Normalize (scale and reduce) variables
 - **Miscellaneous**
