@@ -72,6 +72,8 @@ Features:
 ```python
 import neurokit as nk
 import pandas as pd
+
+# Read the data file
 acq = nk.acq_to_df("myfile.acq")
 
 # ECG
