@@ -18,7 +18,7 @@ import hrv
 # ==============================================================================
 def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     """
-    Process ECG signals.
+    Automated processing of ECG and RSP signals.
 
     Parameters
     ----------
@@ -63,7 +63,7 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # Compute several features using biosppy
     biosppy_ecg = dict(biosppy.signals.ecg.ecg(ecg, sampling_rate=sampling_rate, show=False))
 
-    # Filtered signal
+    # Filtered signal and R peaks
     ecg_features["ECG_Filtered"] = biosppy_ecg["filtered"]
     ecg_features["ECG_Rpeaks_Indexes"] = biosppy_ecg["rpeaks"]
 
@@ -72,7 +72,6 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # Convert seconds to datetime deltas
     time_index = [datetime.timedelta(seconds=x) for x in biosppy_ecg["heart_rate_ts"]]
     time_index = np.array(time_index) + time_now
-
     heart_rate = pd.Series(biosppy_ecg["heart_rate"], index=time_index)
 
     # Create resampling factor
@@ -87,7 +86,7 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         heart_rate = heart_rate.resample(resampling_rate).bfill()
 
     # Store Heart Rate
-#    ecg_features["Heart_Rate"] = scipy.signal.resample(heart_rate, len(ecg))
+#    ecg_features["Heart_Rate"] = scipy.signal.resample(heart_rate, len(ecg))  # Looks more bad than by truncating as below
     ecg_features["Heart_Rate"] = heart_rate[0:len(ecg)]
     ecg_features["Heart_Beats"] = biosppy_ecg["templates"]
 
@@ -102,7 +101,6 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         # Convert seconds to datetime deltas
         time_index = [datetime.timedelta(seconds=x) for x in biosppy_rsp["resp_rate_ts"]]
         time_index = np.array(time_index) + time_now
-
         heart_rate = pd.Series(biosppy_rsp["resp_rate"], index=time_index)
 
         if resampling_method == "mean":
@@ -112,7 +110,6 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         if resampling_method == "bfill":
             heart_rate = heart_rate.resample(resampling_rate).bfill()
 
-
     # HRV
     rri = np.diff(ecg_features["ECG_Rpeaks_Indexes"])
     rri_time = np.cumsum(rri) / 1000.0
@@ -120,6 +117,9 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # Calculate time domain indexes
     ecg_features["HRV"] = hrv.classical.time_domain(rri)
+
+    # Calculate frequency domain indexes
+    ecg_features["HRV"].update(hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0))
 
 
     return(ecg_features)
