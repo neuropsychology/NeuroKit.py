@@ -15,7 +15,7 @@ from itertools import groupby
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def binarize_signal(signal, treshold, upper=True):
+def binarize_signal(signal, treshold, cut="higher"):
     """
     Binarize a channel based on a continuous channel.
 
@@ -25,8 +25,8 @@ def binarize_signal(signal, treshold, upper=True):
         The signal channel.
     treshold = float
         The treshold.
-    upper = bool
-        Associate a 1 with a value above or under the treshold.
+    cut = str
+        "higher" or "lower", define the events as above or under the treshold.
 
     Returns
     ----------
@@ -49,12 +49,12 @@ def binarize_signal(signal, treshold, upper=True):
     signal = list(signal)
     binary_signal = []
     for i in range(len(signal)):
-        if upper == True:
+        if cut == "higher":
             if signal[i] > treshold:
                 binary_signal.append(1)
             else:
                 binary_signal.append(0)
-        if upper == False:
+        else:
             if signal[i] < treshold:
                 binary_signal.append(1)
             else:
@@ -70,7 +70,7 @@ def binarize_signal(signal, treshold, upper=True):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def localize_events(signal, treshold, upper=True, time_index=None):
+def localize_events(signal, treshold, cut="higher", time_index=None):
     """
     Find the onsets of all events based on a continuous signal.
 
@@ -80,8 +80,8 @@ def localize_events(signal, treshold, upper=True, time_index=None):
         The signal channel.
     treshold = float
         The treshold.
-    upper = bool
-        Associate a 1 with a value above or under the treshold.
+    cut = str
+        "higher" or "lower", define the events as above or under the treshold.
     time_index = array or list
         Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
 
@@ -103,7 +103,7 @@ def localize_events(signal, treshold, upper=True, time_index=None):
     ----------
     None
     """
-    signal = binarize_signal(signal, treshold=treshold, upper=upper)
+    signal = binarize_signal(signal, treshold=treshold, cut=cut)
 
     events = {"onsets":[], "length":[]}
     if time_index is not None:
@@ -129,7 +129,7 @@ def localize_events(signal, treshold, upper=True, time_index=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def find_events(signal, treshold, upper=False, time_index=None, number="all", after=0, before=None, min_duration=1):
+def find_events(signal, treshold, cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
     """
     Find and select events based on a continuous signal.
 
@@ -139,8 +139,8 @@ def find_events(signal, treshold, upper=False, time_index=None, number="all", af
         The signal channel.
     treshold = float
         The treshold.
-    upper = bool
-        Associate a 1 with a value above or under the treshold.
+    cut = str
+        "higher" or "lower", define the events as above or under the treshold.
     time_index = array or list
         Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
     number = str or int
@@ -170,7 +170,7 @@ def find_events(signal, treshold, upper=False, time_index=None, number="all", af
     ----------
     None
     """
-    events = localize_events(signal, treshold=treshold, upper=upper, time_index=time_index)
+    events = localize_events(signal, treshold=treshold, cut=cut, time_index=time_index)
 
     # Remove less than duration
     toremove = []
