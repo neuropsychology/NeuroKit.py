@@ -11,7 +11,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def create_epochs(data, onsets, duration=1000, onset=-250, names=None):
+def create_epochs(data, events_onsets, duration=1000, onset=-250, names=None):
     """
     Create epoched data.
 
@@ -19,7 +19,7 @@ def create_epochs(data, onsets, duration=1000, onset=-250, names=None):
     ----------
     data = dataframe
         In the form data*time.
-    onsets = list
+    events_onsets = list
         A list of events onsets.
     duration = int or list
         Duration of each epoch.
@@ -32,13 +32,13 @@ def create_epochs(data, onsets, duration=1000, onset=-250, names=None):
 
     Returns
     ----------
-    list
-        binary_signal
+    dict
+        dict containing all epochs
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> binary_signal = nk.create_epochs(signal, treshold=4)
+    >>> epochs = nk.create_epochs(data, events_onsets)
 
     Authors
     ----------
@@ -50,21 +50,24 @@ def create_epochs(data, onsets, duration=1000, onset=-250, names=None):
     """
     # Adjust duration regarding onset
     if isinstance(duration, int):
-        duration = np.array([duration-onset]*len(onsets))
+        duration = np.array([duration-onset]*len(events_onsets))
     else:
         duration = np.array(duration) - onset
 
     # Check the events names
     if names is None:
-        names = list(range(len(onsets)))
+        names = list(range(len(events_onsets)))
     else:
         if len(list(set(names))) != len(names):
             print("NeuroKit error: create_epochs(): events_names does not contain uniques names, replacing them by numbers.")
-            names = list(range(len(onsets)))
+            names = list(range(len(events_onsets)))
 
+    # Create epochs
     epochs = {}
-    for event, event_onset in enumerate(onsets):
+    for event, event_onset in enumerate(events_onsets):
         event_onset += onset
-        epochs[names[event]] = data[event_onset:event_onset+duration[event]]
+        epoch = data[event_onset:event_onset+duration[event]]
+        epoch.index  = range(onset, duration[event] + onset)
+        epochs[names[event]] = epoch
 
     return(epochs)

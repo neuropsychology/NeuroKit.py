@@ -34,8 +34,8 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     Returns
     ----------
-    ecg_features = dict
-        Dict containing ECG extracted features.
+    processed_ecg = dict
+        Dict containing processed ECG features.
 
         Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided).
 
@@ -46,7 +46,7 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     ----------
     >>> import neurokit as nk
     >>>
-    >>> ecg_features = nk.process_ecg(ecg_signal, resp_signal)
+    >>> processed_ecg = nk.process_ecg(ecg_signal, resp_signal)
 
     Authors
     ----------
@@ -59,14 +59,19 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     - numpy
     - pandas
     """
-    ecg_features = {"ECG_Raw": ecg}
+    ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
     # Compute several features using biosppy
     biosppy_ecg = dict(biosppy.signals.ecg.ecg(ecg, sampling_rate=sampling_rate, show=False))
 
-    # Filtered signal and R peaks
-    ecg_features["ECG_Filtered"] = biosppy_ecg["filtered"]
-    ecg_features["ECG_Rpeaks_Indexes"] = biosppy_ecg["rpeaks"]
+    # Filtered signal
+    ecg_df["ECG_Filtered"] = biosppy_ecg["filtered"]
+
+    # Store R peaks indexes
+    r_peaks = np.array([np.nan]*len(ecg))
+    r_peaks[biosppy_ecg['rpeaks']] = 1
+    ecg_df["ECG_R_Peaks"] = r_peaks
+
 
     # Heart rate index creation
     time_now = datetime.datetime.now()
@@ -88,19 +93,39 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # Store Heart Rate
     if len(heart_rate) >= len(ecg):
-        ecg_features["Heart_Rate"] = heart_rate[0:len(ecg)]
+        ecg_df["Heart_Rate"] = np.array(heart_rate[0:len(ecg)])
     else:
-        ecg_features["Heart_Rate"] = [heart_rate[-1]]*(len(ecg)-len(heart_rate)) + list(heart_rate)
+        ecg_df["Heart_Rate"] = np.array([heart_rate[-1]]*(len(ecg)-len(heart_rate)) + list(heart_rate))
 #        ecg_features["Heart_Rate"] = scipy.signal.resample(heart_rate, len(ecg))  # Looks more badly when resampling with scipy
-    ecg_features["Heart_Rate"] = np.array(ecg_features["Heart_Rate"])
 
-    ecg_features["Heart_Beats"] = biosppy_ecg["templates"]
+
+    # HRV
+    rri = np.diff(biosppy_ecg["rpeaks"])
+    rri_time = np.cumsum(rri) / 1000.0
+    rri_time -= rri_time[0]
+
+    # Calculate time domain indexes
+    hrv_features = hrv.classical.time_domain(rri)
+
+    # Calculate frequency domain indexes
+    try:
+        hrv_features.update(hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0))
+    except:
+        print("NeuroKit Error: process_ecg(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
+
+
+    # Store results
+    processed_ecg = {"ECG_Processed": ecg_df,
+                     "ECG_Features": {
+                            "Heart_Beats": biosppy_ecg["templates"],
+                            "ECG_R_Peaks": biosppy_ecg["rpeaks"],
+                            "ECG_HRV": hrv_features}}
 
     # RSP
     if rsp is not None:
         biosppy_rsp = dict(biosppy.signals.resp.resp(rsp, sampling_rate=sampling_rate, show=False))
-        ecg_features["RSP_Raw"] = rsp
-        ecg_features["RSP_Filtered"] = biosppy_rsp["filtered"]
+        processed_ecg["ECG_Processed"]["RSP_Raw"] = rsp
+        processed_ecg["ECG_Processed"]["RSP_Filtered"] = biosppy_rsp["filtered"]
 
         # RSP rate index creation
         time_now = datetime.datetime.now()
@@ -117,26 +142,9 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
             rsp_rate = rsp_rate.resample(resampling_rate).bfill()
 
         if len(rsp_rate) >= len(rsp):
-            ecg_features["RSP_Rate"] = rsp_rate[0:len(rsp)]
+            rsp_rate = rsp_rate[0:len(rsp)]
         else:
-            ecg_features["RSP_Rate"] = [rsp_rate[-1]]*(len(rsp)-len(rsp_rate)) + list(rsp_rate)
-        ecg_features["RSP_Rate"] = np.array(ecg_features["RSP_Rate"])*60  # From Hz to respiration per seconds
+            rsp_rate = [rsp_rate[-1]]*(len(rsp)-len(rsp_rate)) + list(rsp_rate)
+        processed_ecg["ECG_Processed"]["RSP_Rate"] = np.array(rsp_rate)*60  # From Hz to respiration per seconds
 
-
-
-    # HRV
-    rri = np.diff(ecg_features["ECG_Rpeaks_Indexes"])
-    rri_time = np.cumsum(rri) / 1000.0
-    rri_time -= rri_time[0]
-
-    # Calculate time domain indexes
-    ecg_features["HRV"] = hrv.classical.time_domain(rri)
-
-    # Calculate frequency domain indexes
-    try:
-        ecg_features["HRV"].update(hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0))
-    except:
-        print("NeuroKit Error: process_ecg(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
-
-
-    return(ecg_features)
+    return(processed_ecg)

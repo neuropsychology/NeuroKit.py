@@ -34,8 +34,8 @@ def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
 
     Returns
     ----------
-    bio_features = dict
-        Dict containing bio extracted features.
+    processed_bio = dict
+        Dict containing processed bio features.
 
         Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided), the EDA raw signal, the filtered signal, the phasic compnent (if cvxEDA is True), the SCR onsets, peak indexes and amplitudes.
 
@@ -55,16 +55,26 @@ def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
     ----------
     - None
     """
-    bio_features = {}
+    processed_bio = {}
+    bio_df = pd.DataFrame({})
 
     # ECG & RSP
     if ecg is not None:
-        bio_features.update(process_ecg(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method))
+        ecg = process_ecg(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        processed_bio["ECG_Features"] = ecg["ECG_Features"]
+        bio_df = pd.concat([bio_df, ecg["ECG_Processed"]], axis=1)
 
+    # EDA
     if eda is not None:
-        bio_features.update(process_eda(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA))
+        eda = process_eda(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA)
+        processed_bio["EDA_Features"] = eda["EDA_Features"]
+        bio_df = pd.concat([bio_df, eda["EDA_Processed"]], axis=1)
 
-    return(bio_features)
+
+    processed_bio["Bio_Processed"] = bio_df
+
+
+    return(processed_bio)
 
 
 

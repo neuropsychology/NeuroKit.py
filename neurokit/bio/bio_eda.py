@@ -36,8 +36,8 @@ def process_eda(eda, sampling_rate=1000, use_cvxEDA=True):
 
     Returns
     ----------
-    eda_features = dict
-        Dict containing EDA extracted features.
+    processed_eda = dict
+        Dict containing processed EDA features.
 
         Contains the EDA raw signal, the filtered signal, the phasic compnent (if cvxEDA is True), the SCR onsets, peak indexes and amplitudes.
 
@@ -48,7 +48,7 @@ def process_eda(eda, sampling_rate=1000, use_cvxEDA=True):
     ----------
     >>> import neurokit as nk
     >>>
-    >>> eda_features = nk.process_eda(eda_signal)
+    >>> processed_eda = nk.process_eda(eda_signal)
 
     Authors
     ----------
@@ -61,22 +61,42 @@ def process_eda(eda, sampling_rate=1000, use_cvxEDA=True):
     - pandas
     - cvxopt
     """
-    eda_features = {"EDA_Raw": eda}
+
+    eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
 
     # Convex optimization
     if use_cvxEDA is True:
         eda = cvxEDA(eda, sampling_rate=sampling_rate)
-        eda_features["EDA_Phasic"] = eda
+        eda_df["EDA_Phasic"] = eda
 
     # Compute several features using biosppy
     biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False))
 
-    eda_features["EDA_Filtered"] = biosppy_eda["filtered"]
-    eda_features["SCR_Onsets"] = biosppy_eda['onsets']
-    eda_features["SCR_Peaks_Indexes"] = biosppy_eda['peaks']
-    eda_features["SCR_Peaks_Amplitudes"] = biosppy_eda['amplitudes']
+    eda_df["EDA_Filtered"] = biosppy_eda["filtered"]
 
-    return(eda_features)
+    # Store SCR onsets
+    scr_onsets = np.array([np.nan]*len(eda))
+    scr_onsets[biosppy_eda['onsets']] = 1
+    eda_df["SCR_Onsets"] = scr_onsets
+
+    # Store SCR peaks and amplitudes
+    scr_peaks = np.array([np.nan]*len(eda))
+    peak_index = 0
+    for index in range(len(scr_peaks)):
+        try:
+            if index == biosppy_eda["peaks"][peak_index]:
+                scr_peaks[index] = biosppy_eda['amplitudes'][peak_index]
+                peak_index += 1
+        except:
+            pass
+    eda_df["SCR_Peaks"] = scr_peaks
+
+    processed_eda = {"EDA_Processed": eda_df,
+                     "EDA_Features": {
+                            "SCR_Onsets": biosppy_eda['onsets'],
+                            "SCR_Peaks_Indexes": biosppy_eda["peaks"],
+                            "SCR_Peaks_Amplitudes": biosppy_eda['amplitudes']}}
+    return(processed_eda)
 
 
 
