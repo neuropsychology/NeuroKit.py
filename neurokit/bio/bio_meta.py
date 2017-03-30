@@ -13,7 +13,7 @@ from .bio_eda import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True):
+def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True):
     """
     Automated processing of bio signal.
 
@@ -45,7 +45,7 @@ def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
     ----------
     >>> import neurokit as nk
     >>>
-    >>> bio_features = nk.process_bio(ecg=ecg_signal, rsp=ecg_signal, eda=eda_signal)
+    >>> bio_features = nk.bio_process(ecg=ecg_signal, rsp=ecg_signal, eda=eda_signal)
 
     Authors
     ----------
@@ -60,13 +60,13 @@ def process_bio(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
 
     # ECG & RSP
     if ecg is not None:
-        ecg = process_ecg(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
         processed_bio["ECG_Features"] = ecg["ECG_Features"]
         bio_df = pd.concat([bio_df, ecg["ECG_Processed"]], axis=1)
 
     # EDA
     if eda is not None:
-        eda = process_eda(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA)
+        eda = eda_process(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA)
         processed_bio["EDA_Features"] = eda["EDA_Features"]
         bio_df = pd.concat([bio_df, eda["EDA_Processed"]], axis=1)
 

@@ -17,7 +17,7 @@ import hrv
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     """
     Automated processing of ECG and RSP signals.
 
@@ -46,7 +46,7 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     ----------
     >>> import neurokit as nk
     >>>
-    >>> processed_ecg = nk.process_ecg(ecg_signal, resp_signal)
+    >>> processed_ecg = nk.ecg_process(ecg_signal, resp_signal)
 
     Authors
     ----------
@@ -105,13 +105,26 @@ def process_ecg(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     rri_time -= rri_time[0]
 
     # Calculate time domain indexes
-    hrv_features = hrv.classical.time_domain(rri)
-
+    hrv_time_domain = hrv.classical.time_domain(rri)
+    hrv_features = {"HRV_mhr": hrv_time_domain['mhr'],
+                    "HRV_mrri": hrv_time_domain['mrri'],
+                    "HRV_nn50": hrv_time_domain['nn50'],
+                    "HRV_pnn50": hrv_time_domain['pnn50'],
+                    "HRV_rmssd": hrv_time_domain['rmssd'],
+                    "HRV_sdnn": hrv_time_domain['sdnn']
+            }
     # Calculate frequency domain indexes
     try:
-        hrv_features.update(hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0))
+        hrv_freq_domain = hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0)
+        hrv_features["HRV_hf"] = hrv_freq_domain["hf"]
+        hrv_features["HRV_hfnu"] = hrv_freq_domain["hfnu"]
+        hrv_features["HRV_lf"] = hrv_freq_domain["lf"]
+        hrv_features["HRV_lf_hf"] = hrv_freq_domain["lf_hf"]
+        hrv_features["HRV_lfnu"] = hrv_freq_domain["lfnu"]
+        hrv_features["HRV_total_power"] = hrv_freq_domain["total_power"]
+        hrv_features["HRV_vlf"] = hrv_freq_domain["vlf"]
     except:
-        print("NeuroKit Error: process_ecg(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
+        print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
 
 
     # Store results

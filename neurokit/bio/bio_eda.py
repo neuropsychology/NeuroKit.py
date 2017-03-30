@@ -21,7 +21,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def process_eda(eda, sampling_rate=1000, use_cvxEDA=True):
+def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     """
     Automated processing of EDA signal.
 
@@ -48,7 +48,7 @@ def process_eda(eda, sampling_rate=1000, use_cvxEDA=True):
     ----------
     >>> import neurokit as nk
     >>>
-    >>> processed_eda = nk.process_eda(eda_signal)
+    >>> processed_eda = nk.eda_process(eda_signal)
 
     Authors
     ----------
