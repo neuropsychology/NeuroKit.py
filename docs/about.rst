@@ -5,18 +5,18 @@ About
 Team
 ====
 
-- `Dominique Makowski<https://cdn.rawgit.com/neuropsychology/Organization/master/CVs/DominiqueMakowski.pdf>`_ (France).
+- `Dominique Makowski <https://cdn.rawgit.com/neuropsychology/Organization/master/CVs/DominiqueMakowski.pdf>`_ (France).
 
 Contributors
 ============
 
-- `Nate Vack<https://github.com/njvack>`_ (USA).
-- `Rhenan Bartels Ferreira<https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil).
+- `Nate Vack <https://github.com/njvack>`_ (USA).
+- `Rhenan Bartels Ferreira <https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil).
 
 Support
 =======
 
-- `Memory & Cognition Lab<http://www.python.org/>`_.
+- `Memory & Cognition Lab <http://www.python.org/>`_.
 
 
 Acknowledgments
