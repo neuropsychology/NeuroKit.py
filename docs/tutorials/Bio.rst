@@ -1,5 +1,5 @@
 
-Biosignals Processing in Python
+Biosignals
 ===============================
 
 Preprocessing
@@ -34,10 +34,6 @@ Read Data
 
 
 
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x2d148490>
-
 
 
 
@@ -71,10 +67,6 @@ Processing and Features Extraction
 
 
 
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x39addd50>
-
 
 
 
@@ -94,9 +86,6 @@ Heart Beats
 
 
 
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x3dca1930>
 
 
 
@@ -316,9 +305,6 @@ Plot Results
 
 
 
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x2ac94950>
 
 
 
@@ -333,10 +319,6 @@ Plot Results
 
 
 
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x2acb07d0>
-
 
 
 
@@ -348,11 +330,6 @@ Plot Results
     sns.boxplot(x="Condition", y="EDA_Filtered", data=evoked)
 
 
-
-
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x2b16f510>
 
 
 
@@ -367,11 +344,6 @@ Plot Results
 
 
 
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x2e6927f0>
-
-
 
 
 .. image:: img/output_32_1.png
@@ -382,11 +354,6 @@ Plot Results
     sns.boxplot(x="Condition", y="SCR_Peaks", data=evoked)
 
 
-
-
-.. parsed-literal::
-
-    <matplotlib.axes._subplots.AxesSubplot at 0x2ac9d0b0>
 
 
 
