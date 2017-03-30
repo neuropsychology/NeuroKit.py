@@ -44,9 +44,9 @@ Features:
 
 - **M/EEG**
   - **`eeg_load_raw()`**: Under development
-  - Preprocessing
-  - Filtering
-  - Microstates
+  - Preprocessing: Under development
+  - Filtering: Under development
+  - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
   - **`acq_to_df()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`ecg_process()`**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
