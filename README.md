@@ -33,7 +33,7 @@ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 ## Contribute
 - You need some help? You found a bug? You would like to request a new feature? 
   Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
-- Want to add yourself a feature? Correct a bug? You're more than welcome to contribute!
+- Want to add a feature? Correct a bug? You're more than welcome to contribute!
   Check [this page](http://ecole-de-neuropsychologie.readthedocs.io/en/latest/Contributing/Contribute/) to see how to submit your changes on github.
 
 ## Description
@@ -43,14 +43,10 @@ This package provides a high level integration of complex statistical routines f
 Features:
 
 - **M/EEG**
-  - Data loading
-    - Under development
+  - **`eeg_load_raw()`**: Under development
   - Preprocessing
-    - Under development
   - Filtering
-    - Under development
   - Microstates
-    - Under development
 - **[Biosignals](https://github.com/neuropsychology/NeuroKit.py/blob/master/examples/Bio/bio_processing.ipynb)**
   - **`acq_to_df()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`process_ecg()`**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
