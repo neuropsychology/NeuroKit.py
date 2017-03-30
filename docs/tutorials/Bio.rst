@@ -26,7 +26,7 @@ Import Necessary Packages
 Read Data
 ~~~~~~~~~
 
-.. code:: ipython3
+.. code:: python
 
     df = pd.read_csv("data_bio.csv")
     df.plot()
@@ -50,7 +50,7 @@ channels, EDA, ECG, RSP and the Photosensor used to localize events.
 Processing and Features Extraction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython3
+.. code:: python
 
     bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"])
     bio.keys()  # See what it contains
@@ -64,7 +64,7 @@ Processing and Features Extraction
 
 
 
-.. code:: ipython3
+.. code:: python
 
     bio["Bio_Processed"].plot()
 
@@ -87,7 +87,7 @@ ECG Miscellaenous
 Heart Beats
 ~~~~~~~~~~~
 
-.. code:: ipython3
+.. code:: python
 
     pd.DataFrame(bio["ECG_Features"]["Heart_Beats"]).T.plot(legend=False)  # Plot all the heart beats
 
@@ -110,7 +110,7 @@ peak.
 Heart Rate Variability (HRV)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython3
+.. code:: python
 
     # Print all the HRV indices
     bio["ECG_Features"]["ECG_HRV"]
@@ -143,7 +143,7 @@ This experiment consisted of 8 events (when the photosensor signal goes
 down), which were 2 types of images that were shown to the participant:
 "Negative" vs "Neutral". The following list is the condition order.
 
-.. code:: ipython3
+.. code:: python
 
     condition_list = ["Negative", "Negative", "Neutral", "Neutral", "Neutral", "Negative", "Negative", "Neutral"]
 
@@ -155,7 +155,7 @@ the ``find_events()`` function. This function requires a treshold and a
 cut direction (should it select events that are *higher* or *lower* than
 the treshold).
 
-.. code:: ipython3
+.. code:: python
 
     events = nk.find_events(df["Photosensor"], treshold = 3, cut="lower")
     events
@@ -178,7 +178,7 @@ the event. We set our epochs to start at the event start (``onset=0``)
 and to last for 5000 data points, in our case equal to 5s (since the
 signal is sampled at 1000Hz).
 
-.. code:: ipython3
+.. code:: python
 
     epochs = nk.create_epochs(bio["Bio_Processed"], events["onsets"], duration=5000, onset=0)
 
@@ -189,7 +189,7 @@ We can then itereate through the epochs and store the interesting
 results in a new dict that will be, at the end, converted to a
 dataframe.
 
-.. code:: ipython3
+.. code:: python
 
     evoked = {}  # Initialize an empty dict
     for epoch in epochs:
@@ -309,7 +309,7 @@ dataframe.
 Plot Results
 ~~~~~~~~~~~~
 
-.. code:: ipython3
+.. code:: python
 
     sns.boxplot(x="Condition", y="Heart_Rate", data=evoked)
 
@@ -326,7 +326,7 @@ Plot Results
 .. image:: img/output_29_1.png
 
 
-.. code:: ipython3
+.. code:: python
 
     sns.boxplot(x="Condition", y="RSP_Rate", data=evoked)
 
@@ -343,7 +343,7 @@ Plot Results
 .. image:: img/output_30_1.png
 
 
-.. code:: ipython3
+.. code:: python
 
     sns.boxplot(x="Condition", y="EDA_Filtered", data=evoked)
 
@@ -360,7 +360,7 @@ Plot Results
 .. image:: img/output_31_1.png
 
 
-.. code:: ipython3
+.. code:: python
 
     sns.boxplot(x="Condition", y="EDA_Max", data=evoked)
 
@@ -377,7 +377,7 @@ Plot Results
 .. image:: img/output_32_1.png
 
 
-.. code:: ipython3
+.. code:: python
 
     sns.boxplot(x="Condition", y="SCR_Peaks", data=evoked)
 
