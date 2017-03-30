@@ -2,7 +2,7 @@
 Biosignals
 ===============================
 
-Welcome to the course for biosignals processing using NeuroKit and python.
+Welcome to the course for biosignals processing using NeuroKit and python. You'll find the necessary files to run this example in the `examples<https://github.com/neuropsychology/NeuroKit.py/tree/master/examples/Bio>_` section.
 
 
 Preprocessing
