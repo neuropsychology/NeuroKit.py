@@ -47,7 +47,7 @@ Features:
   - Preprocessing
   - Filtering
   - Microstates
-- **[Biosignals](https://github.com/neuropsychology/NeuroKit.py/blob/master/examples/Bio/bio_processing.ipynb)**
+- **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
   - **`acq_to_df()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`ecg_process()`**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
   - **`eda_process()`**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
@@ -64,7 +64,7 @@ Features:
 ## Examples
 
 
-#### ECG, RSP and EDA processing with a Biopac:copyright:'s Acqknowledge file. (See [this example](https://github.com/neuropsychology/NeuroKit.py/blob/master/examples/Bio/bio_processing.ipynb]))
+#### ECG, RSP and EDA processing with a Biopac:copyright:'s Acqknowledge file. (See [this example](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html))
 ```python
 import neurokit as nk
 import pandas as pd
