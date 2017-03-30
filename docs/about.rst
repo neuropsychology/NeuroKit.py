@@ -16,7 +16,7 @@ Contributors
 Support
 =======
 
-- `Memory & Cognition Lab<http://www.python.org/>`_.
+- `Memory & Cognition Lab<http://www.python.org/>`_, University of Sorbonne Paris Cité,Paris, France.
 
 
 Acknowledgments
