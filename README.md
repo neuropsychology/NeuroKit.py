@@ -51,7 +51,7 @@ Features:
     - Under development
   - Microstates
     - Under development
-- **Biosignals**
+- **[Biosignals](https://github.com/neuropsychology/NeuroKit.py/blob/master/examples/Bio/bio_processing.ipynb)**
   - **`acq_to_df()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`process_ecg()`**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
   - **`process_eda()`**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
@@ -68,7 +68,7 @@ Features:
 ## Examples
 
 
-#### ECG, RSP and EDA processing with a Biopac:copyright:'s Acqknowledge file.
+#### ECG, RSP and EDA processing with a Biopac:copyright:'s Acqknowledge file. (See [this](https://github.com/neuropsychology/NeuroKit.py/blob/master/examples/Bio/bio_processing.ipynb]) example)
 ```python
 import neurokit as nk
 import pandas as pd
@@ -76,14 +76,9 @@ import pandas as pd
 # Read the data file
 acq = nk.acq_to_df("myfile.acq")
 
-# ECG
-ecg_features = nk.process_ecg(ecg=acq["ECG, X, RSPEC-R"], rsp=acq["RSP, X, RSPEC-R"])
-pd.DataFrame(ecg_features["Heart_Beats"]).T.plot()  # Plot all the heart beats
-
-# EDA
-eda_features = nk.process_eda(ecg=acq["EDA, X, PPGED-R"])
-pd.Series(eda_features["EDA_Raw"]).plot()  # Plot the raw signal
-pd.Series(eda_features["EDA_Phasic"]).plot()  # Plot the phasic component
+# Processing
+bio = nk.process_bio(ecg=acq["ECG, X, RSPEC-R"], rsp=acq["RSP, X, RSPEC-R"], eda=acq["EDA, X, PPGED-R"])
+bio["Bio_Processed"].plot()
 ```
 
 
