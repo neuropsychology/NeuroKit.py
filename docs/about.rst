@@ -4,10 +4,24 @@ About us
 Team
 ====
 
+- `Dominique Makowski<https://cdn.rawgit.com/neuropsychology/Organization/master/CVs/DominiqueMakowski.pdf>`_ (France).
 
-You?
-====
+Contributors
+============
 
-Join us.
+- `Nate Vack<https://github.com/njvack>`_ (USA).
+- `Rhenan Bartels Ferreira<https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil).
+
+Support
+=======
+
+- `Memory & Cognition Lab<http://www.python.org/>`_.
+
+
+Acknowledgments
+===============
+
+Credits go to the authors of NeuroKit's dependencies.
+
 
 
