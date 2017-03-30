@@ -36,7 +36,7 @@ Import Data
 
 
 
-.. image:: output_3_1.png
+.. image:: img/output_3_1.png
 
 
 df contains 3.5 minutes of data recorded at 1000Hz. There are 4
