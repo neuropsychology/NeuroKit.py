@@ -68,7 +68,7 @@ Features:
 ## Examples
 
 
-#### ECG, RSP and EDA processing with a Biopac:copyright:'s Acqknowledge file. (See [this](https://github.com/neuropsychology/NeuroKit.py/blob/master/examples/Bio/bio_processing.ipynb]) example)
+#### ECG, RSP and EDA processing with a Biopac:copyright:'s Acqknowledge file. (See [this example](https://github.com/neuropsychology/NeuroKit.py/blob/master/examples/Bio/bio_processing.ipynb]))
 ```python
 import neurokit as nk
 import pandas as pd
