@@ -11,7 +11,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def create_epochs(data, events_onsets, duration=1000, onset=-250, names=None):
+def create_epochs(data, events_onsets, duration=1000, onset=0, names=None):
     """
     Create epoched data.
 
