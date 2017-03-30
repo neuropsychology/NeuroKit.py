@@ -54,10 +54,6 @@ Processing and Features Extraction
 
 
 
-.. parsed-literal::
-
-    dict_keys(['EDA_Features', 'Bio_Processed', 'ECG_Features'])
-
 
 
 .. code:: python
@@ -109,19 +105,19 @@ Heart Rate Variability (HRV)
 
 .. parsed-literal::
 
-    {'hf': 235.12,
-     'hfnu': 12.27,
-     'lf': 1681.79,
-     'lf_hf': 7.1500000000000004,
-     'lfnu': 87.730000000000004,
-     'mhr': 78.969999999999999,
-     'mrri': 763.14999999999998,
-     'nn50': 13.0,
-     'pnn50': 4.7800000000000002,
-     'rmssd': 24.699999999999999,
-     'sdnn': 50.920000000000002,
-     'total_power': 2280.6799999999998,
-     'vlf': 363.76999999999998}
+    {'HRV_hf': 235.12,
+     'HRV_hfnu': 12.27,
+     'HRV_lf': 1681.79,
+     'HRV_lf_hf': 7.1500000000000004,
+     'HRV_lfnu': 87.730000000000004,
+     'HRV_mhr': 78.969999999999999,
+     'HRV_mrri': 763.14999999999998,
+     'HRV_nn50': 13.0,
+     'HRV_pnn50': 4.7800000000000002,
+     'HRV_rmssd': 24.699999999999999,
+     'HRV_sdnn': 50.920000000000002,
+     'HRV_total_power': 2280.6799999999998,
+     'HRV_vlf': 363.76999999999998}
 
 
 
