@@ -8,7 +8,7 @@ Preprocessing
 Import Necessary Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: ipython3
+.. code:: python
 
     # Import packages
     import neurokit as nk
