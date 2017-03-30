@@ -17,7 +17,7 @@ Support
 =======
 
 
-- `Memory & Cognition Lab<http://www.python.org/>`_, University of Sorbonne Paris Cité,Paris, France.
+- `Memory & Cognition Lab <http://recherche.parisdescartes.fr/LaboratoireMemoireCognition>`_, University of Sorbonne Paris Cité,Paris, France.
 
 
 
