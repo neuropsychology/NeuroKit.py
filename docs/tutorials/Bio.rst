@@ -2,6 +2,12 @@
 Biosignals Processing in Python
 ===============================
 
+Preprocessing
+-------------
+
+Import Necessary Packages
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 .. code:: ipython3
 
     # Import packages
@@ -13,13 +19,12 @@ Biosignals Processing in Python
     %matplotlib inline
     import matplotlib
     matplotlib.rcParams['figure.figsize'] = [14.0, 10.0]  # Bigger figures
-    
     import seaborn as sns
-    sns.set_style("whitegrid")
-    sns.set_palette(sns.color_palette("colorblind"))
+    sns.set_style("whitegrid")  # White background
+    sns.set_palette(sns.color_palette("colorblind"))  # Better colours
 
-Import Data
------------
+Read Data
+~~~~~~~~~
 
 .. code:: ipython3
 
@@ -36,14 +41,14 @@ Import Data
 
 
 
-.. image:: img/output_3_1.png
+.. image:: img/output_5_1.png
 
 
 df contains 3.5 minutes of data recorded at 1000Hz. There are 4
 channels, EDA, ECG, RSP and the Photosensor used to localize events.
 
-Process it
-----------
+Processing and Features Extraction
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: ipython3
 
@@ -73,7 +78,7 @@ Process it
 
 
 
-.. image:: img/output_7_1.png
+.. image:: img/output_9_1.png
 
 
 ECG Miscellaenous
@@ -96,7 +101,7 @@ Heart Beats
 
 
 
-.. image:: img/output_10_1.png
+.. image:: img/output_12_1.png
 
 
 This plot contains all detected heart beats synchronized by their R
@@ -318,7 +323,7 @@ Plot Results
 
 
 
-.. image:: img/output_27_1.png
+.. image:: img/output_29_1.png
 
 
 .. code:: ipython3
@@ -335,7 +340,7 @@ Plot Results
 
 
 
-.. image:: img/output_28_1.png
+.. image:: img/output_30_1.png
 
 
 .. code:: ipython3
@@ -352,7 +357,7 @@ Plot Results
 
 
 
-.. image:: img/output_29_1.png
+.. image:: img/output_31_1.png
 
 
 .. code:: ipython3
@@ -369,7 +374,7 @@ Plot Results
 
 
 
-.. image:: img/output_30_1.png
+.. image:: img/output_32_1.png
 
 
 .. code:: ipython3
@@ -386,6 +391,6 @@ Plot Results
 
 
 
-.. image:: img/output_31_1.png
+.. image:: img/output_33_1.png
 
 
