@@ -2,6 +2,9 @@
 Biosignals
 ===============================
 
+Welcome to the course for biosignals processing using NeuroKit and python.
+
+
 Preprocessing
 -------------
 
