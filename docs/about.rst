@@ -18,7 +18,7 @@ Support
 
 
 - `Memory & Cognition Lab <http://recherche.parisdescartes.fr/LaboratoireMemoireCognition>`_, University of Sorbonne Paris Cité, Paris, France.
- -L'École de Neuropsychologie, Paris, France.
+- L'École de Neuropsychologie, Paris, France.
 
 
 
