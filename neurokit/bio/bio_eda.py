@@ -66,8 +66,11 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     # Convex optimization
     if use_cvxEDA is True:
-        eda = cvxEDA(eda, sampling_rate=sampling_rate)
-        eda_df["EDA_Phasic"] = eda
+        try:
+            eda = cvxEDA(eda, sampling_rate=sampling_rate)
+            eda_df["EDA_Phasic"] = eda
+        except:
+            print("NeuroKit Warning: couln't apply cvxEDA on EDA signal. Using normal.")
 
     # Compute several features using biosppy
     biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False))
