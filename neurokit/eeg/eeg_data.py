@@ -233,7 +233,6 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     info = mne.create_info([channel_name], raw.info["sfreq"], ch_types=channel_type)
     channel = mne.io.RawArray([channel], info)
 
-
     raw.add_channels([channel], force_update_info=True)
 
     return(raw)
