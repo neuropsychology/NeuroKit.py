@@ -571,7 +571,7 @@ def interoceptive_accuracy(nbeats_real, nbeats_reported):
     Returns
     ----------
     accuracy = float or list
-        Objective accuracy in detecting internal bodily sensations. It is the central construct underpinning other interoceptive measures.
+        Objective accuracy in detecting internal bodily sensations. It is the central construct underpinning other interoceptive measures (Garfinkel, 2015).
 
     Example
     ----------
