@@ -125,7 +125,7 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_add_channel(raw, channel, sync_by="start", channel_type):
+def eeg_add_channel(raw, channel, sync_by="start", channel_type=None):
     """
     Add a channel to a raw eeg file.
 
@@ -167,6 +167,8 @@ def eeg_add_channel(raw, channel, sync_by="start", channel_type):
 #    stim_channel_name = "PHOTO"
 #    stim_channel, stim_channel_time_index = raw.copy().pick_channels([stim_channel_name])[:]
 #    pd.Series(stim_channel[0]).plot()
+#    import neurokit as nk
+#    nk.localize_events(stim_channel[0])
 #
 #
 #    import neurokit as nk
