@@ -62,13 +62,13 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
     if ecg is not None:
         ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
         processed_bio["ECG_Features"] = ecg["ECG_Features"]
-        bio_df = pd.concat([bio_df, ecg["ECG_Processed"]], axis=1)
+        bio_df = pd.concat([bio_df, ecg["ECG"]], axis=1)
 
     # EDA
     if eda is not None:
         eda = eda_process(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA)
         processed_bio["EDA_Features"] = eda["EDA_Features"]
-        bio_df = pd.concat([bio_df, eda["EDA_Processed"]], axis=1)
+        bio_df = pd.concat([bio_df, eda["EDA"]], axis=1)
 
 
     processed_bio["Bio"] = bio_df
