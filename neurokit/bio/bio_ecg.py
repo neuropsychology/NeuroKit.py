@@ -128,7 +128,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
 
     # Store results
-    processed_ecg = {"ECG_Processed": ecg_df,
+    processed_ecg = {"ECG": ecg_df,
                      "ECG_Features": {
                             "Heart_Beats": biosppy_ecg["templates"],
                             "ECG_R_Peaks": biosppy_ecg["rpeaks"],
@@ -137,8 +137,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # RSP
     if rsp is not None:
         biosppy_rsp = dict(biosppy.signals.resp.resp(rsp, sampling_rate=sampling_rate, show=False))
-        processed_ecg["ECG_Processed"]["RSP_Raw"] = rsp
-        processed_ecg["ECG_Processed"]["RSP_Filtered"] = biosppy_rsp["filtered"]
+        processed_ecg["ECG"]["RSP_Raw"] = rsp
+        processed_ecg["ECG"]["RSP_Filtered"] = biosppy_rsp["filtered"]
 
         # RSP rate index creation
         time_now = datetime.datetime.now()
@@ -158,6 +158,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
             rsp_rate = rsp_rate[0:len(rsp)]
         else:
             rsp_rate = [rsp_rate[-1]]*(len(rsp)-len(rsp_rate)) + list(rsp_rate)
-        processed_ecg["ECG_Processed"]["RSP_Rate"] = np.array(rsp_rate)*60  # From Hz to respiration per seconds
+        processed_ecg["ECG"]["RSP_Rate"] = np.array(rsp_rate)*60  # From Hz to respiration per seconds
 
     return(processed_ecg)

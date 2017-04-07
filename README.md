@@ -48,7 +48,7 @@ Features:
   - Filtering: Under development
   - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
-  - **`acq_to_df()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
+  - **`read_acqknowledge()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
   - **`ecg_process()`**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
   - **`eda_process()`**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
 - **Statistics**
@@ -70,7 +70,7 @@ import neurokit as nk
 import pandas as pd
 
 # Read the data file
-acq = nk.acq_to_df("myfile.acq")
+acq = nk.read_acqknowledge("myfile.acq")
 
 # Processing
 bio = nk.bio_process(ecg=acq["ECG, X, RSPEC-R"], rsp=acq["RSP, X, RSPEC-R"], eda=acq["EDA, X, PPGED-R"])

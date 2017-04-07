@@ -18,9 +18,9 @@ from ..miscellaneous import get_creation_date
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resampling_method="pad"):
+def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, resampling_method="pad"):
     """
-    Format a BIOPAC's AcqKnowledge file into a pandas' dataframe.
+    Read and Format a BIOPAC's AcqKnowledge file into a pandas' dataframe.
 
     Parameters
     ----------
@@ -45,7 +45,7 @@ def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resamplin
     ----------
     >>> import neurokit as nk
     >>>
-    >>> df = nk.acq_to_df('file.acq')
+    >>> df = nk.read_acqknowledge('file.acq')
 
     Authors
     ----------
@@ -62,7 +62,7 @@ def acq_to_df(filename, path="", index="datetime", sampling_rate=1000, resamplin
     if ".acq" not in file:
         file += ".acq"
     if os.path.exists(file) is False:
-        print("NeuroKit Error: acq_to_df(): couldn't find the following file: " + filename)
+        print("NeuroKit Error: read_acqknowledge(): couldn't find the following file: " + filename)
         return()
 
     # Convert creation date

@@ -94,7 +94,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
             pass
     eda_df["SCR_Peaks"] = scr_peaks
 
-    processed_eda = {"EDA_Processed": eda_df,
+    processed_eda = {"EDA": eda_df,
                      "EDA_Features": {
                             "SCR_Onsets": biosppy_eda['onsets'],
                             "SCR_Peaks_Indexes": biosppy_eda["peaks"],

@@ -71,7 +71,7 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         bio_df = pd.concat([bio_df, eda["EDA_Processed"]], axis=1)
 
 
-    processed_bio["Bio_Processed"] = bio_df
+    processed_bio["Bio"] = bio_df
 
 
     return(processed_bio)
