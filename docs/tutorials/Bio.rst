@@ -148,7 +148,7 @@ the treshold).
 
 .. parsed-literal::
 
-    {'duration': array([5030, 5030, 5030, 5031, 5031, 5030, 5030, 5031]),
+    {'durations': array([5030, 5030, 5030, 5031, 5031, 5030, 5030, 5031]),
      'onsets': array([ 15905,  37074,  65874,  87457, 110673, 130425, 156113, 186697])}
 
 
@@ -163,7 +163,7 @@ signal is sampled at 1000Hz).
 
 .. code:: python3
 
-    epochs = nk.create_epochs(bio["Bio"], events["onsets"], duration=5000, onset=0)
+    epochs = nk.create_epochs(bio["Bio"], events["onsets"], duration=events["durations"], onset=0)
 
 Create Evoked-Data
 ~~~~~~~~~~~~~~~~~~

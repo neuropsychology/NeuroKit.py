@@ -250,15 +250,15 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_create_events(events_onset, events_list):
+def eeg_create_events(onsets, conditions=None):
     """
     Create MNE compatible events.
 
     Parameters
     ----------
-    events_onset = list
-        Events onset (from find_events() or find_events()).
-    events_list = list
+    onsets = list
+        Events onsets (from find_events() or find_events()).
+    conditions = list
         A list of equal length containing the stimuli types/conditions.
 
 
@@ -288,8 +288,15 @@ def eeg_create_events(events_onset, events_list):
         events_list = [event_index[i[0]] if x==i[1] else x for x in events_list]
         event_id[i[1]] = event_index[i[0]]
 
-    events = np.array([events_onset, [0]*len(events_onset), events_list]).T
+    events = np.array([onsets, [0]*len(onsets), events_list]).T
     return(events, event_id)
+
+
+
+
+
+
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
