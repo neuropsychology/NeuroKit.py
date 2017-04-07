@@ -73,9 +73,9 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         bio_df = pd.concat([bio_df, eda["EDA"]], axis=1)
 
     if add is not None:
+        add = add.reset_index()
         bio_df = pd.concat([bio_df, add], axis=1)
     processed_bio["Bio"] = bio_df
-
 
     return(processed_bio)
 
