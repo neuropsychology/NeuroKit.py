@@ -12,7 +12,6 @@ maintainer_email = "dom.makowski@gmail.com",
 packages = find_packages(),
 package_data = {},
 install_requires = [
-        "pickle",
         'numpy',
         'pandas',
         'scipy',
