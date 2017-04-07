@@ -12,7 +12,7 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 
 |Name|NeuroKit|
 |----------------|---|
-|Latest Version|[![](https://img.shields.io/badge/version-0.0.7-brightgreen.svg)](https://pypi.python.org/pypi/neurokit)|
+|Latest Version|[![](https://img.shields.io/badge/version-0.0.8-brightgreen.svg)](https://pypi.python.org/pypi/neurokit)|
 |Documentation|[![Documentation Status](https://readthedocs.org/projects/neurokit/badge/?version=latest)](http://neurokit.readthedocs.io/en/latest/?badge=latest)|
 |Discussion|[![Join the chat at https://gitter.im/NeuroKit-py/Lobby](https://badges.gitter.im/NeuroKit-py/Lobby.svg)](https://gitter.im/NeuroKit-py/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)|
 |Questions|[![](https://img.shields.io/badge/issue-create-purple.svg?colorB=FF9800)](https://github.com/neuropsychology/NeuroKit.py/issues)|

@@ -21,9 +21,37 @@ import os
 import sys
 import mock
 
-sys.path.insert(0, os.path.abspath('../..'))
 
-MOCK_MODULES = ['numpy', 'scipy', 'pandas', 'mne', 'nolds', 'bioread', "sklearn", "matplotlib", "biosppy", "hrv"]
+MOCK_MODULES = [
+        "platform",
+        "pickle",
+        "collections",
+        "re",
+        "time",
+        "datetime",
+        "itertools",
+        'numpy',
+        'pandas',
+        "math",
+        'scipy',
+        "scipy.stats",
+        "scipy.signal",
+        "scipy.spatial.distance",
+        "sklearn",
+        "sklearn.preprocessing",
+        "sklearn.decomposition",
+        "sklearn.cluster",
+        "sklearn.metrics",
+        "matplotlib",
+        "matplotlib.pyplot",
+        'mne',
+        'bioread',
+        'nolds',
+        "biosppy",
+        "hrv",
+        "PIL"
+        ]
+
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
 
@@ -446,3 +474,8 @@ epub_exclude_files = ['search.html']
 
 # Example configuration for intersphinx: refer to the Python standard library.
 intersphinx_mapping = {'https://docs.python.org/': None}
+
+
+
+
+sys.path.insert(0, os.path.abspath('../'))

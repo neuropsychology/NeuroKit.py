@@ -18,7 +18,7 @@ from ..miscellaneous import get_creation_date
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, resampling_method="pad"):
+def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, resampling_method="pad", fill_interruptions=True):
     """
     Read and Format a BIOPAC's AcqKnowledge file into a pandas' dataframe.
 
@@ -34,6 +34,8 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
         final sampling rate (samples/second).
     resampling_method = str
         "mean", "pad" or "bfill", the resampling method.
+    fill_interruptions = bool
+        Automatically fill the eventual signal interruptions using a backfill method.
 
     Returns
     ----------
@@ -134,5 +136,8 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
 
     if index == "range":
         df = df.reset_index()
+
+    # Fill signal interruptions
+    df = df.fillna(method="backfill")
 
     return(df)
