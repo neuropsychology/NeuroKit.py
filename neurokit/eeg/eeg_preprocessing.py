@@ -13,12 +13,12 @@ import mne
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="iir"):
+def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
     """
     Apply filter.
     """
     if notch == True:
-        raw.notch_filter(np.arange(50, 201, 50),
+        raw.notch_filter(np.arange(50, 551, 50),
                          phase='zero',
                          method=method
                          )
