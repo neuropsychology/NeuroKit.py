@@ -74,7 +74,7 @@ acq = nk.read_acqknowledge("myfile.acq")
 
 # Processing
 bio = nk.bio_process(ecg=acq["ECG, X, RSPEC-R"], rsp=acq["RSP, X, RSPEC-R"], eda=acq["EDA, X, PPGED-R"])
-bio["Bio_Processed"].plot()
+bio["Bio"].plot()
 ```
 
 
