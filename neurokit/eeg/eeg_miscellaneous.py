@@ -44,6 +44,6 @@ def eeg_find_Rpeaks(raw, ecg_channel="ecg"):
     ----------
     None
     """
-    rpeaks, = biosppy.ecg.hamilton_segmenter(signal=eeg_select_channels(raw, ecg_channel="ecg"), sampling_rate=raw.info["sfreq"])
+    rpeaks, = biosppy.ecg.hamilton_segmenter(eeg_select_channels(raw, ecg_channel), sampling_rate=raw.info["sfreq"])
     return(rpeaks)
 
