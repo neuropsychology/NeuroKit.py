@@ -1,9 +1,12 @@
 
-Biosignals
+Biosignals Processing in Python
 ===============================
 
-Welcome to the course for biosignals processing using NeuroKit and python. You'll find the necessary files to run this example in the `examples <https://github.com/neuropsychology/NeuroKit.py/tree/master/examples/Bio>`_ section.
-
+Welcome to the course for biosignals processing using NeuroKit and
+python. Welcome to the course for biosignals processing using NeuroKit
+and python. You'll find the necessary files to run this example in the
+`examples <https://github.com/neuropsychology/NeuroKit.py/tree/master/examples/Bio>`__
+section.
 
 Preprocessing
 -------------
@@ -11,7 +14,7 @@ Preprocessing
 Import Necessary Packages
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython3
 
     # Import packages
     import neurokit as nk
@@ -29,7 +32,7 @@ Import Necessary Packages
 Read Data
 ~~~~~~~~~
 
-.. code:: python
+.. code:: ipython3
 
     df = pd.read_csv("data_bio.csv")
     df.plot()
@@ -40,7 +43,8 @@ Read Data
 
 
 
-.. image:: img/output_5_1.png
+
+.. image:: img/output_6_1.png
 
 
 df contains 3.5 minutes of data recorded at 1000Hz. There are 4
@@ -49,19 +53,11 @@ channels, EDA, ECG, RSP and the Photosensor used to localize events.
 Processing and Features Extraction
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython3
 
     bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"])
-    bio.keys()  # See what it contains
+    bio["Bio"].plot()  # Plot processed signals
 
-
-
-
-
-
-.. code:: python
-
-    bio["Bio_Processed"].plot()
 
 
 
@@ -78,7 +74,10 @@ ECG Miscellaenous
 Heart Beats
 ~~~~~~~~~~~
 
-.. code:: python
+The processing functions automatically extracts each individual
+heartbeat, synchronized by their R peak. You can plot all of them.
+
+.. code:: ipython3
 
     pd.DataFrame(bio["ECG_Features"]["Heart_Beats"]).T.plot(legend=False)  # Plot all the heart beats
 
@@ -89,16 +88,13 @@ Heart Beats
 
 
 
-.. image:: img/output_12_1.png
+.. image:: img/output_13_1.png
 
-
-This plot contains all detected heart beats synchronized by their R
-peak.
 
 Heart Rate Variability (HRV)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython3
 
     # Print all the HRV indices
     bio["ECG_Features"]["ECG_HRV"]
@@ -131,7 +127,7 @@ This experiment consisted of 8 events (when the photosensor signal goes
 down), which were 2 types of images that were shown to the participant:
 "Negative" vs "Neutral". The following list is the condition order.
 
-.. code:: python
+.. code:: ipython3
 
     condition_list = ["Negative", "Negative", "Neutral", "Neutral", "Neutral", "Negative", "Negative", "Neutral"]
 
@@ -143,7 +139,7 @@ the ``find_events()`` function. This function requires a treshold and a
 cut direction (should it select events that are *higher* or *lower* than
 the treshold).
 
-.. code:: python
+.. code:: ipython3
 
     events = nk.find_events(df["Photosensor"], treshold = 3, cut="lower")
     events
@@ -163,12 +159,12 @@ Create Epochs
 
 Then, we divise our dataframe in epochs, *i.e.* segments of data around
 the event. We set our epochs to start at the event start (``onset=0``)
-and to last for 5000 data points, in our case equal to 5s (since the
+and to last for 5000 data points, in our case equal to 5 s (since the
 signal is sampled at 1000Hz).
 
-.. code:: python
+.. code:: ipython3
 
-    epochs = nk.create_epochs(bio["Bio_Processed"], events["onsets"], duration=5000, onset=0)
+    epochs = nk.create_epochs(bio["Bio"], events["onsets"], duration=5000, onset=0)
 
 Create Evoked-Data
 ~~~~~~~~~~~~~~~~~~
@@ -177,7 +173,7 @@ We can then itereate through the epochs and store the interesting
 results in a new dict that will be, at the end, converted to a
 dataframe.
 
-.. code:: python
+.. code:: ipython3
 
     evoked = {}  # Initialize an empty dict
     for epoch in epochs:
@@ -208,10 +204,10 @@ dataframe.
         <tr style="text-align: right;">
           <th></th>
           <th>EDA_Max</th>
-          <th>EDA_Filtered</th>
-          <th>RSP_Rate</th>
           <th>Heart_Rate</th>
           <th>SCR_Peaks</th>
+          <th>EDA_Filtered</th>
+          <th>RSP_Rate</th>
           <th>Condition</th>
         </tr>
       </thead>
@@ -219,73 +215,73 @@ dataframe.
         <tr>
           <th>0</th>
           <td>2.904791</td>
-          <td>1.119592</td>
-          <td>9.899207</td>
           <td>76.692448</td>
           <td>0.002233</td>
+          <td>1.119592</td>
+          <td>9.899207</td>
           <td>Negative</td>
         </tr>
         <tr>
           <th>1</th>
           <td>1.401832</td>
-          <td>0.228276</td>
-          <td>15.088623</td>
           <td>77.758983</td>
           <td>0.001362</td>
+          <td>0.228276</td>
+          <td>15.088623</td>
           <td>Negative</td>
         </tr>
         <tr>
           <th>2</th>
           <td>0.333022</td>
-          <td>0.170198</td>
-          <td>12.570695</td>
           <td>86.674810</td>
           <td>0.000000</td>
+          <td>0.170198</td>
+          <td>12.570695</td>
           <td>Neutral</td>
         </tr>
         <tr>
           <th>3</th>
           <td>0.617933</td>
-          <td>0.289176</td>
-          <td>17.845710</td>
           <td>71.802572</td>
           <td>0.000000</td>
+          <td>0.289176</td>
+          <td>17.845710</td>
           <td>Neutral</td>
         </tr>
         <tr>
           <th>4</th>
           <td>1.120845</td>
-          <td>0.700019</td>
-          <td>15.900692</td>
           <td>72.209853</td>
           <td>0.000000</td>
+          <td>0.700019</td>
+          <td>15.900692</td>
           <td>Neutral</td>
         </tr>
         <tr>
           <th>5</th>
           <td>2.199279</td>
+          <td>79.131237</td>
+          <td>0.001678</td>
           <td>1.128347</td>
           <td>16.889012</td>
-          <td>79.131768</td>
-          <td>0.001678</td>
           <td>Negative</td>
         </tr>
         <tr>
           <th>6</th>
           <td>3.707069</td>
-          <td>1.398594</td>
-          <td>17.058763</td>
-          <td>80.892720</td>
+          <td>80.894028</td>
           <td>0.002566</td>
+          <td>1.398594</td>
+          <td>17.058186</td>
           <td>Negative</td>
         </tr>
         <tr>
           <th>7</th>
           <td>3.543960</td>
-          <td>2.009089</td>
-          <td>15.289180</td>
           <td>81.304369</td>
           <td>0.000000</td>
+          <td>2.009089</td>
+          <td>15.289368</td>
           <td>Neutral</td>
         </tr>
       </tbody>
@@ -297,10 +293,9 @@ dataframe.
 Plot Results
 ~~~~~~~~~~~~
 
-.. code:: python
+.. code:: ipython3
 
     sns.boxplot(x="Condition", y="Heart_Rate", data=evoked)
-
 
 
 
@@ -311,9 +306,10 @@ Plot Results
 .. image:: img/output_29_1.png
 
 
-.. code:: python
+.. code:: ipython3
 
     sns.boxplot(x="Condition", y="RSP_Rate", data=evoked)
+
 
 
 
@@ -324,9 +320,11 @@ Plot Results
 .. image:: img/output_30_1.png
 
 
-.. code:: python
+.. code:: ipython3
 
     sns.boxplot(x="Condition", y="EDA_Filtered", data=evoked)
+
+
 
 
 
@@ -336,9 +334,10 @@ Plot Results
 .. image:: img/output_31_1.png
 
 
-.. code:: python
+.. code:: ipython3
 
     sns.boxplot(x="Condition", y="EDA_Max", data=evoked)
+
 
 
 
@@ -348,7 +347,7 @@ Plot Results
 .. image:: img/output_32_1.png
 
 
-.. code:: python
+.. code:: ipython3
 
     sns.boxplot(x="Condition", y="SCR_Peaks", data=evoked)
 
