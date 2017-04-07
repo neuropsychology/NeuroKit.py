@@ -22,7 +22,7 @@ install_requires = [
         'nolds',
         "biosppy",
         "hrv",
-        "PIL"
+        "Pillow"
         ],
 dependency_links=[],
 long_description = open('README.md').read(),
