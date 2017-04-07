@@ -281,14 +281,19 @@ def eeg_create_events(onsets, conditions=None):
     None
     """
     event_id = {}
-    event_names = list(set(events_list))
+
+    if conditions is None:
+        conditions = ["Event"] * len(onsets)
+
+
+    event_names = list(set(conditions))
 #    event_index = [1, 2, 3, 4, 5, 32, 64, 128]
     event_index = list(range(len(event_names)))
     for i in enumerate(event_names):
-        events_list = [event_index[i[0]] if x==i[1] else x for x in events_list]
+        conditions = [event_index[i[0]] if x==i[1] else x for x in conditions]
         event_id[i[1]] = event_index[i[0]]
 
-    events = np.array([onsets, [0]*len(onsets), events_list]).T
+    events = np.array([onsets, [0]*len(onsets), conditions]).T
     return(events, event_id)
 
 
