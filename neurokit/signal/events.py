@@ -107,7 +107,7 @@ def localize_events(events_channel, treshold="auto", cut="higher", time_index=No
     """
     events_channel = binarize_signal(events_channel, treshold=treshold, cut=cut)
 
-    events = {"onsets":[], "duration":[]}
+    events = {"onsets":[], "durations":[]}
     if time_index is not None:
         events["onsets_time"] = []
 
@@ -116,7 +116,7 @@ def localize_events(events_channel, treshold="auto", cut="higher", time_index=No
         duration = len(list(g))
         if key == 1:
             events["onsets"].append(index)
-            events["duration"].append(duration)
+            events["durations"].append(duration)
             if time_index is not None:
                 events["onsets_time"].append(time_index[index])
         index += duration
@@ -176,12 +176,12 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
     # Remove less than duration
     toremove = []
     for event in range(len(events["onsets"])):
-        if events["duration"][event] < min_duration:
+        if events["durations"][event] < min_duration:
             toremove.append(False)
         else:
             toremove.append(True)
     events["onsets"] = np.array(events["onsets"])[np.array(toremove)]
-    events["duration"] = np.array(events["duration"])[np.array(toremove)]
+    events["durations"] = np.array(events["durations"])[np.array(toremove)]
     if time_index is not None:
         events["onsets_time"] = np.array(events["onsets_time"])[np.array(toremove)]
 
@@ -200,7 +200,7 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
                 events["onsets_time"] = np.array(events["onsets_time"])
             after_onsets = list(np.array(events["onsets"])[events["onsets_time"]>after])[:number]
             after_times = list(np.array(events["onsets_time"])[events["onsets_time"]>after])[:number]
-            after_length = list(np.array(events["duration"])[events["onsets_time"]>after])[:number]
+            after_length = list(np.array(events["durations"])[events["onsets_time"]>after])[:number]
         if before != None:
             if events["onsets_time"] == []:
                 events["onsets_time"] = np.array(events["onsets"])
@@ -208,10 +208,10 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
                 events["onsets_time"] = np.array(events["onsets_time"])
             before_onsets = list(np.array(events["onsets"])[events["onsets_time"]<before])[:number]
             before_times = list(np.array(events["onsets_time"])[events["onsets_time"]<before])[:number]
-            before_length = list(np.array(events["duration"])[events["onsets_time"]<before])[:number]
+            before_length = list(np.array(events["durations"])[events["onsets_time"]<before])[:number]
         events["onsets"] = before_onsets + after_onsets
         events["onsets_time"] = before_times + after_times
-        events["duration"] = before_length + after_length
+        events["durations"] = before_length + after_length
 
     return(events)
 
