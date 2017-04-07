@@ -15,7 +15,7 @@ from itertools import groupby
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def binarize_signal(signal, treshold, cut="higher"):
+def binarize_signal(signal, treshold="auto", cut="higher"):
     """
     Binarize a channel based on a continuous channel.
 
@@ -24,9 +24,9 @@ def binarize_signal(signal, treshold, cut="higher"):
     signal = array or list
         The signal channel.
     treshold = float
-        The treshold.
+        The treshold value by which to select the events. If "auto", takes the value between the max and the min.
     cut = str
-        "higher" or "lower", define the events as above or under the treshold.
+        "higher" or "lower", define the events as above or under the treshold. For photosensors, a white screen corresponds usually to higher values. Therefore, if your events were signalled by a black colour, events values would be the lower ones, and you should set the cut to "lower".
 
     Returns
     ----------
@@ -46,6 +46,8 @@ def binarize_signal(signal, treshold, cut="higher"):
     ----------
     None
     """
+    if treshold == "auto":
+        treshold = (np.max(np.array(signal)) - np.min(np.array(signal)))/2
     signal = list(signal)
     binary_signal = []
     for i in range(len(signal)):
@@ -70,7 +72,7 @@ def binarize_signal(signal, treshold, cut="higher"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def localize_events(events_channel, treshold, cut="higher", time_index=None):
+def localize_events(events_channel, treshold="auto", cut="higher", time_index=None):
     """
     Find the onsets of all events based on a continuous signal.
 
@@ -79,9 +81,9 @@ def localize_events(events_channel, treshold, cut="higher", time_index=None):
     events_channel = array or list
         The trigger channel .
     treshold = float
-        The treshold.
+        The treshold value by which to select the events. If "auto", takes the value between the max and the min.
     cut = str
-        "higher" or "lower", define the events as above or under the treshold.
+        "higher" or "lower", define the events as above or under the treshold. For photosensors, a white screen corresponds usually to higher values. Therefore, if your events were signalled by a black colour, events values would be the lower ones, and you should set the cut to "lower".
     time_index = array or list
         Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
 
@@ -93,7 +95,7 @@ def localize_events(events_channel, treshold, cut="higher", time_index=None):
     Example
     ----------
     >>> import neurokit as nk
-    >>> events_onset = nk.events_onset(events_channel, treshold=4)
+    >>> events_onset = nk.events_onset(events_channel)
 
     Authors
     ----------
@@ -129,7 +131,7 @@ def localize_events(events_channel, treshold, cut="higher", time_index=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def find_events(events_channel, treshold, cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
+def find_events(events_channel, treshold="auto", cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
     """
     Find and select events based on a continuous signal.
 
@@ -138,10 +140,9 @@ def find_events(events_channel, treshold, cut="higher", time_index=None, number=
     events_channel = array or list
         The trigger channel.
     treshold = float
-        The treshold.
+        The treshold value by which to select the events. If "auto", takes the value between the max and the min.
     cut = str
-        "higher" or "lower", define the events as above or under the treshold.
-    time_index = array or list
+        "higher" or "lower", define the events as above or under the treshold. For photosensors, a white screen corresponds usually to higher values. Therefore, if your events were signalled by a black colour, events values would be the lower ones, and you should set the cut to "lower".
         Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
     number = str or int
         How many events should it select.
