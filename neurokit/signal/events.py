@@ -79,7 +79,7 @@ def localize_events(events_channel, treshold="auto", cut="higher", time_index=No
     Parameters
     ----------
     events_channel = array or list
-        The trigger channel .
+        The trigger channel.
     treshold = float
         The treshold value by which to select the events. If "auto", takes the value between the max and the min.
     cut = str

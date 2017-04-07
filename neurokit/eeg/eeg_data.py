@@ -50,11 +50,11 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
     Example
     ----------
     >>> import neurokit as nk
-    >>> raw = nk.read_eeg("", trigger_list)
+    >>> raw = nk.read_eeg("filename")
 
     Authors
     ----------
-    Dominique Makowski, the mne dev team.
+    Dominique Makowski
 
     Dependencies
     ----------
@@ -116,6 +116,54 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
 
 
 
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_select_channels(raw, channel_names):
+    """
+    Select one or several channels by name and returns them in a dataframe.
+
+    Parameters
+    ----------
+    raw = mne.io.Raw
+        Raw EEG data.
+    channel_names = str or list
+        Channel's name(s).
+
+    Returns
+    ----------
+    channels = pd.DataFrame
+        Channel.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> raw = nk.eeg_select_channel(raw, "TP7")
+
+    Authors
+    ----------
+    Dominique Makowski
+
+    Dependencies
+    ----------
+    - mne
+    """
+    if isinstance(channel_names, list) is False:
+        channel_names = [channel_names]
+
+    channels, time_index = raw.copy().pick_channels(channel_names)[:]
+    if len(channel_names) > 1:
+        channels = pd.DataFrame(channels.T, columns=channel_names)
+    else:
+        channels = pd.Series(channels[0])
+        channels.name = channel_names[0]
+    return(channels)
+
 
 # ==============================================================================
 # ==============================================================================
@@ -141,7 +189,6 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
         The index by which to align the two inputs.
     channel_type = str
         Channel type. currently supported fields are 'ecg', 'bio', 'stim', 'eog', 'misc', 'seeg', 'ecog', 'mag', 'eeg', 'ref_meg', 'grad', 'emg', 'hbr' or 'hbo'.
-    sync_by =
 
     Returns
     ----------
@@ -151,11 +198,11 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     Example
     ----------
     >>> import neurokit as nk
-    >>> raw = nk.read_eeg("", trigger_list)
+    >>> raw = nk.eeg_add_channel(raw, ecg, channel_type="ecg")
 
     Authors
     ----------
-    Dominique Makowski, the mne dev team.
+    Dominique Makowski
 
     Dependencies
     ----------
@@ -188,45 +235,6 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     raw.add_channels([channel], force_update_info=True)
 
     return(raw)
-#    pd.Series(channel).plot()
-#    pd.Series(stim_channel[0]).plot()
-#    raw.info["sfreq"]
-#    raw.copy().pick_channels([stim_channel])[:]
-#
-#    if raw.info["sfreq"] != new_channel_frequency:
-#        print("NeuroKit Error: eeg_add_channel(): different sampling rates detected between eeg data and new channel.")
-#        return()
-#
-#    if len(np.array(raw_events).shape) == 1:
-#        raw_events_onset = list(raw_events)
-#    elif len(np.array(raw_events).shape) == 2:
-#        raw_events_onset = list(raw_events[:,0])
-#    else:
-#        print("NeuroKit Error: eeg_add_channel(): raw_events must be a list of onsets or an events object returned by eeg_add_events().")
-#        return()
-#
-#    event1_new = new_channel_events_onset[0]
-#    event1_raw = raw_events_onset[0]
-#
-#    index = np.array(new_channel.index)
-#    index = index - (event1_new - event1_raw)
-#    new_channel.index = index
-#
-#    if event1_new > event1_raw:
-#        channel = list(new_channel.ix[0:])
-#    if event1_new < event1_raw:
-#        channel = [np.nan] * (event1_raw-event1_new) + list(new_channel)
-#
-#    random_channel, time_index = raw.copy().pick_channels([raw.info['ch_names'][0]])[:]
-#    if len(channel) > len(random_channel[0]):
-#        channel = list(channel)[:len(random_channel[0])]
-#    if len(channel) < len(random_channel[0]):
-#        channel = list(channel) + [np.nan] * (len(len(random_channel[0])-len(channel)))
-#
-#    info = mne.create_info([new_channel_type], new_channel_frequency, ch_types=new_channel_type)
-#    channel = mne.io.RawArray([channel], info)
-#
-#    raw.add_channels([channel], force_update_info=True)
 
 
 

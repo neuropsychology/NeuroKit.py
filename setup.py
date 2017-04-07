@@ -17,7 +17,7 @@ install_requires = [
         'scipy',
         "sklearn",
         "matplotlib",
-        'mne',
+        'mne >= 0.14',
         'bioread',
         'nolds',
         "biosppy",
