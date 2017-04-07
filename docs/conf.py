@@ -25,15 +25,6 @@ sys.path.insert(0, os.path.abspath('../'))
 
 
 MOCK_MODULES = [
-        "os",
-        "sys",
-        "platform",
-        "pickle",
-        "collections",
-        "re",
-        "time",
-        "datetime",
-        "itertools",
         'numpy',
         'pandas',
         "math",
@@ -53,7 +44,7 @@ MOCK_MODULES = [
         'nolds',
         "biosppy",
         "hrv",
-        "PIL"
+        "Pillow"
         ]
 
 for mod_name in MOCK_MODULES:
