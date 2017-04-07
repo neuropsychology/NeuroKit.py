@@ -125,7 +125,7 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channel_type=None, ):
+def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channel_type=None, channel_name=None):
     """
     Add a channel to a raw eeg file.
 
@@ -161,65 +161,74 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     ----------
     - mne
     """
-#    if sync_by in ["start", "end"]:
-#        if len(channel) != len(raw):
-#            print("NeuroKit Error: eeg_add_channel(): The two signals differ in size. Are you sure you want to sync them by " + sync_by + "?")
-#
-#    # Extract photosensor:
-#    stim_channel_name = "PHOTO"
-#    stim_channel, stim_channel_time_index = raw.copy().pick_channels([stim_channel_name])[:]
-##    pd.Series(stim_channel[0]).plot()
-#    import neurokit as nk
-#    nk.localize_events(stim_channel[0], cut="lower")["onsets"][0]
-##
-##
-#    import neurokit as nk
-#    nk.find_events()
+    if channel_name is None:
+        if isinstance(channel, pd.core.series.Series):
+            if channel.name is not None:
+                channel_name = channel.name
+            else:
+                channel_name = "Added_Channel"
+        else:
+            channel_name = "Added_Channel"
 
 
+    index = np.array(channel.index)
+    index = index - (sync_index_channel - sync_index_raw)
+    channel.index = index
+
+    if sync_index_channel >= sync_index_raw:
+        channel = list(channel.ix[0:])[0:len(raw)]
+    if sync_index_channel < sync_index_raw:
+        channel = [np.nan] * (sync_index_raw-sync_index_channel) + list(channel)
 
 
-
-
-    raw.info["sfreq"]
-    raw.copy().pick_channels([stim_channel])[:]
-
-    if raw.info["sfreq"] != new_channel_frequency:
-        print("NeuroKit Error: eeg_add_channel(): different sampling rates detected between eeg data and new channel.")
-        return()
-
-    if len(np.array(raw_events).shape) == 1:
-        raw_events_onset = list(raw_events)
-    elif len(np.array(raw_events).shape) == 2:
-        raw_events_onset = list(raw_events[:,0])
-    else:
-        print("NeuroKit Error: eeg_add_channel(): raw_events must be a list of onsets or an events object returned by eeg_add_events().")
-        return()
-
-    event1_new = new_channel_events_onset[0]
-    event1_raw = raw_events_onset[0]
-
-    index = np.array(new_channel.index)
-    index = index - (event1_new - event1_raw)
-    new_channel.index = index
-
-    if event1_new > event1_raw:
-        channel = list(new_channel.ix[0:])
-    if event1_new < event1_raw:
-        channel = [np.nan] * (event1_raw-event1_new) + list(new_channel)
-
-    random_channel, time_index = raw.copy().pick_channels([raw.info['ch_names'][0]])[:]
-    if len(channel) > len(random_channel[0]):
-        channel = list(channel)[:len(random_channel[0])]
-    if len(channel) < len(random_channel[0]):
-        channel = list(channel) + [np.nan] * (len(len(random_channel[0])-len(channel)))
-
-    info = mne.create_info([new_channel_type], new_channel_frequency, ch_types=new_channel_type)
+    info = mne.create_info([channel_name], raw.info["sfreq"], ch_types=channel_type)
     channel = mne.io.RawArray([channel], info)
+
 
     raw.add_channels([channel], force_update_info=True)
 
     return(raw)
+#    pd.Series(channel).plot()
+#    pd.Series(stim_channel[0]).plot()
+#    raw.info["sfreq"]
+#    raw.copy().pick_channels([stim_channel])[:]
+#
+#    if raw.info["sfreq"] != new_channel_frequency:
+#        print("NeuroKit Error: eeg_add_channel(): different sampling rates detected between eeg data and new channel.")
+#        return()
+#
+#    if len(np.array(raw_events).shape) == 1:
+#        raw_events_onset = list(raw_events)
+#    elif len(np.array(raw_events).shape) == 2:
+#        raw_events_onset = list(raw_events[:,0])
+#    else:
+#        print("NeuroKit Error: eeg_add_channel(): raw_events must be a list of onsets or an events object returned by eeg_add_events().")
+#        return()
+#
+#    event1_new = new_channel_events_onset[0]
+#    event1_raw = raw_events_onset[0]
+#
+#    index = np.array(new_channel.index)
+#    index = index - (event1_new - event1_raw)
+#    new_channel.index = index
+#
+#    if event1_new > event1_raw:
+#        channel = list(new_channel.ix[0:])
+#    if event1_new < event1_raw:
+#        channel = [np.nan] * (event1_raw-event1_new) + list(new_channel)
+#
+#    random_channel, time_index = raw.copy().pick_channels([raw.info['ch_names'][0]])[:]
+#    if len(channel) > len(random_channel[0]):
+#        channel = list(channel)[:len(random_channel[0])]
+#    if len(channel) < len(random_channel[0]):
+#        channel = list(channel) + [np.nan] * (len(len(random_channel[0])-len(channel)))
+#
+#    info = mne.create_info([new_channel_type], new_channel_frequency, ch_types=new_channel_type)
+#    channel = mne.io.RawArray([channel], info)
+#
+#    raw.add_channels([channel], force_update_info=True)
+
+
 
 
 
