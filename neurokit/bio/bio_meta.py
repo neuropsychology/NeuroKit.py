@@ -13,7 +13,7 @@ from .bio_eda import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True):
+def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True, additional_channels=None):
     """
     Automated processing of bio signal.
 
@@ -31,6 +31,8 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
     cvxEDA = bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
+    additional_channels = pandas.DataFrame
+        Dataframe or channels to add by concatenation to the processed dataframe.
 
     Returns
     ----------
@@ -70,7 +72,8 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         processed_bio["EDA_Features"] = eda["EDA_Features"]
         bio_df = pd.concat([bio_df, eda["EDA"]], axis=1)
 
-
+    if additional_channels is not None:
+        bio_df = pd.concat([bio_df, additional_channels], axis=1)
     processed_bio["Bio"] = bio_df
 
 

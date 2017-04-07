@@ -125,7 +125,7 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_add_channel(raw, channel, sync_by="start", channel_type=None):
+def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channel_type=None, ):
     """
     Add a channel to a raw eeg file.
 
@@ -135,8 +135,10 @@ def eeg_add_channel(raw, channel, sync_by="start", channel_type=None):
         Raw EEG data.
     channel = list or array
         The channel to be added.
-    sync_by = str
-        How to sync the two channels? "start", "end" or ...
+    sync_index_raw = int or list
+        The index by which to align the two inputs.
+    sync_index_channel = int or list
+        The index by which to align the two inputs.
     channel_type = str
         Channel type. currently supported fields are 'ecg', 'bio', 'stim', 'eog', 'misc', 'seeg', 'ecog', 'mag', 'eeg', 'ref_meg', 'grad', 'emg', 'hbr' or 'hbo'.
     sync_by =
@@ -166,11 +168,11 @@ def eeg_add_channel(raw, channel, sync_by="start", channel_type=None):
 #    # Extract photosensor:
 #    stim_channel_name = "PHOTO"
 #    stim_channel, stim_channel_time_index = raw.copy().pick_channels([stim_channel_name])[:]
-#    pd.Series(stim_channel[0]).plot()
+##    pd.Series(stim_channel[0]).plot()
 #    import neurokit as nk
-#    nk.localize_events(stim_channel[0])
-#
-#
+#    nk.localize_events(stim_channel[0], cut="lower")["onsets"][0]
+##
+##
 #    import neurokit as nk
 #    nk.find_events()
 
