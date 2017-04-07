@@ -547,3 +547,49 @@ def normal_range(mean, sd, treshold=1.28):
     bottom = mean - sd*treshold
     top = mean + sd*treshold
     return(bottom, top)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def interoceptive_accuracy(nbeats_real, nbeats_reported):
+    """
+    Computes interoceptive accuracy according to Garfinkel (2015).
+
+    Parameters
+    ----------
+    nbeats_real = int or list
+        Real number of heartbeats.
+    nbeats_reported = int or list
+        Reported number of heartbeats.
+
+    Returns
+    ----------
+    accuracy = float or list
+        Objective accuracy in detecting internal bodily sensations. It is the central construct underpinning other interoceptive measures.
+
+    Example
+    ----------
+    NA
+
+    Authors
+    ----------
+    Dominique Makowski
+
+    Dependencies
+    ----------
+    - numpy
+    """
+    # Convert to array if list
+    if isinstance(nbeats_real, list):
+        nbeats_real = np.array(nbeats_real)
+        nbeats_reported = np.array(nbeats_reported)
+    # Compute accuracy
+    accuracy = 1 - (abs(nbeats_real-nbeats_reported))/((nbeats_real+nbeats_reported)/2)
+
+    return(accuracy)
