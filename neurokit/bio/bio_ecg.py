@@ -132,7 +132,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
                      "ECG_Features": {
                             "Heart_Beats": biosppy_ecg["templates"],
                             "ECG_R_Peaks": biosppy_ecg["rpeaks"],
-                            "ECG_HRV": hrv_features}}
+                            "HRV": hrv_features}}
 
     # RSP
     if rsp is not None:
