@@ -217,15 +217,17 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
         else:
             channel_name = "Added_Channel"
 
-
+    # Compute the distance between the two signals
     index = np.array(channel.index)
     index = index - (sync_index_channel - sync_index_raw)
     channel.index = index
 
+    # Match them
     if sync_index_channel >= sync_index_raw:
         channel = list(channel.ix[0:])[0:len(raw)]
     if sync_index_channel < sync_index_raw:
         channel = [np.nan] * (sync_index_raw-sync_index_channel) + list(channel)
+        channel = list(channel)[0:len(raw)]
 
 
     info = mne.create_info([channel_name], raw.info["sfreq"], ch_types=channel_type)
