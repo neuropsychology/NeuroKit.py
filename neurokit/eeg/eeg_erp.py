@@ -1,7 +1,7 @@
 """
 ERP analysis EEG submodule.
 """
-from .eeg_preprocessing import eeg_select_electrodes
+from .eeg_preprocessing import eeg_select_sensors
 import numpy as np
 import mne
 import matplotlib
