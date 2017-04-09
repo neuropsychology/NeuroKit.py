@@ -161,3 +161,45 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         processed_ecg["ECG"]["RSP_Rate"] = np.array(rsp_rate)*60  # From Hz to respiration per seconds
 
     return(processed_ecg)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_find_peaks(signal, sampling_rate=1000):
+    """
+    Find R peaks indices on the ECG channel.
+
+    Parameters
+    ----------
+    signal = list or array
+        ECG signal (preferably filtered).
+    sampling_rate = int
+        sampling_rate = int
+
+
+    Returns
+    ----------
+    rpeaks
+        List of R-peak location indices.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> Rpeaks = nk.ecg_find_Rpeaks(raw)
+
+    Authors
+    ----------
+    Dominique Makowski, the biosppy dev team
+
+    Dependencies
+    ----------
+    None
+    """
+    rpeaks, = biosppy.ecg.hamilton_segmenter(signal, sampling_rate=sampling_rate)
+    return(rpeaks)
