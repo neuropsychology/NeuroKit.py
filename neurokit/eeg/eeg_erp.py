@@ -49,7 +49,7 @@ def eeg_average_per_epoch(epochs, include="all", exclude=None, hemisphere="both"
     """
     """
 #    epochs.pick_channels(eeg_select_electrodes("CP"))
-    epochs = epochs.copy().pick_channels(eeg_select_electrodes(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central))
+    epochs = epochs.copy().pick_channels(eeg_select_sensors(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central))
 
     dropped = list(epochs.drop_log)
 
