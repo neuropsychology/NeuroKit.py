@@ -1,7 +1,7 @@
 """
 Time-frequency submodule.
 """
-from .eeg_preprocessing import eeg_select_electrodes
+from .eeg_preprocessing import eeg_select_sensors
 from ..miscellaneous import Time
 
 import numpy as np
@@ -145,7 +145,7 @@ def eeg_power_per_epoch(epochs, include="all", exclude=None, hemisphere="both", 
     """
 
 
-    epochs = epochs.copy().pick_channels(eeg_select_electrodes(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central))
+    epochs = epochs.copy().pick_channels(eeg_select_sensors(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central))
 
     dropped = list(epochs.drop_log)  # get events
     frequencies = eeg_create_frequency_bands(bands=frequency_bands)
