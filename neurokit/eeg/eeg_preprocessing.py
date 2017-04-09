@@ -213,7 +213,7 @@ def eeg_epoching(raw, events, event_id, tmin=-0.2, tmax=1, eog_reject=600e-6, pr
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_select_electrodes(include="all", exclude=None, hemisphere="both", include_central=True):
+def eeg_select_sensors(include="all", exclude=None, hemisphere="both", include_central=True):
     """
     Select electrodes by region.
     """
