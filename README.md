@@ -43,7 +43,7 @@ This package provides a high level integration of complex statistical routines f
 Features:
 
 - **M/EEG**
-  - **`eeg_load_raw()`**: Under development
+  - **`read_eeg()`**: Under development
   - Preprocessing: Under development
   - Filtering: Under development
   - Microstates: Under development
