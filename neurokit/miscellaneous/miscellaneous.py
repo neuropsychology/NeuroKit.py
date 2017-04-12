@@ -235,13 +235,13 @@ def closest_in_list(number, array, direction="both", strictly=False):
     Parameters
     ----------
     number =  float
-        The number
+        The number.
     array = list
-        The list to look in
+        The list to look in.
     direction = str
-        "both" for smaller or greater, "greater" for only greater numbers and "smaller" for the closest smaller
+        "both" for smaller or greater, "greater" for only greater numbers and "smaller" for the closest smaller.
     strictly = bool
-        False for stricly superior or inferior or True for including equal
+        False for stricly superior or inferior or True for including equal.
 
     Returns
     ----------
@@ -275,3 +275,120 @@ def closest_in_list(number, array, direction="both", strictly=False):
             closest = min(filter(lambda x: x >= number, array))
 
     return(closest)
+
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def BMI(height, weight, age, sex):
+    """
+    Returns the traditional BMI, the 'new' Body Mass Index (BMI, see https://people.maths.ox.ac.uk/trefethen/bmi.html) and estimates the Body Fat Percentage (BFP;, Deurenberg, 1991)
+
+
+    Parameters
+    ----------
+    height =  float
+        Height in cm.
+    weight = float
+        Weight in kg.
+    age = float
+        Age in years.
+    sex = str
+        "m" or "f".
+
+
+    Returns
+    ----------
+    bmi = dict
+        dict containing values and their interpretations.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> nk.BMI(182, 55)
+
+    Authors
+    ----------
+    Dominique Makowski
+
+    Dependencies
+    ----------
+    None
+    """
+
+
+    # BMI
+    height = height/100
+    bmi = {}
+    bmi["BMI_old"] = weight/(height**2)
+    bmi["BMI_new"] = 1.3*weight/height**2.5
+    if bmi["BMI_new"] < 15:
+        bmi["BMI_category"] = "Very severely underweight"
+    if 15 < bmi["BMI_new"] < 16:
+         bmi["BMI_category"] = "Severely underweight"
+    if 16 < bmi["BMI_new"] < 18.5:
+         bmi["BMI_category"] = "Underweight"
+    if 18.5 < bmi["BMI_new"] < 25:
+         bmi["BMI_category"] = "Healthy weight"
+    if 25 < bmi["BMI_new"] < 30:
+         bmi["BMI_category"] = "Overweight"
+    if 30 < bmi["BMI_new"] < 35:
+         bmi["BMI_category"] = "Moderately obese"
+    if 35 < bmi["BMI_new"] < 40:
+         bmi["BMI_category"] = "Severely obese"
+    if bmi["BMI_new"] > 40:
+         bmi["BMI_category"] = "Very severely obese"
+
+    # BFP
+    if sex.lower() == "m":
+        sex = 1
+    else:
+        sex = 0
+
+    if age <= 15:
+        bmi["BFP"] = 1.51*bmi["BMI_old"]-0.70*age-3.6*sex+1.4
+    else:
+        bmi["BFP"] = 1.20*bmi["BMI_old"] + 0.23*age-10.8*sex-5.4
+
+    if sex == 1:
+        if bmi["BFP"] < 2:
+            bmi["BFP_category"] = "Critical"
+        if 2 <= bmi["BFP"] <= 5:
+            bmi["BFP_category"] = "Essential"
+        if 6 <= bmi["BFP"] <= 12:
+            bmi["BFP_category"] = "Athletic"
+        if 13 <= bmi["BFP"] <= 16:
+            bmi["BFP_category"] = "Fitness"
+        if 17 <= bmi["BFP"] <= 21:
+            bmi["BFP_category"] = "Average"
+        if 22 <= bmi["BFP"] <= 29:
+            bmi["BFP_category"] = "Overweight"
+        if bmi["BFP"] > 29:
+            bmi["BFP_category"] = "Obese"
+    else:
+        if bmi["BFP"] < 10:
+            bmi["BFP_category"] = "Critical"
+        if 10 <= bmi["BFP"] <= 13:
+            bmi["BFP_category"] = "Essential"
+        if 14 <= bmi["BFP"] <= 20:
+            bmi["BFP_category"] = "Athletic"
+        if 21 <= bmi["BFP"] <= 24:
+            bmi["BFP_category"] = "Fitness"
+        if 25 <= bmi["BFP"] <= 30:
+            bmi["BFP_category"] = "Average"
+        if 31 <= bmi["BFP"] <= 39:
+            bmi["BFP_category"] = "Overweight"
+        if bmi["BFP"] > 40:
+            bmi["BFP_category"] = "Obese"
+
+
+
+    return(bmi)
