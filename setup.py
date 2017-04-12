@@ -23,7 +23,7 @@ install_requires = [
         "biosppy",
         "hrv",
         "Pillow"
-        ],
+        "cvxopt"],
 dependency_links=[],
 long_description = open('README.md').read(),
 keywords = "python signal processing EEG EDA",
