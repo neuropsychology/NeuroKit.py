@@ -313,7 +313,7 @@ def BMI(height, weight, age, sex):
     Example
     ----------
     >>> import neurokit as nk
-    >>> nk.BMI(182, 55)
+    >>> nk.BMI(height=166, weight=54, age=22, sex="f")
 
     Authors
     ----------
