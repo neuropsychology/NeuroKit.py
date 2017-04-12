@@ -40,7 +40,7 @@ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 
 This package provides a high level integration of complex statistical routines for researchers and clinicians with not much experience in programming, statistics or signal theory.
 
-Features:
+Main features:
 
 - **M/EEG**
   - **`read_eeg()`**: Under development
