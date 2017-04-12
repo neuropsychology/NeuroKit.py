@@ -55,6 +55,7 @@ Main features:
   - **`z_score()`**: Normalize (scale and reduce) variables
 - **Miscellaneous**
   - **`fractal_dimensions()`**: Extract Fractal dimensions, chaos and entropy features
+  - **`BMI()`**: Computes the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
 
 
 
@@ -92,6 +93,13 @@ import neurokit as nk
 raw_scores = [1, 2, 8, 6, 2, 4]
 z_scores = nk.z_score(raw_scores)
 ```
+
+#### Body Mass Index (BMI)
+```python
+import neurokit as nk
+nk.BMI(height=166, weight=54, age=22, sex="f")
+```
+
 
 
 ## Citation
