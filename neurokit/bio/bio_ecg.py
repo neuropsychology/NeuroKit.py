@@ -23,18 +23,18 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     Parameters
     ----------
-    ecg =  array
+    ecg :  list or numpy.array
         ECG signal array.
-    rsp =  array
+    rsp :  array
         Respiratory signal array.
-    sampling_rate = int
+    sampling_rate : int
         Sampling rate (samples/second).
-    resampling_method = str
-        "mean", "pad" or "bfill", the resampling method.
+    resampling_method : str
+        "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
 
     Returns
     ----------
-    processed_ecg = dict
+    processed_ecg : dict
         Dict containing processed ECG features.
 
         Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided).
@@ -48,16 +48,30 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     >>>
     >>> processed_ecg = nk.ecg_process(ecg_signal, resp_signal)
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski, the bioSSPy dev team, Rhenan Bartels (from hrv)
+    **Authors**
 
-    Dependencies
-    ----------
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
+    - the cvxEDA dev team (https://github.com/lciti/cvxEDA)
+
+    **Dependencies**
+
     - biosppy
-    - hrv
     - numpy
     - pandas
+    - cvxopt
+
+    References
+    -----------
+
+    See Also
+    ---------
+    - BioSPPY package: https://github.com/PIA-Group/BioSPPy
+    - hrv package: https://github.com/rhenanbartels/hrv
+
     """
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 

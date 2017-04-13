@@ -24,23 +24,23 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
 
     Parameters
     ----------
-    filename =  str
-        File name (with or without the extension) of a BIOPAC's AcqKnowledge file.
-    path = str
-        Data Directory.
-    index = str
+    filename :  str
+        Filename (with or without the extension) of a BIOPAC's AcqKnowledge file.
+    path : str
+        Data directory.
+    index : str
         How to index the dataframe. "datetime" for aproximate datetime (based on the file creation/change) and "range" for a simple range index.
-    sampling_rate = int
-        final sampling rate (samples/second).
-    resampling_method = str
-        "mean", "pad" or "bfill", the resampling method.
-    fill_interruptions = bool
+    sampling_rate : int
+        Final sampling rate (samples/second).
+    resampling_method : str
+        The resampling method: "mean", "pad" or "bfill",
+    fill_interruptions : bool
         Automatically fill the eventual signal interruptions using a backfill method.
 
     Returns
     ----------
-    df = pandas.DataFrame()
-        the dataframe
+    df : pandas.DataFrame()
+        the acqknowledge file converted to a dataframe.
 
 
     Example
@@ -49,15 +49,26 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
     >>>
     >>> df = nk.read_acqknowledge('file.acq')
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    **Authors**
 
-    Dependencies
-    ----------
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+
+    **Dependencies**
+
     - pandas
     - bioread
     - datetime
+
+    References
+    -----------
+
+    See Also
+    ---------
+    - bioread package: https://github.com/njvack/bioread
+
     """
     # Check path
     file = path + filename

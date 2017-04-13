@@ -15,28 +15,28 @@ from .bio_eda import *
 # ==============================================================================
 def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True, add=None):
     """
-    Automated processing of bio signal.
+    Automated processing of bio signals. Wrapper function for :func:`neurokit.ecg_process()` and :func:`neurokit.eda_process()`.
 
     Parameters
     ----------
-    ecg =  array
+    ecg :  list or numpy.array
         ECG signal array.
-    rsp =  array
+    rsp :  array
         Respiratory signal array.
-    eda =  array
+    eda :  list or numpy.array
         EDA signal array.
-    sampling_rate = int
+    sampling_rate : int
         Sampling rate (samples/second).
-    resampling_method = str
+    resampling_method : str
         "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
-    cvxEDA = bool
+    use_cvxEDA : bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
-    add = pandas.DataFrame
+    add : pandas.DataFrame
         Dataframe or channels to add by concatenation to the processed dataframe.
 
     Returns
     ----------
-    processed_bio = dict
+    processed_bio : dict
         Dict containing processed bio features.
 
         Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided), the EDA raw signal, the filtered signal, the phasic compnent (if cvxEDA is True), the SCR onsets, peak indexes and amplitudes.
@@ -49,13 +49,26 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
     >>>
     >>> bio_features = nk.bio_process(ecg=ecg_signal, rsp=ecg_signal, eda=eda_signal)
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    **Authors**
 
-    Dependencies
-    ----------
-    - None
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    **Dependencies**
+
+    - pandas
+
+    References
+    -----------
+    - Greco et al. (2016): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
+
+    See Also
+    ---------
+    - BioSPPY package: https://github.com/PIA-Group/BioSPPy
+    - hrv package: https://github.com/rhenanbartels/hrv
+    - cvxEDA package: https://github.com/lciti/cvxEDA
+
     """
     processed_bio = {}
     bio_df = pd.DataFrame({})

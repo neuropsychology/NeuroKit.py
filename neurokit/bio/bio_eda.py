@@ -27,21 +27,21 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     Parameters
     ----------
-    eda =  array
+    eda :  list or numpy.array
         EDA signal array.
-    sampling_rate = int
+    sampling_rate : int
         Sampling rate (samples/second).
-    use_cvxEDA = bool
+    use_cvxEDA : bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
 
     Returns
     ----------
-    processed_eda = dict
+    processed_eda : dict
         Dict containing processed EDA features.
 
         Contains the EDA raw signal, the filtered signal, the phasic compnent (if cvxEDA is True), the SCR onsets, peak indexes and amplitudes.
 
-        This function is mainly a wrapper for the biosspy.eda.eda() and cvxEDA() functions. Credits go to their authors.
+        This function is mainly a wrapper for the biosppy.eda.eda() and cvxEDA() functions. Credits go to their authors.
 
 
     Example
@@ -50,16 +50,31 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     >>>
     >>> processed_eda = nk.eda_process(eda_signal)
 
-    Authors
-    ----------
-    Dominique Makowski, the bioSSPy dev team, the cvxEDA dev team
 
-    Dependencies
+    Notes
     ----------
+
+    **Authors**
+
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
+    - the cvxEDA dev team (https://github.com/lciti/cvxEDA)
+
+    **Dependencies**
+
     - biosppy
     - numpy
     - pandas
     - cvxopt
+
+    References
+    -----------
+    - Greco et al. (2016): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
+
+    See Also
+    ---------
+    - cvxEDA package: https://github.com/lciti/cvxEDA
     """
 
     eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
