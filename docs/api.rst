@@ -1,5 +1,5 @@
-API Reference
-#############
+Documentation
+#################
 This part of the documentation details the complete ``neurokit`` for python API.
 
 
