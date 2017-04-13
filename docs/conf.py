@@ -43,7 +43,7 @@ MOCK_MODULES = [
         'nolds',
         "biosppy",
         "hrv",
-        "Pillow"
+        "Pillow",
         "cvxopt"]
 
 for mod_name in MOCK_MODULES:
