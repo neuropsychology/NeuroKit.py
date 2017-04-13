@@ -9,7 +9,7 @@ This part of the documentation details the complete ``neurokit`` for python API.
    :members:
    
 .. autofunction:: neurokit.BMI
-   :members:
+
    
 .. autofunction:: neurokit.miscellaneous.BMI
-   :members:
+
