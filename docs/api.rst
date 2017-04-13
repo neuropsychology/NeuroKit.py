@@ -15,6 +15,15 @@ Biosignal Processing
    :undoc-members:
    
 
+EEG Processing
+=====================
 
+.. automodule:: neurokit.eeg
+   :members:
+   :imported-members:
+   :inherited-members:
+   :private-members:
+   :special-members:
+   :undoc-members:
 
 
