@@ -30,6 +30,7 @@ MOCK_MODULES = [
         'scipy',
         "scipy.stats",
         "scipy.signal",
+        "scipy.spatial",
         "scipy.spatial.distance",
         "sklearn",
         "sklearn.preprocessing",
@@ -46,8 +47,7 @@ MOCK_MODULES = [
         "Pillow",
         "cvxopt",
         "cvxopt.solvers",
-        "bio",
-        "spatial.distance"]
+        "bio"]
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
