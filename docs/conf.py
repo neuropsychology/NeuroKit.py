@@ -46,7 +46,8 @@ MOCK_MODULES = [
         "Pillow",
         "cvxopt",
         "cvxopt.solvers",
-        "bio"]
+        "bio",
+        "spatial.distance"]
 
 for mod_name in MOCK_MODULES:
     sys.modules[mod_name] = mock.Mock()
