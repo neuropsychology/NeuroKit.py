@@ -68,13 +68,14 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     - pandas
     - cvxopt
 
+    *See Also*
+
+    - cvxEDA package: https://github.com/lciti/cvxEDA
+
     References
     -----------
     - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
 
-    See Also
-    ---------
-        - cvxEDA package: https://github.com/lciti/cvxEDA
     """
 
     eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
@@ -178,14 +179,16 @@ def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
     - cvxopt
     - numpy
 
+    *See Also*
+
+    - cvxEDA package: https://github.com/lciti/cvxEDA
+
 
     References
     -----------
     - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
 
-    See Also
-    ---------
-        - cvxEDA package: https://github.com/lciti/cvxEDA
+
     """
     frequency = 1/sampling_rate
 

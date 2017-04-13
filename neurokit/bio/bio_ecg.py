@@ -64,13 +64,14 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     - pandas
     - cvxopt
 
+    *See Also*
+
+    - BioSPPY: https://github.com/PIA-Group/BioSPPy
+    - hrv package: https://github.com/rhenanbartels/hrv
+
     References
     -----------
 
-    See Also
-    ---------
-        - BioSPPY package: https://github.com/PIA-Group/BioSPPy
-        - hrv package: https://github.com/rhenanbartels/hrv
 
     """
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
@@ -219,12 +220,13 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 
     - biosppy
 
+    *See Also*
+
+    - BioSPPY: https://github.com/PIA-Group/BioSPPy
+
     References
     -----------
 
-    See Also
-    ---------
-        - BioSPPY package: https://github.com/PIA-Group/BioSPPy
     """
     rpeaks, = biosppy.ecg.hamilton_segmenter(signal, sampling_rate=sampling_rate)
     return(rpeaks)

@@ -62,12 +62,14 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
     - bioread
     - datetime
 
+    *See Also*
+
+    - bioread package: https://github.com/njvack/bioread
+
+
     References
     -----------
 
-    See Also
-    ---------
-        - bioread package: https://github.com/njvack/bioread
 
     """
     # Check path

@@ -59,15 +59,15 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
 
     - pandas
 
+    *See Also*
+
+    - BioSPPY package: https://github.com/PIA-Group/BioSPPy
+    - hrv package: https://github.com/rhenanbartels/hrv
+    - cvxEDA package: https://github.com/lciti/cvxEDA
+
     References
     -----------
     - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
-
-    See Also
-    ---------
-        - BioSPPY package: https://github.com/PIA-Group/BioSPPy
-        - hrv package: https://github.com/rhenanbartels/hrv
-        - cvxEDA package: https://github.com/lciti/cvxEDA
 
     """
     processed_bio = {}
