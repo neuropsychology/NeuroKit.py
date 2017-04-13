@@ -81,7 +81,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     # Convex optimization
     if use_cvxEDA is True:
         try:
-            eda = cvxEDA(eda, sampling_rate=sampling_rate)
+            eda = cvxeda(eda, sampling_rate=sampling_rate)
             eda_df["EDA_Phasic"] = eda
         except:
             print("NeuroKit Warning: couln't apply cvxEDA on EDA signal. Using normal.")
@@ -127,7 +127,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
+def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
     """
     A convex optimization approach to electrodermal activity processing (CVXEDA).
 
