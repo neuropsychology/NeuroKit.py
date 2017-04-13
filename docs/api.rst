@@ -3,16 +3,10 @@ API Reference
 This part of the documentation details the complete ``neurokit`` for python API.
 
 .. automodule:: neurokit
-   
-   
-.. autodoc:: neurokit
    :members:
-
-
-.. automodule:: neurokit
+   
+.. automodule:: bio_ecg
    :members:
-
-
-
-.. automodule:: bio
+   
+.. autofunction:: BMI
    :members:
