@@ -70,7 +70,7 @@ extensions = [
     'sphinx.ext.coverage',
     'sphinx.ext.mathjax',
     'sphinx.ext.ifconfig',
-#    'sphinx.ext.napoleon',
+    'sphinx.ext.napoleon',
     'sphinx.ext.viewcode'
 ]
 
