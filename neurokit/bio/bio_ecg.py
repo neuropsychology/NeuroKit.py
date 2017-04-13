@@ -23,9 +23,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     Parameters
     ----------
-    ecg :  list or numpy.array
+    ecg : list or numpy.array
         ECG signal array.
-    rsp :  array
+    rsp : list or numpy.array
         Respiratory signal array.
     sampling_rate : int
         Sampling rate (samples/second).
@@ -50,14 +50,14 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     Notes
     ----------
-    **Authors**
+    *Authors*
 
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
     - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
     - the cvxEDA dev team (https://github.com/lciti/cvxEDA)
 
-    **Dependencies**
+    *Dependencies*
 
     - biosppy
     - numpy
@@ -69,8 +69,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     See Also
     ---------
-    - BioSPPY package: https://github.com/PIA-Group/BioSPPy
-    - hrv package: https://github.com/rhenanbartels/hrv
+        - BioSPPY package: https://github.com/PIA-Group/BioSPPy
+        - hrv package: https://github.com/rhenanbartels/hrv
 
     """
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
@@ -191,29 +191,40 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 
     Parameters
     ----------
-    signal = list or array
+    signal : list or numpy.array
         ECG signal (preferably filtered).
-    sampling_rate = int
+    sampling_rate : int
         sampling_rate = int
 
 
     Returns
     ----------
-    rpeaks
-        List of R-peak location indices.
+    rpeaks : list
+        List of R-peaks location indices.
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> Rpeaks = nk.ecg_find_Rpeaks(raw)
+    >>> Rpeaks = nk.ecg_find_peaks(signal)
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski, the biosppy dev team
+    *Authors*
 
-    Dependencies
-    ----------
-    None
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
+
+    *Dependencies*
+
+    - biosppy
+
+    References
+    -----------
+
+    See Also
+    ---------
+        - BioSPPY package: https://github.com/PIA-Group/BioSPPy
     """
     rpeaks, = biosppy.ecg.hamilton_segmenter(signal, sampling_rate=sampling_rate)
     return(rpeaks)

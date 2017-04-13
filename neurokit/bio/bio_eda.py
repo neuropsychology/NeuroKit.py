@@ -54,14 +54,14 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     Notes
     ----------
 
-    **Authors**
+    *Authors*
 
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
     - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
     - the cvxEDA dev team (https://github.com/lciti/cvxEDA)
 
-    **Dependencies**
+    *Dependencies*
 
     - biosppy
     - numpy
@@ -70,11 +70,11 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     References
     -----------
-    - Greco et al. (2016): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
+    - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
 
     See Also
     ---------
-    - cvxEDA package: https://github.com/lciti/cvxEDA
+        - cvxEDA package: https://github.com/lciti/cvxEDA
     """
 
     eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
@@ -130,54 +130,62 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 # ==============================================================================
 def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
     """
-    A convex optimization approach to electrodermal activity processing (CVXEDA)
+    A convex optimization approach to electrodermal activity processing (CVXEDA).
 
     This function implements the cvxEDA algorithm described in "cvxEDA: a
     Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
 
     Parameters
     ----------
-       eda
-           observed EDA signal.
-       sampling_rate
-           sampling rate (samples/seconds).
-       tau0
-           slow time constant of the Bateman function.
-       tau1
-           fast time constant of the Bateman function.
-       delta_knot
-           time between knots of the tonic spline function.
-       alpha
-           penalization for the sparse SMNA driver.
-       gamma
-           penalization for the tonic spline coefficients.
-       solver
-           sparse QP solver to be used, see cvxopt.solvers.qp
+       eda : list or numpy.array
+           raw EDA signal array.
+       sampling_rate : int
+           Sampling rate (samples/second).
+       tau0 : float
+           Slow time constant of the Bateman function.
+       tau1 : float
+           Fast time constant of the Bateman function.
+       delta_knot : float
+           Time between knots of the tonic spline function.
+       alpha : float
+           Penalization for the sparse SMNA driver.
+       gamma : float
+           Penalization for the tonic spline coefficients.
+       solver : bool
+           Sparse QP solver to be used, see cvxopt.solvers.qp
        verbose = bool
            Print progress?
-       options
-           solver options, see http://cvxopt.org/userguide/coneprog.html#algorithm-parameters
+       options : dict
+           Solver options, see http://cvxopt.org/userguide/coneprog.html#algorithm-parameters
 
     Returns
     ----------
-       phasic
-           The phasic component.
+        phasic : np.array
+            The phasic component.
 
-    Authors
-    ----------
-    Luca Citi (lciti@ieee.org), Alberto Greco
 
-    Citation
+    Notes
     ----------
-    A Greco, G Valenza, A Lanata, EP Scilingo, and L Citi
-    "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing"
-    IEEE Transactions on Biomedical Engineering, 2015
-    DOI: 10.1109/TBME.2015.2474131
 
-    Dependencies
-    ----------
+    *Authors*
+
+
+    - Luca Citi (https://github.com/lciti)
+    - Alberto Greco
+
+    *Dependencies*
+
     - cvxopt
     - numpy
+
+
+    References
+    -----------
+    - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
+
+    See Also
+    ---------
+        - cvxEDA package: https://github.com/lciti/cvxEDA
     """
     frequency = 1/sampling_rate
 

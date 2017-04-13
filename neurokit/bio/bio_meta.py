@@ -19,9 +19,9 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
 
     Parameters
     ----------
-    ecg :  list or numpy.array
+    ecg : list or numpy.array
         ECG signal array.
-    rsp :  array
+    rsp : list or numpy.array
         Respiratory signal array.
     eda :  list or numpy.array
         EDA signal array.
@@ -51,23 +51,23 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
 
     Notes
     ----------
-    **Authors**
+    *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
 
-    **Dependencies**
+    *Dependencies*
 
     - pandas
 
     References
     -----------
-    - Greco et al. (2016): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
+    - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
 
     See Also
     ---------
-    - BioSPPY package: https://github.com/PIA-Group/BioSPPy
-    - hrv package: https://github.com/rhenanbartels/hrv
-    - cvxEDA package: https://github.com/lciti/cvxEDA
+        - BioSPPY package: https://github.com/PIA-Group/BioSPPy
+        - hrv package: https://github.com/rhenanbartels/hrv
+        - cvxEDA package: https://github.com/lciti/cvxEDA
 
     """
     processed_bio = {}
