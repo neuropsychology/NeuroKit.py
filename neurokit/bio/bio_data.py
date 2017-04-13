@@ -55,7 +55,6 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
 
-
     *Dependencies*
 
     - pandas
@@ -66,11 +65,8 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
 
     - bioread package: https://github.com/njvack/bioread
 
-
     References
     -----------
-
-
     """
     # Check path
     file = path + filename

@@ -53,9 +53,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     Notes
     ----------
-
     *Authors*
-
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
     - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
@@ -70,7 +68,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     *See Also*
 
-    - cvxEDA package: https://github.com/lciti/cvxEDA
+    - cvxEDA: https://github.com/lciti/cvxEDA
 
     References
     -----------
@@ -167,9 +165,7 @@ def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
 
     Notes
     ----------
-
     *Authors*
-
 
     - Luca Citi (https://github.com/lciti)
     - Alberto Greco
@@ -181,14 +177,12 @@ def cvxEDA(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
 
     *See Also*
 
-    - cvxEDA package: https://github.com/lciti/cvxEDA
+    - cvxEDA: https://github.com/lciti/cvxEDA
 
 
     References
     -----------
     - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
-
-
     """
     frequency = 1/sampling_rate
 
