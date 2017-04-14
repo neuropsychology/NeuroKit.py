@@ -7,7 +7,7 @@ Contents:
    :maxdepth: 1
 
    tutorials/index
-   api
+   documentation
    about
    
 
