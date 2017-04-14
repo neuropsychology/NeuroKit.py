@@ -9,7 +9,6 @@ Biosignal Processing
 .. automodule:: neurokit.bio
    :members:
    :imported-members:
-   :inherited-members:
    :private-members:
    :special-members:
    :undoc-members:

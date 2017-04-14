@@ -56,8 +56,6 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
-    - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
-    - the cvxEDA dev team (https://github.com/lciti/cvxEDA)
 
     *Dependencies*
 
@@ -152,14 +150,14 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
            Penalization for the tonic spline coefficients.
        solver : bool
            Sparse QP solver to be used, see cvxopt.solvers.qp
-       verbose = bool
+       verbose : bool
            Print progress?
        options : dict
            Solver options, see http://cvxopt.org/userguide/coneprog.html#algorithm-parameters
 
     Returns
     ----------
-        phasic : np.array
+        phasic : numpy.array
             The phasic component.
 
 

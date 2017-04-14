@@ -39,7 +39,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
         Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided).
 
-        This function is mainly a wrapper for the biosspy.ecg.ecg() and the hrv.hrv() functions. Credits go to their authors.
+        This function is mainly a wrapper for the biosppy.ecg.ecg() and the hrv.hrv() functions. Credits go to their authors.
 
 
     Example
@@ -54,15 +54,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
-    - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
-    - the cvxEDA dev team (https://github.com/lciti/cvxEDA)
 
     *Dependencies*
 
     - biosppy
     - numpy
     - pandas
-    - cvxopt
 
     *See Also*
 
