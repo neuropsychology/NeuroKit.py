@@ -12,7 +12,7 @@ Biosignal Processing
    :inherited-members:
    :private-members:
    :special-members:
-   
+   :undoc-members:
 
 EEG Processing
 =====================
