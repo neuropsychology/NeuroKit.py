@@ -36,7 +36,17 @@ read_acqknowledge
 EEG Processing
 =====================
 
-TO DO
+read_eeg
+--------------------
+
+.. autofunction:: neurokit.read_eeg
+
+
+eeg_add_channel
+--------------------
+
+.. autofunction:: neurokit.eeg_add_channel
+
 
 
 

@@ -1,5 +1,5 @@
 """
 misc submodule.
 """
-from .io import *
+from .data import *
 from .miscellaneous import *

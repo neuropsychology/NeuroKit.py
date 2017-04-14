@@ -20,31 +20,31 @@ import os
 # ==============================================================================
 def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=None, montage="easycap-M1", preload=True, verbose="CRITICAL"):
     """
-    Load EEG data into raw file.
+    Load EEG data into mne.io.Raw file.
 
     Parameters
     ----------
-    filename = str
-        File name (with or without the extension).
-    path = str
-        Data Directory.
-    eog = list
+    filename : str
+        Filename (with or without the extension).
+    path : str
+        File's path.
+    eog : list
         Names of channels or list of indices that should be designated EOG channels. Values should correspond to the vhdr file. Default is ('HEOG', 'VEOG'), but MNE's default is ('HEOGL', 'HEOGR', 'VEOGb').
-    misc = list
+    misc : list
         Names of channels or list of indices that should be designated MISC channels. Values should correspond to the electrodes in the vhdr file. If 'auto', units in vhdr file are used for inferring misc channels. Default is 'auto'.
-    reference = str or list
+    reference : str or list
         re-reference using specific sensors.
-    montage = str
+    montage : str
         Path or instance of montage containing electrode positions. If None, sensor locations are (0,0,0). See the documentation of mne.channels.read_montage() for more information.
-    preload = bool
+    preload : bool
         If True, all data are loaded at initialization. If False, data are not read until save.
-    verbose = str
+    verbose : str
         Level of verbosity. "DEBUG", "INFO", "WARNING", "ERROR" or "CRITICAL".
 
 
     Returns
     ----------
-    raw = mne.io.Raw
+    raw : mne.io.Raw
         Raw data in FIF format.
 
     Example
@@ -52,13 +52,19 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
     >>> import neurokit as nk
     >>> raw = nk.read_eeg("filename")
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
     - mne
+
+    *See Also*
+
+    - mne package: http://martinos.org/mne/dev/index.html
     """
     file = path + filename
 
@@ -145,13 +151,19 @@ def eeg_select_channels(raw, channel_names):
     >>> import neurokit as nk
     >>> raw = nk.eeg_select_channel(raw, "TP7")
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
     - mne
+
+    *See Also*
+
+    - mne package: http://martinos.org/mne/dev/index.html
     """
     if isinstance(channel_names, list) is False:
         channel_names = [channel_names]
@@ -175,24 +187,24 @@ def eeg_select_channels(raw, channel_names):
 # ==============================================================================
 def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channel_type=None, channel_name=None):
     """
-    Add a channel to a raw eeg file.
+    Add a channel to a raw m/eeg file.
 
     Parameters
     ----------
-    raw = mne.io.Raw
+    raw : mne.io.Raw
         Raw EEG data.
-    channel = list or array
+    channel : list or numpy.array
         The channel to be added.
-    sync_index_raw = int or list
+    sync_index_raw : int or list
         The index by which to align the two inputs.
-    sync_index_channel = int or list
+    sync_index_channel : int or list
         The index by which to align the two inputs.
-    channel_type = str
-        Channel type. currently supported fields are 'ecg', 'bio', 'stim', 'eog', 'misc', 'seeg', 'ecog', 'mag', 'eeg', 'ref_meg', 'grad', 'emg', 'hbr' or 'hbo'.
+    channel_type : str
+        Channel type. Currently supported fields are 'ecg', 'bio', 'stim', 'eog', 'misc', 'seeg', 'ecog', 'mag', 'eeg', 'ref_meg', 'grad', 'emg', 'hbr' or 'hbo'.
 
     Returns
     ----------
-    raw = mne.io.Raw
+    raw : mne.io.Raw
         Raw data in FIF format.
 
     Example
@@ -200,13 +212,19 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     >>> import neurokit as nk
     >>> raw = nk.eeg_add_channel(raw, ecg, channel_type="ecg")
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
     - mne
+
+    *See Also*
+
+    - mne package: http://martinos.org/mne/dev/index.html
     """
     if channel_name is None:
         if isinstance(channel, pd.core.series.Series):
@@ -218,17 +236,14 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
             channel_name = "Added_Channel"
 
     # Compute the distance between the two signals
-    index = np.array(channel.index)
-    index = index - (sync_index_channel - sync_index_raw)
-    channel.index = index
-
-    # Match them
-    if sync_index_channel >= sync_index_raw:
-        channel = list(channel.ix[0:])[0:len(raw)]
-    if sync_index_channel < sync_index_raw:
-        channel = [np.nan] * (sync_index_raw-sync_index_channel) + list(channel)
-        channel = list(channel)[0:len(raw)]
-
+    diff = sync_index_channel - sync_index_raw
+    if diff > 0:
+        channel = list(channel)[diff:len(channel)]
+        channel = channel + [np.nan]*diff
+    if diff < 0:
+        channel = [np.nan]*diff + list(channel)
+        channel = list(channel)[0:len(channel)]
+    channel = list(channel)[0:len(raw)]  # Crop to fit the raw data
 
     info = mne.create_info([channel_name], raw.info["sfreq"], ch_types=channel_type)
     channel = mne.io.RawArray([channel], info)
