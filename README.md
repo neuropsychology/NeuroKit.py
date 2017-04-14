@@ -48,9 +48,9 @@ Main features:
   - Filtering: Under development
   - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
-  - **`read_acqknowledge()`**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
-  - **`ecg_process()`**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
-  - **`eda_process()`**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
+  - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
+  - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
+  - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
 - **Statistics**
   - **`z_score()`**: Normalize (scale and reduce) variables
 - **Miscellaneous**
