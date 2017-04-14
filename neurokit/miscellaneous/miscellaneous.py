@@ -242,41 +242,44 @@ def closest_in_list(number, array, direction="both", strictly=False):
 # ==============================================================================
 def BMI(height, weight, age, sex):
     """
-    Returns the traditional BMI, the 'new' Body Mass Index (BMI, see https://people.maths.ox.ac.uk/trefethen/bmi.html) and estimates the Body Fat Percentage (BFP;, Deurenberg, 1991)
-
+    Returns the traditional BMI, the 'new' Body Mass Index and estimates the Body Fat Percentage (BFP; Deurenberg et al., 1991).
 
     Parameters
     ----------
-    height =  float
+    height : float
         Height in cm.
-    weight = float
+    weight : float
         Weight in kg.
-    age = float
+    age : float
         Age in years.
-    sex = str
+    sex : str
         "m" or "f".
-
 
     Returns
     ----------
-    bmi = dict
+    bmi : dict
         dict containing values and their interpretations.
 
     Example
     ----------
     >>> import neurokit as nk
+    >>>
     >>> nk.BMI(height=166, weight=54, age=22, sex="f")
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
-    None
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *See Also*
+
+    - https://people.maths.ox.ac.uk/trefethen/bmi.html
+
+    References
+    -----------
+    - Deurenberg et al. (1991): https://www.cambridge.org/core/services/aop-cambridge-core/content/view/S0007114591000193
     """
-
-
     # BMI
     height = height/100
     bmi = {}

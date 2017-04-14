@@ -32,15 +32,41 @@ read_acqknowledge
 
 .. autofunction:: neurokit.read_acqknowledge
 
-EEG Processing
+
+
+
+Statistics
 =====================
 
-.. automodule:: neurokit.eeg
-   :members:
-   :imported-members:
-   :inherited-members:
-   :private-members:
-   :special-members:
-   :undoc-members:
+z_score
+---------------
+
+.. autofunction:: neurokit.z_score
+
+
+
+Miscellaneous
+=====================
+
+BMI
+---------------
+
+.. autofunction:: neurokit.BMI
+
+
+
+..
+
+   EEG Processing
+   =====================
+
+
+   .. automodule:: neurokit.eeg
+      :members:
+      :imported-members:
+      :inherited-members:
+      :private-members:
+      :special-members:
+      :undoc-members:
 
 
