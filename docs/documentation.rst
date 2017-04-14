@@ -48,7 +48,10 @@ eeg_add_channel
 .. autofunction:: neurokit.eeg_add_channel
 
 
+eeg_filter
+--------------------
 
+.. autofunction:: neurokit.eeg_filter
 
 
 Statistics

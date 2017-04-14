@@ -15,13 +15,49 @@ import mne
 # ==============================================================================
 def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
     """
-    Apply filter.
+    Applies a zero-phase filter on EEG/MEG data.
+
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        Raw EEG data.
+    lowpass : int
+        Lowpass filter frequency in Hz.
+    highpass : int
+        Highpass filter frequency in Hz.
+    notch : bool
+        Apply additional notch filter on the 50Hz band.
+    method : str
+        'fir' will use overlap-add FIR filtering, 'iir' will use IIR forward-backward filtering (via filtfilt).
+
+
+    Returns
+    ----------
+    raw : mne.io.Raw
+        Raw data in FIF format.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> raw = nk.eeg_filter(raw)
+
+    Notes
+    ----------
+    *Authors*
+
+    - MNE dev team (http://martinos.org/mne/dev/index.html)
+
+    *Dependencies*
+
+    - mne
+
+    *See Also*
+
+    - mne package: http://martinos.org/mne/dev/index.html
     """
     if notch == True:
         raw.notch_filter(np.arange(50, 451, 50),
-                         phase='zero',
-                         method=method
-                         )
+                         method=method)
 
     if lowpass is not None and highpass is not None:
         raw.filter(lowpass,
@@ -38,16 +74,57 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_ica(raw, eog=True, ecg=True, method='fastica', n_components=30, random_state=23, plot=False):
+def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_components=30, plot=False):
     """
-    Apply ICA.
-    Supposing you have 2 EOG channels and one ECG channel.
-    """
-    ica = mne.preprocessing.ICA(n_components=n_components,
-                                method=method,  # for comparison with EEGLAB try "extended-infomax" here
-                                random_state=random_state  # random seed
-                                )
+    Applies ICA to remove eog and/or ecg artifacts.
 
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        Raw EEG data.
+    eog : bool
+        Remove EOG's artifacts.
+    ecg : bool
+        Remove ECG's artifacts.
+    method : str
+        ICA method. 'fastica', 'infomax' or 'extended-infomax'.
+    n_components : int
+        The number of components used for ICA decomposition.
+    random_state : int
+        Seed used to initialize the FastICA estimation.
+    plot : bool
+        Plot results.
+
+
+
+    Returns
+    ----------
+    raw : mne.io.Raw
+        Raw data in FIF format.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> raw, ica = nk.eeg_ica(raw)
+
+    Notes
+    ----------
+    *Authors*
+
+    - MNE dev team (http://martinos.org/mne/dev/index.html)
+
+    *Dependencies*
+
+    - mne
+
+    *See Also*
+
+    - mne package: http://martinos.org/mne/dev/index.html
+    """
+    ica = mne.preprocessing.ICA(method=method,  # for comparison with EEGLAB try "extended-infomax" here
+                                random_state=random_state,  # random seed
+                                n_components=n_components
+                                )
     # Check if MEG or EEG data
     if True in set(["MEG" in ch for ch in raw.info["ch_names"]]):
         meg = True
@@ -84,8 +161,14 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', n_components=30, random_s
                                                                               eog=False,
                                                                               ecg=True)
                                                          )
-        # generate ECG epochs use detection via phase statistics
-        ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
+
+        try:
+            raw.copy().pick_types(meg=False, eeg=False, ecg=True)
+            # generate ECG epochs use detection via phase statistics
+            ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method="correlation")
+        except ValueError:
+            ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
+
         if plot is True:
             ica.plot_scores(ecg_scores, exclude=ecg_inds, title='ecg components')
         ica.exclude.extend(ecg_inds)
