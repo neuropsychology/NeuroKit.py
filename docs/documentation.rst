@@ -11,6 +11,11 @@ Biosignal Processing
 
 .. autofunction:: neurokit.bio_process
 
+`eda_process`
+---------------
+
+.. autofunction:: neurokit.eda_process
+
 
 
 EEG Processing
