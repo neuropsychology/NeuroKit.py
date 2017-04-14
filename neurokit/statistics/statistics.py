@@ -367,7 +367,7 @@ def z_score(raw_scores, center=True, scale=True):
 
     Returns
     ----------
-    z_scores : pd.DataFrame
+    z_scores : pandas.DataFrame
         The Z scores.
 
 
