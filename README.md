@@ -43,7 +43,7 @@ This package provides a high level integration of complex statistical routines f
 Main features:
 
 - **M/EEG**
-  - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Under development
+  - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read many EEG and MEG files
   - Preprocessing: Under development
   - Filtering: Under development
   - Microstates: Under development
