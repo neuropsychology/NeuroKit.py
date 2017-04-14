@@ -78,7 +78,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # Store R peaks indexes
     r_peaks = np.array([np.nan]*len(ecg))
     r_peaks[biosppy_ecg['rpeaks']] = 1
-    ecg_df["ECG_R_Peaks"] = r_peaks
+    ecg_df["ECG_Rpeaks"] = r_peaks
 
 
     # Heart rate index creation
