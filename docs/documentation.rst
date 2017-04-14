@@ -33,6 +33,12 @@ read_acqknowledge
 .. autofunction:: neurokit.read_acqknowledge
 
 
+EEG Processing
+=====================
+
+TO DO
+
+
 
 
 Statistics
@@ -56,9 +62,6 @@ BMI
 
 
 
-
-EEG Processing
-=====================
 
 
 
