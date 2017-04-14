@@ -62,44 +62,12 @@ Main features:
 
 
 
-## Examples
+## Documentation
 
-
-#### ECG, RSP and EDA processing with a Biopac:copyright:'s Acqknowledge file (See [this example](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)).
-```python
-import neurokit as nk
-import pandas as pd
-
-# Read the data file
-acq = nk.read_acqknowledge("myfile.acq")
-
-# Processing
-bio = nk.bio_process(ecg=acq["ECG, X, RSPEC-R"], rsp=acq["RSP, X, RSPEC-R"], eda=acq["EDA, X, PPGED-R"])
-bio["Bio"].plot()
-```
-
-
-#### Fractal/chaos/entropy indices computation
-```python
-import neurokit as nk
-signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
-results = nk.fractal_dimensions(signal)
-print(results["Entropy"])
-```
-
-#### Z-scores
-```python
-import neurokit as nk
-raw_scores = [1, 2, 8, 6, 2, 4]
-z_scores = nk.z_score(raw_scores)
-```
-
-#### Body Mass Index (BMI)
-```python
-import neurokit as nk
-nk.BMI(height=166, weight=54, age=22, sex="f")
-```
-
+- [Tutorials](http://neurokit.readthedocs.io/en/latest/tutorials/index.html)
+  - [x] Biosignals processing
+  - [ ] M/EEG processing
+- [API Documentation](http://neurokit.readthedocs.io/en/latest/documentation.html)
 
 
 ## Citation
