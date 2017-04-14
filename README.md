@@ -52,10 +52,10 @@ Main features:
   - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
   - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
 - **Statistics**
-  - **`z_score()`**: Normalize (scale and reduce) variables
+  - **[`z_score()`](http://neurokit.readthedocs.io/en/latest/documentation.html#z-score)**: Normalize (scale and reduce) variables
 - **Miscellaneous**
   - **`fractal_dimensions()`**: Extract Fractal dimensions, chaos and entropy features
-  - **`BMI()`**: Computes the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
+  - **[`BMI()`](http://neurokit.readthedocs.io/en/latest/documentation.html#bmi)**: Computes the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
 
 
 
