@@ -41,7 +41,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
         This function is mainly a wrapper for the biosppy.ecg.ecg() and the hrv.hrv() functions. Credits go to their authors.
 
-
     Example
     ----------
     >>> import neurokit as nk
@@ -50,8 +49,20 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     Notes
     ----------
-    *Authors*
+    *Details*
 
+    - HRV: Heart-Rate Variability is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013).
+       - SDNN is the standard deviation of the time interval between successive normal heart beats (i.e., the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine.
+       - The RMSSD is the root mean square of the RR intervals (i.e., square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (i.e., those influencing larger changes from one beat to the next).
+       - VLF is the variance (i.e., power) in HRV in the Very Low Frequency (.003 to .04 Hz). Reflect an intrinsic rhythm produced by the heart
+which is modulated by primarily by sympathetic activity.
+       - LF  is the variance (i.e., power) in HRV in the Low Frequency (.04 to .15 Hz). Reflects a mixture of sympathetic and parasympathetic
+activity, but in long-term recordings like ours, it reflects sympathetic activity and can be reduced by the beta-adrenergic antagonist propanolol (McCraty & Atkinson, 1996).
+       - HF  is the variance (i.e., power) in HRV in the High Frequency (.15 to .40 Hz). Reflects fast changes in beat-to-beat variability due to
+parasympathetic (vagal) activity. Sometimes called the respiratory band because it corresponds to HRV changes related to the respiratory cycle
+and can be increased by slow, deep breathing (about 6 or 7 breaths per minute) (Kawachi et al., 1995) and decreased by anticholinergic drugs or vagal blockade (Hainsworth, 1995).
+
+    *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
 
@@ -66,6 +77,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     - BioSPPY: https://github.com/PIA-Group/BioSPPy
     - hrv package: https://github.com/rhenanbartels/hrv
 
+    References
+    ------------
+    - Zohar, A. H., Cloninger, C. R., & McCraty, R. (2013). Personality and heart rate variability: exploring pathways from personality to cardiac coherence and health. Open Journal of Social Sciences, 1(06), 32.
     """
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
@@ -114,23 +128,23 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # Calculate time domain indexes
     hrv_time_domain = hrv.classical.time_domain(rri)
-    hrv_features = {"HRV_mhr": hrv_time_domain['mhr'],
-                    "HRV_mrri": hrv_time_domain['mrri'],
-                    "HRV_nn50": hrv_time_domain['nn50'],
-                    "HRV_pnn50": hrv_time_domain['pnn50'],
-                    "HRV_rmssd": hrv_time_domain['rmssd'],
-                    "HRV_sdnn": hrv_time_domain['sdnn']
+    hrv_features = {"HRV_MHR": hrv_time_domain['mhr'],
+                    "HRV_MRRI": hrv_time_domain['mrri'],
+                    "HRV_NN50": hrv_time_domain['nn50'],
+                    "HRV_PNN50": hrv_time_domain['pnn50'],
+                    "HRV_RMSSD": hrv_time_domain['rmssd'],
+                    "HRV_SDNN": hrv_time_domain['sdnn']
             }
     # Calculate frequency domain indexes
     try:
         hrv_freq_domain = hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0)
-        hrv_features["HRV_hf"] = hrv_freq_domain["hf"]
-        hrv_features["HRV_hfnu"] = hrv_freq_domain["hfnu"]
-        hrv_features["HRV_lf"] = hrv_freq_domain["lf"]
-        hrv_features["HRV_lf_hf"] = hrv_freq_domain["lf_hf"]
-        hrv_features["HRV_lfnu"] = hrv_freq_domain["lfnu"]
+        hrv_features["HRV_HF"] = hrv_freq_domain["hf"]
+        hrv_features["HRV_HFNU"] = hrv_freq_domain["hfnu"]
+        hrv_features["HRV_LF"] = hrv_freq_domain["lf"]
+        hrv_features["HRV_LF_HF"] = hrv_freq_domain["lf_hf"]
+        hrv_features["HRV_LFNU"] = hrv_freq_domain["lfnu"]
         hrv_features["HRV_total_power"] = hrv_freq_domain["total_power"]
-        hrv_features["HRV_vlf"] = hrv_freq_domain["vlf"]
+        hrv_features["HRV_VLF"] = hrv_freq_domain["vlf"]
     except:
         print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
 
