@@ -33,17 +33,11 @@ ecg_find_peaks()
 .. autofunction:: neurokit.bio.ecg_find_peaks
 
 
-read_acqknowledge
------------------
+read_acqknowledge()
+--------------------
 
 .. autofunction:: neurokit.bio.read_acqknowledge
 
-.. automodule:: neurokit.bio
-   :members:
-   :imported-members:
-   :private-members:
-   :special-members:
-   :undoc-members:
 
 EEG Processing
 =====================
