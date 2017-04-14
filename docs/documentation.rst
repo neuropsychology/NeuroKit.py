@@ -9,6 +9,8 @@ Biosignal Processing
 .. automodule:: neurokit.bio
    :members:
    :imported-members:
+   :private-members:
+   :special-members:
    :undoc-members:
 
 EEG Processing
