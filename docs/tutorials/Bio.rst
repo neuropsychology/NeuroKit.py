@@ -55,7 +55,7 @@ Processing and Features Extraction
 .. code:: python3
 
     bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"])
-    bio["Bio"].plot()  # Plot processed signals
+    bio["df"].plot()  # Plot processed signals
 
 
 
@@ -78,7 +78,7 @@ heartbeat, synchronized by their R peak. You can plot all of them.
 
 .. code:: python3
 
-    pd.DataFrame(bio["ECG_Features"]["Heart_Beats"]).T.plot(legend=False)  # Plot all the heart beats
+    pd.DataFrame(bio["ECG"]["Heart_Beats"]).T.plot(legend=False)  # Plot all the heart beats
 
 
 
@@ -96,7 +96,7 @@ Heart Rate Variability (HRV)
 .. code:: python3
 
     # Print all the HRV indices
-    bio["ECG_Features"]["ECG_HRV"]
+    bio["ECG"]["HRV"]
 
 
 
@@ -163,7 +163,7 @@ signal is sampled at 1000Hz).
 
 .. code:: python3
 
-    epochs = nk.create_epochs(bio["Bio"], events["onsets"], duration=events["durations"], onset=0)
+    epochs = nk.create_epochs(bio["df"], events["onsets"], duration=events["durations"], onset=0)
 
 Create Evoked-Data
 ~~~~~~~~~~~~~~~~~~
