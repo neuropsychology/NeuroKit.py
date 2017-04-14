@@ -3,6 +3,7 @@ import time as builtin_time
 import pandas as pd
 import numpy as np
 
+import platform
 import os
 import pickle
 
@@ -204,3 +205,60 @@ def load_object(filename, path=""):
     with open(filename, 'rb') as file:
         raws = pickle.load(file)
     return(raws)
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def get_creation_date(path):
+    """
+    Try to get the date that a file was created, falling back to when it was last modified if that not possible.
+    See  for explanation.
+
+    Parameters
+    ----------
+    path : str
+       File's path.
+
+    Returns
+    ----------
+    creation_date : str
+        Time of file creation.
+
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>>
+    >>> date = nk.get_creation_date(file)
+
+    Notes
+    ----------
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Mark Amery
+
+    *Dependencies*
+
+    - platform
+    - os
+
+    *See Also*
+
+    - http://stackoverflow.com/a/39501288/1709587
+
+    """
+    if platform.system() == 'Windows':
+        return(os.path.getctime(path))
+    else:
+        stat = os.stat(path)
+        try:
+            return(stat.st_birthtime)
+        except AttributeError:
+            print("Neuropsydia error: get_creation_date(): We're probably on Linux. No easy way to get creation dates here, so we'll settle for when its content was last modified.")
+            return(stat.st_mtime)

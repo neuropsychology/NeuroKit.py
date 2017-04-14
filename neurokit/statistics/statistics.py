@@ -126,7 +126,7 @@ def select_variables(df, dtype="numeric"):
     df = pandas.DataFrame object
         a pandas dataframe
     dtype = str, optional
-        "numeric" or "factor". Note that right now, entering something else than "numeric" will just result in a dataframe with all non-numeric variables.
+        "numeric" or "factor" (to do). Note that right now, entering something else than "numeric" will just result in a dataframe with all non-numeric variables.
 
     Returns
     ----------
@@ -354,35 +354,47 @@ def t_test(var1, var2, data=None, var1_name="VARIABLE-1", var2_name="VARIABLE-2"
 # ==============================================================================
 def z_score(raw_scores, center=True, scale=True):
     """
-    Transform an numeric pandas' array or list into Z scores (scaled and centered scores).
+    Transform an array, serie or list into Z scores (scaled and centered scores).
 
     Parameters
     ----------
-    NA
+    raw_scores : list, numpy.array or pandas.Series
+        ECG signal array.
+    centered : bool
+        Center the array (mean = 0).
+    scale :  bool
+        scale the array (sd = 1).
 
     Returns
     ----------
-    NA
+    z_scores : pd.DataFrame
+        The Z scores.
+
 
     Example
     ----------
-    NA
+    >>> import neurokit as nk
+    >>>
+    >>> nk.z_score([3, 1, 2, 4, 6])
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
-    - scipy
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - pandas
+
     """
     df = pd.DataFrame(raw_scores)
 
     mean = df.mean(axis=0)
     sd = df.std(axis=0)
-    Z_scores = (df - mean)/sd
+    z_scores = (df - mean)/sd
 
-    return(Z_scores)
+    return(z_scores)
 
 
 # ==============================================================================
