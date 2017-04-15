@@ -96,7 +96,7 @@ def eeg_name_frequencies(freqs):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper"):
+def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper", proj=False):
     """
     NA.
 
@@ -112,6 +112,8 @@ def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper"):
         Max frequency of interest.
     method : str
         "multitaper" or "welch".
+    proj : bool
+        add projectors.
 
     Returns
     ----------
@@ -151,23 +153,22 @@ def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper"):
                                                         fmin=fmin,
                                                         fmax=fmax,
                                                         low_bias=True,
-                                                        proj=True,
+                                                        proj=proj,
                                                         picks=picks)
     else:
         psds, freqs = mne.time_frequency.psd_welch(raw,
                                                         fmin=fmin,
                                                         fmax=fmax,
                                                         low_bias=True,
-                                                        proj=True,
+                                                        proj=proj,
                                                         picks=picks)
     tf = pd.DataFrame(psds)
     tf.columns = eeg_name_frequencies(freqs)
     tf = tf.mean(axis=0)
-    tf.T.plot()
 
     mean_tf = {}
     for freq in ["UltraLow", "Delta", "Theta", "Alpha", "Alpha1", "Alpha2", "Mu", "Beta", "Beta1", "Beta2", "Gamma", "Gamma1", "Gamma2", "UltraHigh"]:
-        mean_tf[freq] = tf[tf.index==freq].mean()
+        mean_tf[freq] = tf[[freq in s for s in tf.index]].mean()
     mean_tf = pd.DataFrame.from_dict(mean_tf, orient="index").T
 
     return(mean_tf)
