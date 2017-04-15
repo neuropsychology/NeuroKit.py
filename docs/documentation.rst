@@ -33,34 +33,6 @@ read_acqknowledge
 .. autofunction:: neurokit.read_acqknowledge
 
 
-EEG Processing
-=====================
-
-read_eeg
---------------------
-
-.. autofunction:: neurokit.read_eeg
-
-
-
-Signal
-=====================
-
-
-find_events
----------------
-
-.. autofunction:: neurokit.find_events
-
-
-create_epochs
----------------
-
-.. autofunction:: neurokit.create_epochs
-
-
-
-
 
 Statistics
 =====================
