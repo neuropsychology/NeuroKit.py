@@ -305,9 +305,41 @@ def eeg_epoching(raw, events, event_id, tmin=-0.2, tmax=1, eog_reject=600e-6, pr
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_select_sensors(include="all", exclude=None, hemisphere="both", include_central=True):
+def eeg_select_sensor_area(include="all", exclude=None, hemisphere="both", include_central=True):
     """
-    Select electrodes by region.
+    Returns list of electrodes names (according to a 10-20 EEG montage). This function is probably not very flexibile. Looking for help to improve it.
+
+    Parameters
+    ----------
+    include : str
+        Sensor area to include.
+    exclude : str or None
+        Sensor area to exclude.
+    hemisphere : both
+        Select both hemispheres?
+    include_central : bool
+        if `hemisphere != "both"`, select the central line?
+
+    Returns
+    ----------
+    sensors : list
+        List of sensors corresponding to the selected area.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> nk.eeg_select_sensor_area(include="F", exclude="C")
+
+
+    Notes
+    ----------
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    References
+    ------------
+    - None
     """
     sensors = ['AF3', 'AF4', 'AF7', 'AF8', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'CP1', 'CP2', 'CP3', 'CP4', 'CP5', 'CP6', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'FC1', 'FC2', 'FC3', 'FC4', 'FC5', 'FC6', 'Fp1', 'Fp2', 'FT10', 'FT7', 'FT8', 'FT9', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Pz', 'FCz', 'T7', 'T8', 'TP10', 'TP7', 'TP8', 'TP9', 'AFz']
 

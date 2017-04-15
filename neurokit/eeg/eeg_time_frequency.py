@@ -96,16 +96,18 @@ def eeg_name_frequencies(freqs):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper", proj=False):
+def eeg_psd(raw, sensors_include="all", sensors_exclude=None, fmin=0.016, fmax=60, method="multitaper", proj=False):
     """
-    NA.
+    Compute Power-Spectral Density (PSD).
 
     Parameters
     ----------
     raw : mne.io.Raw
         Raw EEG data.
-    sensors : str
-        Sensors area.
+    sensors_include : str
+        Sensor area to include. See :func:`neurokit.eeg_select_sensors()`.
+    sensors_exclude : str
+        Sensor area to exclude. See :func:`neurokit.eeg_select_sensors()`.
     fmin : float
         Min frequency of interest.
     fmax: float
@@ -117,7 +119,8 @@ def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper", proj=F
 
     Returns
     ----------
-    NA.
+    mean_psd : pandas.DataFrame
+        Averaged PSDs.
 
     Example
     ----------
@@ -146,7 +149,7 @@ def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper", proj=F
     ------------
     - None
     """
-    picks = mne.pick_types(raw.info, include=eeg_select_sensors(sensors), exclude="bads")
+    picks = mne.pick_types(raw.info, include=eeg_select_sensors(include=sensors_include, exclude=sensors_exclude), exclude="bads")
 
     if method == "multitaper":
         psds, freqs = mne.time_frequency.psd_multitaper(raw,
@@ -165,12 +168,12 @@ def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper", proj=F
     tf.columns = eeg_name_frequencies(freqs)
     tf = tf.mean(axis=0)
 
-    mean_tf = {}
+    mean_psd = {}
     for freq in ["UltraLow", "Delta", "Theta", "Alpha", "Alpha1", "Alpha2", "Mu", "Beta", "Beta1", "Beta2", "Gamma", "Gamma1", "Gamma2", "UltraHigh"]:
-        mean_tf[freq] = tf[[freq in s for s in tf.index]].mean()
-    mean_tf = pd.DataFrame.from_dict(mean_tf, orient="index").T
+        mean_psd[freq] = tf[[freq in s for s in tf.index]].mean()
+    mean_psd = pd.DataFrame.from_dict(mean_psd, orient="index").T
 
-    return(mean_tf)
+    return(mean_psd)
 
 
 

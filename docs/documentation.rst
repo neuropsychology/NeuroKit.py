@@ -42,6 +42,12 @@ read_eeg
 .. autofunction:: neurokit.read_eeg
 
 
+eeg_select_sensor_area
+--------------------
+
+.. autofunction:: neurokit.eeg_select_sensor_area
+
+
 eeg_add_channel
 --------------------
 
@@ -53,11 +59,21 @@ eeg_filter
 
 .. autofunction:: neurokit.eeg_filter
 
+eeg_ica
+--------------------
+
+.. autofunction:: neurokit.eeg_ica
+
 
 eeg_name_frequencies
 ---------------
 
 .. autofunction:: neurokit.eeg_name_frequencies
+
+eeg_psd
+---------------
+
+.. autofunction:: neurokit.eeg_psd
 
 
 
