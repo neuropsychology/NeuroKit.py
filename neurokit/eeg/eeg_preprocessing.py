@@ -100,7 +100,7 @@ def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method=
         Plot results.
     decim : int
         Increment for selecting each nth time slice. If None, all samples within start and stop are used.
-    reject : dict | None
+    reject : dict or None
         Rejection parameters based on peak-to-peak amplitude.
 
 
