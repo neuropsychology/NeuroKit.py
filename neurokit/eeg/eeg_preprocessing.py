@@ -202,15 +202,24 @@ def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method=
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_eog_ssp(raw, plot=False):
+def eeg_ssp(raw, eog=True, ecg= True, plot=False):
     """
-    Apply SSP.
+    Apply SSP artifacts correction.
     """
-    projs, eog_events = mne.preprocessing.compute_proj_eog(raw, average=True, n_grad=0, n_mag=0, n_eeg=2)
-    eog_projs = projs[-2:]
-    if plot is True:
-        mne.viz.plot_projs_topomap(eog_projs, layout=mne.channels.find_layout(raw.info))
-    raw.info['projs'] += eog_projs
+    if eog is True:
+        projs, events = mne.preprocessing.compute_proj_eog(raw, average=True)
+        eog_projs = projs[-2:]
+        if plot is True:
+            mne.viz.plot_projs_topomap(eog_projs, layout=mne.channels.find_layout(raw.info))
+
+    if ecg is True:
+        projs, events = mne.preprocessing.compute_proj_ecg(raw, average=True)
+        ecg_projs = projs[-2:]
+        if plot is True:
+            mne.viz.plot_projs_topomap(ecg_projs, layout=mne.channels.find_layout(raw.info))
+
+    raw.info['projs'] += eog_projs + ecg_projs
+
     return(raw)
 
 
