@@ -315,8 +315,8 @@ def eeg_select_sensor_area(include="all", exclude=None, hemisphere="both", inclu
         Sensor area to include.
     exclude : str or None
         Sensor area to exclude.
-    hemisphere : both
-        Select both hemispheres?
+    hemisphere : str
+        Select both hemispheres? "both", "left" or "right".
     include_central : bool
         if `hemisphere != "both"`, select the central line?
 
