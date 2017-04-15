@@ -61,7 +61,8 @@ def create_epochs(data, events_onsets, duration=1000, onset=0, names=None):
         if len(list(set(names))) != len(names):
             print("NeuroKit error: create_epochs(): events_names does not contain uniques names, replacing them by numbers.")
             names = list(range(len(events_onsets)))
-
+        else:
+            names = list(names)
     # Create epochs
     epochs = {}
     for event, event_onset in enumerate(events_onsets):
