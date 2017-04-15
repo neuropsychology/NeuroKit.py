@@ -33,20 +33,22 @@ def eeg_name_frequencies(freqs):
     for freq in freqs:
         if 1 <= freq <= 3:
             freqs_names.append("Delta")
-        if 4 <= freq <= 7:
+        elif 4 <= freq <= 7:
             freqs_names.append("Theta")
-        if 8 <= freq <= 9:
+        elif 8 <= freq <= 9:
             freqs_names.append("Alpha1")
-        if 10 <= freq <= 12:
+        elif 10 <= freq <= 12:
             freqs_names.append("Alpha2")
-        if 13 <= freq <= 17:
+        elif 13 <= freq <= 17:
             freqs_names.append("Beta1")
-        if 18 <= freq <= 30:
+        elif 18 <= freq <= 30:
             freqs_names.append("Beta2")
-        if 31 <= freq <= 40:
+        elif 31 <= freq <= 40:
             freqs_names.append("Gamma1")
-        if 41 <= freq <= 50:
+        elif 41 <= freq <= 50:
             freqs_names.append("Gamma2")
+        else:
+            freqs_names.append("Other")
     return(freqs_names)
 
 # ==============================================================================
