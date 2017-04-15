@@ -147,11 +147,13 @@ def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method=
     if eog is True:
         eog_inds, scores = ica.find_bads_eog(raw, threshold=eog_treshold)
         eog_inds = eog_inds[0:2]  # Exclude max 2 components
-        ica.exclude += eog_inds
         if plot is True:
             ica.plot_scores(scores, exclude=eog_inds, title='eog components', labels='eog')
             ica.plot_sources(raw, exclude=eog_inds, title='eog components')
             ica.plot_components(eog_inds, title='eog components', colorbar=True)
+
+        ica.exclude += eog_inds
+
 
     if ecg is True:
         # If existing ECG channel
@@ -162,12 +164,11 @@ def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method=
             ecg_epochs = mne.preprocessing.create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=picks)
             ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps', threshold=0.8)
         ecg_inds = ecg_inds[0:3]  # Exclude max 3 components
-        ica.exclude += eog_inds
-
         if plot is True:
             ica.plot_scores(scores, exclude=ecg_inds, title='ecg components', labels='ecg')
             ica.plot_sources(raw, exclude=ecg_inds, title='eog')
             ica.plot_components(ecg_inds, title='eog', colorbar=True)
+        ica.exclude += eog_inds
 
 
     if plot is True:
