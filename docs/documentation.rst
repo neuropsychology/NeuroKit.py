@@ -43,7 +43,7 @@ read_eeg
 
 
 eeg_select_sensor_area
---------------------
+-------------------------
 
 .. autofunction:: neurokit.eeg_select_sensor_area
 
@@ -66,7 +66,7 @@ eeg_ica
 
 
 eeg_name_frequencies
----------------
+-----------------------
 
 .. autofunction:: neurokit.eeg_name_frequencies
 
