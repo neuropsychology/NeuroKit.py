@@ -74,7 +74,7 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_components=30, plot=False, decim=3, reject = dict(grad=4000e-13, mag=4e-12, eeg=100e-6, eog=300e-6)):
+def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method='fastica', random_state=23, n_components=0.95, plot=False, decim=3, reject=None):
     """
     Applies ICA to remove eog and/or ecg artifacts.
 
@@ -84,17 +84,24 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_compon
         Raw EEG data.
     eog : bool
         Remove EOG's artifacts.
+    eog_treshold : float
+        The value above which a feature is classified as outlier.
     ecg : bool
         Remove ECG's artifacts.
+    ecg_treshold : float
+        The value above which a feature is classified as outlier. If no existing ECG channel, decrease it around 0.25.
     method : str
         ICA method. 'fastica', 'infomax' or 'extended-infomax'.
     n_components : int
-        The number of components used for ICA decomposition.
+        The number of components used for ICA decomposition. If int, it must be smaller then max_pca_components. If None, all PCA components will be used. If float between 0 and 1 components will be selected by the cumulative percentage of explained variance.
     random_state : int
         Seed used to initialize the FastICA estimation.
     plot : bool
         Plot results.
-
+    decim : int
+        Increment for selecting each nth time slice. If None, all samples within start and stop are used.
+    reject : dict | None
+        Rejection parameters based on peak-to-peak amplitude.
 
 
     Returns
@@ -138,55 +145,47 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_compon
     ica.fit(raw, picks=picks, decim=decim, reject=reject)
 
     if eog is True:
-        # create one EOG epoch
-        eog_epochs = mne.preprocessing.create_eog_epochs(raw,
-                                                         picks=mne.pick_types(raw.info,
-                                                                              meg=meg,
-                                                                              eeg=eeg,
-                                                                              eog=True,
-                                                                              ecg=False)
-                                                         )
-        # detect EOG via correlation
-        eog_inds, eog_scores = ica.find_bads_eog(eog_epochs)
+        eog_inds, scores = ica.find_bads_eog(raw, threshold=eog_treshold)
+        eog_inds = eog_inds[0:2]  # Exclude max 2 components
+        ica.exclude += eog_inds
         if plot is True:
-            ica.plot_scores(eog_scores, exclude=eog_inds, title='eog components')
-        ica.exclude.extend(eog_inds)
+            ica.plot_scores(scores, exclude=eog_inds, title='eog components', labels='eog')
+            ica.plot_sources(raw, exclude=eog_inds, title='eog components')
+            ica.plot_components(eog_inds, title='eog components', colorbar=True)
 
     if ecg is True:
-        # create one ECG epoch
-        ecg_epochs = mne.preprocessing.create_ecg_epochs(raw,
-                                                         picks=mne.pick_types(raw.info,
-                                                                              meg=meg,
-                                                                              eeg=eeg,
-                                                                              eog=False,
-                                                                              ecg=True)
-                                                         )
-
+        # If existing ECG channel
         try:
             raw.copy().pick_types(meg=False, eeg=False, ecg=True)
-            # generate ECG epochs use detection via phase statistics
-            ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method="correlation")
+            ecg_inds, scores = ica.find_bads_ecg(raw, method='correlation', threshold=ecg_treshold)
         except ValueError:
-            ecg_inds, ecg_scores = ica.find_bads_ecg(ecg_epochs, method='ctps')
+            ecg_epochs = mne.preprocessing.create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=picks)
+            ecg_inds, scores = ica.find_bads_ecg(ecg_epochs, method='ctps', threshold=0.8)
+        ecg_inds = ecg_inds[0:3]  # Exclude max 3 components
+        ica.exclude += eog_inds
 
         if plot is True:
-            ica.plot_scores(ecg_scores, exclude=ecg_inds, title='ecg components')
-        ica.exclude.extend(ecg_inds)
+            ica.plot_scores(scores, exclude=ecg_inds, title='ecg components', labels='ecg')
+            ica.plot_sources(raw, exclude=ecg_inds, title='eog')
+            ica.plot_components(ecg_inds, title='eog', colorbar=True)
 
 
     if plot is True:
-        ica.plot_sources(raw)
-        ica.plot_components()[0]
-
-        eog_evoked = eog_epochs.average()
+        # estimate average artifact
+        eog_evoked = mne.preprocessing.create_eog_epochs(raw, tmin=-.5, tmax=.5, picks=picks).average()
         ica.plot_sources(eog_evoked, exclude=eog_inds)  # plot EOG sources + selection
         ica.plot_overlay(eog_evoked, exclude=eog_inds)  # plot EOG cleaning
 
-        ecg_evoked = ecg_epochs.average()
+        ecg_evoked = mne.preprocessing.create_ecg_epochs(raw, tmin=-.5, tmax=.5, picks=picks).average()
         ica.plot_sources(ecg_evoked, exclude=ecg_inds)  # plot ECG sources + selection
         ica.plot_overlay(ecg_evoked, exclude=ecg_inds)  # plot ECG cleaning
 
-    raw = ica.apply(raw)
+
+        # check the amplitudes do not change
+        ica.plot_overlay(raw)  # EOG artifacts remain
+
+
+    raw =ica.apply(raw)
     return(raw, ica)
 
 

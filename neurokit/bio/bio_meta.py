@@ -19,11 +19,11 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
 
     Parameters
     ----------
-    ecg : list or numpy.array
+    ecg : list | numpy.array
         ECG signal array.
-    rsp : list or numpy.array
+    rsp : list | numpy.array
         Respiratory signal array.
-    eda :  list or numpy.array
+    eda :  list | numpy.array
         EDA signal array.
     sampling_rate : int
         Sampling rate (samples/second).

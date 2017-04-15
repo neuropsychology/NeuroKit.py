@@ -23,9 +23,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     Parameters
     ----------
-    ecg : list or numpy.array
+    ecg : list | numpy.array
         ECG signal array.
-    rsp : list or numpy.array
+    rsp : list | numpy.array
         Respiratory signal array.
     sampling_rate : int
         Sampling rate (samples/second).
@@ -196,7 +196,7 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 
     Parameters
     ----------
-    signal : list or numpy.array
+    signal : list | numpy.array
         ECG signal (preferably filtered).
     sampling_rate : int
         sampling_rate = int
