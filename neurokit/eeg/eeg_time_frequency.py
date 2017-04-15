@@ -19,14 +19,45 @@ import mne
 # ==============================================================================
 def eeg_name_frequencies(freqs):
     """
-    Delta: 1-3Hz
-    Theta: 4-7Hz
-    Alpha1: 8-9Hz
-    Alpha2: 10-12Hz
-    Beta1: 13-17Hz
-    Beta2: 18-30Hz
-    Gamma1: 31-40Hz
-    Gamma2: 41-50Hz
+    Name frequencies according to standart classifications.
+
+    Parameters
+    ----------
+    freqs : list or numpy.array
+        list of floats containing frequencies to classify.
+
+    Returns
+    ----------
+    freqs_names : list
+        Named frequencies
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>>
+    >>> nk.eeg_name_frequencies([0.5, 1.5, 3, 5, 7, 15])
+
+    Notes
+    ----------
+    *Details*
+
+    - Delta: 1-3Hz
+    - Theta: 4-7Hz
+    - Alpha1: 8-9Hz
+    - Alpha2: 10-12Hz
+    - Beta1: 13-17Hz
+    - Beta2: 18-30Hz
+    - Gamma1: 31-40Hz
+    - Gamma2: 41-50Hz
+    - Mu: 8-13Hz
+
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    References
+    ------------
+    - None
     """
     freqs = list(freqs)
     freqs_names = []
@@ -38,9 +69,11 @@ def eeg_name_frequencies(freqs):
         elif freq <= 7:
             freqs_names.append("Theta")
         elif freq <= 9:
-            freqs_names.append("Alpha1")
+            freqs_names.append("Alpha1/Mu")
         elif freq <= 12:
-            freqs_names.append("Alpha2")
+            freqs_names.append("Alpha2/Mu")
+        elif freq <= 13:
+            freqs_names.append("Beta1/Mu")
         elif freq <= 17:
             freqs_names.append("Beta1")
         elif freq <= 30:
@@ -52,6 +85,96 @@ def eeg_name_frequencies(freqs):
         else:
             freqs_names.append("UltraHigh")
     return(freqs_names)
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper"):
+    """
+    NA.
+
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        Raw EEG data.
+    sensors : str
+        Sensors area.
+    fmin : float
+        Min frequency of interest.
+    fmax: float
+        Max frequency of interest.
+    method : str
+        "multitaper" or "welch".
+
+    Returns
+    ----------
+    NA.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+
+
+    Notes
+    ----------
+    *Details*
+
+    - Delta: 1-3Hz
+    - Theta: 4-7Hz
+    - Alpha1: 8-9Hz
+    - Alpha2: 10-12Hz
+    - Beta1: 13-17Hz
+    - Beta2: 18-30Hz
+    - Gamma1: 31-40Hz
+    - Gamma2: 41-50Hz
+    - Mu: 8-13Hz
+
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    References
+    ------------
+    - None
+    """
+    picks = mne.pick_types(raw.info, include=eeg_select_sensors(sensors), exclude="bads")
+
+    if method == "multitaper":
+        psds, freqs = mne.time_frequency.psd_multitaper(raw,
+                                                        fmin=fmin,
+                                                        fmax=fmax,
+                                                        low_bias=True,
+                                                        proj=True,
+                                                        picks=picks)
+    else:
+        psds, freqs = mne.time_frequency.psd_welch(raw,
+                                                        fmin=fmin,
+                                                        fmax=fmax,
+                                                        low_bias=True,
+                                                        proj=True,
+                                                        picks=picks)
+    tf = pd.DataFrame(psds)
+    tf.columns = eeg_name_frequencies(freqs)
+    tf = tf.mean(axis=0)
+    tf.T.plot()
+
+    mean_tf = {}
+    for freq in ["UltraLow", "Delta", "Theta", "Alpha", "Alpha1", "Alpha2", "Mu", "Beta", "Beta1", "Beta2", "Gamma", "Gamma1", "Gamma2", "UltraHigh"]:
+        mean_tf[freq] = tf[tf.index==freq].mean()
+    mean_tf = pd.DataFrame.from_dict(mean_tf, orient="index").T
+
+    return(mean_tf)
+
+
+
+
 
 # ==============================================================================
 # ==============================================================================

@@ -54,6 +54,13 @@ eeg_filter
 .. autofunction:: neurokit.eeg_filter
 
 
+eeg_name_frequencies
+---------------
+
+.. autofunction:: neurokit.eeg_name_frequencies
+
+
+
 Signal
 =====================
 
@@ -68,6 +75,8 @@ create_epochs
 ---------------
 
 .. autofunction:: neurokit.create_epochs
+
+
 
 
 
