@@ -152,13 +152,13 @@ def eeg_psd(raw, sensors="all", fmin=0.016, fmax=60, method="multitaper", proj=F
         psds, freqs = mne.time_frequency.psd_multitaper(raw,
                                                         fmin=fmin,
                                                         fmax=fmax,
+                                                        low_bias=True,
                                                         proj=proj,
                                                         picks=picks)
     else:
         psds, freqs = mne.time_frequency.psd_welch(raw,
                                                         fmin=fmin,
                                                         fmax=fmax,
-                                                        low_bias=True,
                                                         proj=proj,
                                                         picks=picks)
     tf = pd.DataFrame(psds)
