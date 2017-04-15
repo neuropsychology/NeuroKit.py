@@ -42,12 +42,6 @@ read_eeg
 .. autofunction:: neurokit.read_eeg
 
 
-eeg_select_sensor_area
---------------------
-
-.. autofunction:: neurokit.eeg_select_sensor_area
-
-
 
 Signal
 =====================
