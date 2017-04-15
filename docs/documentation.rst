@@ -54,6 +54,23 @@ eeg_filter
 .. autofunction:: neurokit.eeg_filter
 
 
+Signal
+=====================
+
+
+find_events
+---------------
+
+.. autofunction:: neurokit.find_events
+
+
+create_epochs
+---------------
+
+.. autofunction:: neurokit.create_epochs
+
+
+
 Statistics
 =====================
 

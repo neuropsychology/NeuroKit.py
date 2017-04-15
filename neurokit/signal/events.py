@@ -137,39 +137,41 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
 
     Parameters
     ----------
-    events_channel = array or list
+    events_channel : array or list
         The trigger channel.
-    treshold = float
+    treshold : float
         The treshold value by which to select the events. If "auto", takes the value between the max and the min.
-    cut = str
+    cut : str
         "higher" or "lower", define the events as above or under the treshold. For photosensors, a white screen corresponds usually to higher values. Therefore, if your events were signalled by a black colour, events values would be the lower ones, and you should set the cut to "lower".
         Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
-    number = str or int
+    number : str or int
         How many events should it select.
-    after = int
+    after : int
         If number different than "all", then at what time should it start selecting the events.
-    before = int
+    before : int
         If number different than "all", before what time should it select the events.
-    min_duration = int
+    min_duration : int
         The minimum duration of an event.
 
     Returns
     ----------
-    list or tuple of lists
-        events onsets
+    events : list or tuple
+        Events onsets.
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> events_onset = nk.select_events(events_channel, treshold=4)
+    >>> events_onset = nk.select_events(events_channel)
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
-    None
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - numpy
     """
     events = localize_events(events_channel, treshold=treshold, cut=cut, time_index=time_index)
 

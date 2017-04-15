@@ -13,46 +13,46 @@ import numpy as np
 # ==============================================================================
 def create_epochs(data, events_onsets, duration=1000, onset=0, names=None):
     """
-    Create epoched data.
+    Epoching a dataframe.
 
     Parameters
     ----------
-    data = dataframe
-        In the form data*time.
-    events_onsets = list
-        A list of events onsets.
-    duration = int or list
-        Duration of each epoch.
-    onset = int
-        Where to start each epoch (in relation with each event onset).
-    names = list
+    data : pandas.DataFrame
+        Data*time.
+    events_onsets : list
+        A list of event onsets indices.
+    duration : int or list
+        Duration(s) of each epoch(s) (in time points).
+    onset : int
+        Epoch onset (in time points, relative to event onset).
+    names : list
         Events names in order. Must contains uniques names. If not provided, will be replaced by event number.
-
-
 
     Returns
     ----------
-    dict
-        dict containing all epochs
+    epochs : dict
+        dict containing all epochs.
 
     Example
     ----------
     >>> import neurokit as nk
     >>> epochs = nk.create_epochs(data, events_onsets)
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
-    None
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - numpy
     """
     # Adjust duration regarding onset
     if isinstance(duration, int):
-        duration = np.array([duration-onset]*len(events_onsets))
+        duration = np.array([duration]*len(events_onsets))
     else:
-        duration = np.array(duration) - onset
+        duration = np.array(duration)
 
     # Check the events names
     if names is None:

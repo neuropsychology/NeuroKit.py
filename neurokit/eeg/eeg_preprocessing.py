@@ -74,7 +74,7 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_components=30, plot=False, decim=3):
+def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_components=30, plot=False, decim=3, reject = dict(grad=4000e-13, mag=4e-12, eeg=100e-6, eog=300e-6)):
     """
     Applies ICA to remove eog and/or ecg artifacts.
 
@@ -135,7 +135,7 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_compon
 
     picks = mne.pick_types(raw.info, meg=meg, eeg=eeg, eog=False, ecg=False, stim=False, exclude='bads', bio=False)
 
-    ica.fit(raw, picks=picks, decim=decim)
+    ica.fit(raw, picks=picks, decim=decim, reject=reject)
 
     if eog is True:
         # create one EOG epoch
@@ -179,8 +179,8 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_compon
         ica.plot_components()[0]
 
         eog_evoked = eog_epochs.average()
-        ica.plot_sources(eog_evoked, exclude=ecg_inds)  # plot ECG sources + selection
-        ica.plot_overlay(eog_evoked, exclude=ecg_inds)  # plot ECG cleaning
+        ica.plot_sources(eog_evoked, exclude=eog_inds)  # plot EOG sources + selection
+        ica.plot_overlay(eog_evoked, exclude=eog_inds)  # plot EOG cleaning
 
         ecg_evoked = ecg_epochs.average()
         ica.plot_sources(ecg_evoked, exclude=ecg_inds)  # plot ECG sources + selection
