@@ -74,7 +74,7 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_components=30, plot=False):
+def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_components=30, plot=False, decim=3):
     """
     Applies ICA to remove eog and/or ecg artifacts.
 
@@ -135,7 +135,7 @@ def eeg_ica(raw, eog=True, ecg=True, method='fastica', random_state=23, n_compon
 
     picks = mne.pick_types(raw.info, meg=meg, eeg=eeg, eog=False, ecg=False, stim=False, exclude='bads', bio=False)
 
-    ica.fit(raw, picks=picks, decim=3)
+    ica.fit(raw, picks=picks, decim=decim)
 
     if eog is True:
         # create one EOG epoch
