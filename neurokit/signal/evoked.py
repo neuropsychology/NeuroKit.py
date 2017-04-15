@@ -11,7 +11,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def create_epochs(data, events_onsets, duration=1000, onset=0, names=None):
+def create_epochs(data, events_onsets, duration=1000, onset=0, index=None):
     """
     Epoching a dataframe.
 
@@ -25,8 +25,8 @@ def create_epochs(data, events_onsets, duration=1000, onset=0, names=None):
         Duration(s) of each epoch(s) (in time points).
     onset : int
         Epoch onset (in time points, relative to event onset).
-    names : list
-        Events names in order. Must contains uniques names. If not provided, will be replaced by event number.
+    index : list
+        Events names in order that will be used as index. Must contains uniques names. If not provided, will be replaced by event number.
 
     Returns
     ----------
@@ -54,21 +54,21 @@ def create_epochs(data, events_onsets, duration=1000, onset=0, names=None):
     else:
         duration = np.array(duration)
 
-    # Check the events names
-    if names is None:
-        names = list(range(len(events_onsets)))
+    # Check the index
+    if index is None:
+        index = list(range(len(events_onsets)))
     else:
-        if len(list(set(names))) != len(names):
+        if len(list(set(index))) != len(index):
             print("NeuroKit error: create_epochs(): events_names does not contain uniques names, replacing them by numbers.")
-            names = list(range(len(events_onsets)))
+            index = list(range(len(events_onsets)))
         else:
-            names = list(names)
+            index = list(index)
     # Create epochs
     epochs = {}
     for event, event_onset in enumerate(events_onsets):
         event_onset += onset
         epoch = data[event_onset:event_onset+duration[event]]
         epoch.index  = range(onset, duration[event] + onset)
-        epochs[names[event]] = epoch
+        epochs[index[event]] = epoch
 
     return(epochs)
