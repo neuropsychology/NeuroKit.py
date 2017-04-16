@@ -93,6 +93,10 @@ create_epochs
 .. autofunction:: neurokit.create_epochs
 
 
+chaos
+--------------------
+
+.. autofunction:: neurokit.chaos
 
 
 
