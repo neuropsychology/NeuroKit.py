@@ -45,7 +45,8 @@ Main features:
 - **M/EEG**
   - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read many EEG and MEG files into an [`mne.io.Raw`](http://martinos.org/mne/stable/generated/mne.io.Raw.html#mne.io.Raw) object
   - Preprocessing: Under development
-  - Filtering: Under development
+  - ERP: Under development
+  - Time/Frequency: Under development
   - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
   - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
@@ -54,7 +55,7 @@ Main features:
 - **Statistics**
   - **[`z_score()`](http://neurokit.readthedocs.io/en/latest/documentation.html#z-score)**: Normalize (scale and reduce) variables
 - **Miscellaneous**
-  - **`fractal_dimensions()`**: Extract Fractal dimensions, chaos and entropy features
+  - **[`chaos()`](http://neurokit.readthedocs.io/en/latest/documentation.html#chaos)**: Extract chaos indices, such as entropy, fractal dimensions, Hurst and Lyapunov exponents
   - **[`BMI()`](http://neurokit.readthedocs.io/en/latest/documentation.html#bmi)**: Computes the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
 
 
