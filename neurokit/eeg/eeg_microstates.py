@@ -1,7 +1,7 @@
 """
 Microstates submodule.
 """
-from ..signal import fractal_dimensions
+from ..signal import chaos
 from ..miscellaneous import find_following_duplicates
 from ..miscellaneous import load_object
 from ..statistics import feature_reduction
@@ -272,9 +272,9 @@ def eeg_microstates_features(results, method, ecg=True, nonlinearity=True, verbo
             # Frequencies of each microstate
             occurences = dict(collections.Counter(results[participant][run]["microstates"]))
 
-            # Compute fractal dimensions of the microstate sequence
+            # Compute chaos dimensions of the microstate sequence
             if nonlinearity is True:
-                results[participant][run]["nonlinearity"] = fractal_dimensions(results[participant][run]["microstates"])
+                results[participant][run]["nonlinearity"] = chaos(results[participant][run]["microstates"])
 
             # ECG coherence
 #            results[participant][run]["ecg"]
