@@ -1,15 +1,22 @@
-Install Python and Stuff
+Python and Stuff
 #########################
 
+Installation
+=============
+
+
 Windows
-=========
+-----------------------
 
 
-download winpython Zero version
-install it on desktop
-In the created folder open the winpython command prompt
-create an empty folder somewhere (ex: d:\temp)
+1. Download winpython Zero version
+2. Install it somewhere (desktop's a good place). It creates a folder called `WinPython-XXbits-x.x.x.xZero`
+3. Create an empty folder somewhere (e.g. `d:\temp`)
 Download numpy+mkl, scipy and scikit-learn and place them into the temp directory
+
+3. In the created folder open the winpython command prompt
+
+
 Download other packages
 pip download --dest d:\temp PyQt5
 pip download --dest d:\temp matplotlib
