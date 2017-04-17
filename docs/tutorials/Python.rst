@@ -12,23 +12,12 @@ Windows
 1. Download winpython Zero version
 2. Install it somewhere (desktop's a good place). It creates a folder called `WinPython-XXbits-x.x.x.xZero`
 3. Create an empty folder somewhere (e.g. `d:\temp`)
-Download numpy+mkl, scipy and scikit-learn and place them into the temp directory
-
-3. In the created folder open the winpython command prompt
-
-
-Download other packages
-pip download --dest d:\temp PyQt5
-pip download --dest d:\temp matplotlib
-pip download --dest d:\temp pandas
-pip download --dest d:\temp spyder
-Install them
-run pip install numpy --no-index --trusted-host=None --find-links=d:\temp
-run pip install scipy --no-index --trusted-host=None --find-links=d:\temp
-run pip install scikit-learn --no-index --trusted-host=None --find-links=d:\temp
-run pip install PyQt5 --no-index --trusted-host=None --find-links=d:\temp
-run pip install matplotlib --no-index --trusted-host=None --find-links=d:\temp
-run pip install pandas --no-index --trusted-host=None --find-links=d:\temp
-run pip install spyder --no-index --trusted-host=None --find-links=d:\temp
-
+4. Download numpy+mkl, scipy and scikit-learn, cvxopt and place them into the temp directory
+5. In the `WinPython-XXbits-x.x.x.xZero` folder open the winpython command prompt
+6. Download other packages
+7. pip install PyQt5
+8. pip install matplotlib
+9. pip install pandas
+10. pip install ... 
+11. pip intall spyder
 
