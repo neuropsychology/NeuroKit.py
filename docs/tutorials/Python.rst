@@ -11,7 +11,7 @@ Windows
 
 1. Download  version `Winython Zero <http://winpython.github.io/>`_
 2. Install it somewhere (desktop's a good place). It creates a folder called `WinPython-XXbits-x.x.x.xZero`
-3. Download `numpy+mkl <http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy>`_, `scipy <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy>`_, `scikit-learn <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn>`_ and `cvxopt <http://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxopt>`_ and place them into the `script` subfolder
+3. Download `numpy+mkl <http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy>`_, `scipy <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy>`_, `scikit-learn <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn>`_ and `cvxopt <http://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxopt>`_ (adapted to your version of python, i.e. 3.4; 3.5 or 3.6) and place them into the `script` subfolder
 4. In the `WinPython-XXbits-x.x.x.xZero` folder open `WinPython Command Prompt.exe`
 5. Run :code:`pip install numpy --no-index --trusted-host=None --find-links=./`
 6. Run :code:`pip install scipy --no-index --trusted-host=None --find-links=./`
