@@ -8,7 +8,16 @@ Installation
 Windows
 -----------------------
 
+- Easy
 
+1. Download the `working Neuropython <https://drive.google.com/file/d/0B9Wj3n7B5MAtOFdiVnk1UXQyXzA/view?usp=sharing>`_ distribution 
+2. Unzip it
+3. Open the folder
+4. Run `Spyder.exe`
+
+- From scratch
+
+From scratch:
 1. Download  version `Winython Zero <http://winpython.github.io/>`_
 2. Install it somewhere (desktop's a good place). It creates a folder called `WinPython-XXbits-x.x.x.xZero`
 3. Download `numpy+mkl <http://www.lfd.uci.edu/~gohlke/pythonlibs/#numpy>`_, `scipy <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scipy>`_, `scikit-learn <http://www.lfd.uci.edu/~gohlke/pythonlibs/#scikit-learn>`_ and `cvxopt <http://www.lfd.uci.edu/~gohlke/pythonlibs/#cvxopt>`_ (adapted to your version of python, i.e. 3.4; 3.5 or 3.6) and place them into the `script` subfolder
@@ -19,6 +28,7 @@ Windows
 8. Run :code:`pip install cvxopt --no-index --trusted-host=None --find-links=./`
 9. Run :code:`pip install PyQt5`
 10. Run :code:`pip install pylint==1.6.5`
-11. Run :code:`pip intall spyder`
+11. Run :code:`pip install spyder`
 12. Run :code:`pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master`
 13. Run :code:`pip install https://github.com/neuropsychology/Neuropsydia.py/zipball/dev`
+14. Run `Spyder.exe`
