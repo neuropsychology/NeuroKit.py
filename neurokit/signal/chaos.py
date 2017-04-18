@@ -12,7 +12,7 @@ import numpy as np
 # ==============================================================================
 def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=True):
     """
-    Returns several chaos/complexity indices of a signal (including entropy, fractal dimensions, hust exponent etc.).
+    Returns several chaos/complexity indices of a signal (including entropy, fractal dimensions, Hurst and Lyapunov exponent etc.).
 
     Parameters
     ----------
@@ -23,7 +23,7 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     fractal_dim : bool
         Compute the fractal dimension.
     hurst : bool
-        Compute the hurst exponent.
+        Compute the Hurst exponent.
     dfa : bool
         Compute DFA.
     lyap_r : bool
@@ -50,7 +50,7 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
 
     - **entropy**: Measures the complexity of a time-series, based on approximate entropy. The sample entropy of a time series is defined as the negative natural logarithm of the conditional probability that two sequences similar for emb_dim points remain similar at the next point, excluding self-matches. A lower value for the sample entropy therefore corresponds to a higher probability indicating more self-similarity.
     - **correlation dimension**: A measure of the fractal dimension of a time series which is also related to complexity. The correlation dimension is a characteristic measure that can be used to describe the geometry of chaotic attractors. It is defined using the correlation sum C(r) which is the fraction of pairs of points X_i in the phase space whose distance is smaller than r.
-    - **hurst**: The hurst exponent is a measure of the "long-term memory" of a time series. It can be used to determine whether the time series is more, less, or equally likely to increase if it has increased in previous steps. This property makes the Hurst exponent especially interesting for the analysis of stock data.
+    - **hurst**: The Hurst exponent is a measure of the "long-term memory" of a time series. It can be used to determine whether the time series is more, less, or equally likely to increase if it has increased in previous steps. This property makes the Hurst exponent especially interesting for the analysis of stock data.
     - **dfa**: DFA measures the Hurst parameter H, which is very similar to the Hurst exponent. The main difference is that DFA can be used for non-stationary processes (whose mean and/or variance change over time).
     - **lyap**: Positive Lyapunov exponents indicate chaos and unpredictability. Provides the algorithm of Rosenstein et al. (1993) to estimate the largest Lyapunov exponent and the algorithm of Eckmann et al. (1986) to estimate the whole spectrum of Lyapunov exponents.
 

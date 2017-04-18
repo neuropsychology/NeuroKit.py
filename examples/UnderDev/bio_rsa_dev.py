@@ -8,10 +8,9 @@ import biosppy
 df = pd.read_csv("data_rsa.csv")
 
 sampling_rate = 1000
-ecg_filtered = dict(biosppy.ecg.ecg(df["ECG"], show=False))["filtered"]
-rpeaks = dict(biosppy.ecg.ecg(df["ECG"], show=False))["rpeaks"]
-rsp_filtered = dict(biosppy.resp.resp(df["RSP"], show=False))["filtered"]
-#resp_cycles = dict(biosppy.resp.resp(df["RSP"]))["zeros"]  # Returns zero crossings rather than beginnings of cycles
+ecg = df["ECG"]
+rsp = df["RSP"]
+
 
 
 """
@@ -25,8 +24,16 @@ http://ieeexplore.ieee.org.sci-hub.cc/document/470252/?reload=true
 """
 
 # ==============================================================================
-def bio_rsa(ecg_filtered, rsp_filtered, rpeaks, sampling_rate=1000):
+def bio_rsa(ecg, rsp, sampling_rate=1000):
 
+    # Compute useful features
+    ecg_filtered = dict(biosppy.ecg.ecg(df["ECG"], show=False))["filtered"]
+    rpeaks = dict(biosppy.ecg.ecg(df["ECG"], show=False))["rpeaks"]
+    rsp_filtered = dict(biosppy.resp.resp(df["RSP"], show=False))["filtered"]
+    rsp_zero_crossings = dict(biosppy.resp.resp(df["RSP"], show=False))["zeros"]
+
+
+    # RR interval
     rri = np.diff(rpeaks)
 
     return()
