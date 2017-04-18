@@ -10,7 +10,7 @@ Windows
 
 - Easy
 
-1. Download the `working winpython <https://drive.google.com/file/d/0B9Wj3n7B5MAtOFdiVnk1UXQyXzA/view?usp=sharing>`_ distribution 
+1. Download a `working winpython <https://drive.google.com/file/d/0B9Wj3n7B5MAtOFdiVnk1UXQyXzA/view?usp=sharing>`_ distribution 
 2. Unzip it
 3. Open the folder
 4. Run `Spyder.exe`
