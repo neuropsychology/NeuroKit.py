@@ -42,7 +42,7 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     >>> import neurokit as nk
     >>>
     >>> signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
-    >>> results = nk.fractal_dimensions(signal)
+    >>> results = nk.chaos(signal)
 
     Notes
     ----------
@@ -57,8 +57,8 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
 
     *Authors*
 
+    - Christopher Schölzel (https://github.com/CSchoel)
     - Dominique Makowski (https://github.com/DominiqueMakowski)
-    - The nolds dev team
 
     *Dependencies*
 
