@@ -1,4 +1,4 @@
-Python and Stuff
+Python
 #########################
 
 Installation
@@ -10,7 +10,7 @@ Windows
 
 - Easy
 
-1. Download a `working winpython <https://drive.google.com/file/d/0B9Wj3n7B5MAtOFdiVnk1UXQyXzA/view?usp=sharing>`_ distribution 
+1. Download a `working winpython <https://drive.google.com/file/d/0B9Wj3n7B5MAtOFdiVnk1UXQyXzA/view?usp=sharing>`_ distribution (including NeuroKit 0.1.0 and Neuropsydia 1.0.3)
 2. Unzip it
 3. Open the folder
 4. Run `Spyder.exe`
@@ -31,3 +31,9 @@ Windows
 12. Run :code:`pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master`
 13. Run :code:`pip install https://github.com/neuropsychology/Neuropsydia.py/zipball/dev`
 14. Run `Spyder.exe`
+
+Mac OS
+-------------------
+
+1. Install Anaconda
+2. Don't know
