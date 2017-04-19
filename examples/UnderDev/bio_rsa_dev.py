@@ -17,13 +17,22 @@ http://ieeexplore.ieee.org.sci-hub.cc/document/470252/?reload=true
 
 # ==============================================================================
 def bio_rsa(rpeaks, rsp_zero_crossings):
+
+    # Find all RSP cycles and the Rpeaks within
     cycles_rri = []
     for idx in range(len(rsp_zero_crossings) - 1):
         cycle_init = rsp_zero_crossings[idx]
         cycle_end = rsp_zero_crossings[idx + 1]
         cycles_rri.append(rpeaks[np.logical_and(rpeaks >= cycle_init,
                                                 rpeaks < cycle_end)])
-    return(cycles_rri)
+
+    # Iterate over all cycles
+    RSA = []
+    for cycle in cycles_rri:
+        RRis = np.diff(cycle)
+        RSA.append(np.max(RRis) - np.min(RRis))
+
+    return(RSA)
 
 
 def _get_useful_signals(data, *cols):
