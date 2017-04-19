@@ -1,4 +1,4 @@
-Python and such
+Python and stuff
 #########################
 
 Installation
