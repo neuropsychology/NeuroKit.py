@@ -316,32 +316,32 @@ def BMI(height, weight, age, sex):
     if sex == 1:
         if bmi["BFP"] < 2:
             bmi["BFP_category"] = "Critical"
-        if 2 <= bmi["BFP"] <= 5:
+        if 2 <= bmi["BFP"] < 6:
             bmi["BFP_category"] = "Essential"
-        if 6 <= bmi["BFP"] <= 12:
+        if 6 <= bmi["BFP"] < 13:
             bmi["BFP_category"] = "Athletic"
-        if 13 <= bmi["BFP"] <= 16:
+        if 13 <= bmi["BFP"] < 17:
             bmi["BFP_category"] = "Fitness"
-        if 17 <= bmi["BFP"] <= 21:
+        if 17 <= bmi["BFP"] < 22:
             bmi["BFP_category"] = "Average"
-        if 22 <= bmi["BFP"] <= 29:
+        if 22 <= bmi["BFP"] < 30:
             bmi["BFP_category"] = "Overweight"
-        if bmi["BFP"] > 29:
+        if bmi["BFP"] >= 30:
             bmi["BFP_category"] = "Obese"
     else:
         if bmi["BFP"] < 10:
             bmi["BFP_category"] = "Critical"
-        if 10 <= bmi["BFP"] <= 13:
+        if 10 <= bmi["BFP"] < 14:
             bmi["BFP_category"] = "Essential"
-        if 14 <= bmi["BFP"] <= 20:
+        if 14 <= bmi["BFP"] < 21:
             bmi["BFP_category"] = "Athletic"
-        if 21 <= bmi["BFP"] <= 24:
+        if 21 <= bmi["BFP"] < 25:
             bmi["BFP_category"] = "Fitness"
-        if 25 <= bmi["BFP"] <= 30:
+        if 25 <= bmi["BFP"] < 31:
             bmi["BFP_category"] = "Average"
-        if 31 <= bmi["BFP"] <= 39:
+        if 31 <= bmi["BFP"] < 40:
             bmi["BFP_category"] = "Overweight"
-        if bmi["BFP"] > 40:
+        if bmi["BFP"] >= 40:
             bmi["BFP_category"] = "Obese"
 
 
