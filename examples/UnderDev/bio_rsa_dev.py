@@ -35,6 +35,11 @@ def bio_rsa(rpeaks, rsp_zero_crossings):
     return(RSA)
 
 
+
+
+
+
+
 def _get_useful_signals(data, *cols):
     ecg = biosppy.ecg.ecg(data[cols[0]], show=False)
     rsp = biosppy.resp.resp(data[cols[1]], show=False)
@@ -48,9 +53,8 @@ def _get_useful_signals(data, *cols):
 # ==============================================================================
 
 if __name__ == "__main__":
-    data = pd.read_csv('data_rsa.csv')
-    ecg, rsp, rpeaks, rsp_zero_crossings = _get_useful_signals(data, 'ECG',
-                                                               'RSP')
+    data = pd.read_csv('noisy_rsp.csv')
+    ecg, rsp, rpeaks, rsp_zero_crossings = _get_useful_signals(data, 'ECG','RSP')
     cycles_rri = bio_rsa(rpeaks, rsp_zero_crossings)
 
     # Some plots to check if the RRi found within the resp cycles are correct.
