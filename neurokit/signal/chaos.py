@@ -33,7 +33,7 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
 
     Returns
     ----------
-    fractal_dimensions : dict
+    chaos : dict
         Dict containing values for each indices.
 
 
@@ -42,7 +42,7 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     >>> import neurokit as nk
     >>>
     >>> signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
-    >>> results = nk.chaos(signal)
+    >>> chaos_features = nk.chaos(signal)
 
     Notes
     ----------
@@ -72,42 +72,42 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     -----------
     - Richman, J. S., & Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy and sample entropy. American Journal of Physiology-Heart and Circulatory Physiology, 278(6), H2039-H2049.
     """
-    results = {}
+    chaos = {}
     if entropy == True:
         try:
-            results["Entropy"] = nolds.sampen(signal)
+            chaos["Entropy"] = nolds.sampen(signal)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
-            results["Entropy"] = np.nan
+            chaos["Entropy"] = np.nan
     if fractal_dim == True:
         try:
-            results["Fractal_Dim"] = nolds.corr_dim(signal, 2)
+            chaos["Fractal_Dim"] = nolds.corr_dim(signal, 2)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
-            results["Fractal_Dim"] = np.nan
+            chaos["Fractal_Dim"] = np.nan
     if hurst == True:
         try:
-            results["Hurst"] = nolds.hurst_rs(signal)
+            chaos["Hurst"] = nolds.hurst_rs(signal)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
-            results["Hurst"] = np.nan
+            chaos["Hurst"] = np.nan
     if dfa == True:
         try:
-            results["DFA"] = nolds.dfa(signal)
+            chaos["DFA"] = nolds.dfa(signal)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
-            results["DFA"] = np.nan
+            chaos["DFA"] = np.nan
     if lyap_r == True:
         try:
-            results["Lyapunov_R"] = nolds.lyap_r(signal)
+            chaos["Lyapunov_R"] = nolds.lyap_r(signal)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
-            results["Lyapunov_R"] = np.nan
+            chaos["Lyapunov_R"] = np.nan
     if lyap_e == True:
         try:
-            results["Lyapunov_E"] = nolds.lyap_e(signal)
+            chaos["Lyapunov_E"] = nolds.lyap_e(signal)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
-            results["Lyapunov_E"] = np.nan
+            chaos["Lyapunov_E"] = np.nan
 
-    return(results)
+    return(chaos)
