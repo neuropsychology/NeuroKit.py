@@ -36,4 +36,5 @@ Mac OS
 -------------------
 
 1. Install Anaconda
-2. Don't know
+2. Find how to install packages
+3. Buy a PC
