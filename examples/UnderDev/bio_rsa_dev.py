@@ -30,7 +30,8 @@ def bio_rsa(rpeaks, rsp_zero_crossings):
     RSA = []
     for cycle in cycles_rri:
         RRis = np.diff(cycle)
-        RSA.append(np.max(RRis) - np.min(RRis))
+        if len(RRis < 2):
+            RSA.append(np.max(RRis) - np.min(RRis))
 
     return(RSA)
 
