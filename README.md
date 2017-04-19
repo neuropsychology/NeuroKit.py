@@ -30,6 +30,9 @@ Run the following:
 pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
 ```
 
+Not working? Check [this](http://neurokit.readthedocs.io/en/latest/tutorials/Python.html) out!
+
+
 ## Contribute
 - You need some help? You found a bug? You would like to request a new feature? 
   Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
