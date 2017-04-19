@@ -59,7 +59,7 @@ Main features:
   - **[`z_score()`](http://neurokit.readthedocs.io/en/latest/documentation.html#z-score)**: Normalize (scale and reduce) variables
 - **Miscellaneous**
   - **[`chaos()`](http://neurokit.readthedocs.io/en/latest/documentation.html#chaos)**: Extract chaos indices, such as entropy, fractal dimensions, Hurst and Lyapunov exponents
-  - **[`BMI()`](http://neurokit.readthedocs.io/en/latest/documentation.html#bmi)**: Computes the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
+  - **[`BMI()`](http://neurokit.readthedocs.io/en/latest/documentation.html#bmi)**: Compute the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
 
 
 
