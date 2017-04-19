@@ -27,7 +27,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     Parameters
     ----------
-    eda :  list or numpy.array
+    eda :  list or array
         EDA signal array.
     sampling_rate : int
         Sampling rate (samples/second).
@@ -134,7 +134,7 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
 
     Parameters
     ----------
-       eda : list or numpy.array
+       eda : list or array
            raw EDA signal array.
        sampling_rate : int
            Sampling rate (samples/second).
