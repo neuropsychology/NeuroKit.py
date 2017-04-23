@@ -21,15 +21,16 @@ Installation
 
 Installation can be easily done using ``pip``:
 
-```bash
-pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
-```
+.. code-block:: bash
+
+   pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
+
 
 
 
 .. note::
 
-    You can also directly download a fully working python distribution (including NeuroKit) `here <http://neurokit.readthedocs.io/en/latest/tutorials/Python.html#installation>`_.
+   A fully working python distribution (including NeuroKit) can be downloaded `**here** <http://neurokit.readthedocs.io/en/latest/tutorials/Python.html#installation>`_.
 
 
 
