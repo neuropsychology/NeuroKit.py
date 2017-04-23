@@ -1,7 +1,11 @@
 Home
 ====
 
-Contents:
+
+**NeuroKit** is a Python module written by neuroscientists for neuroscientists. It provides high-level integrative functions with good and flexible defaults, to allow them to focus on what's important.
+
+
+**Contents:**
 
 .. toctree::
    :maxdepth: 1
@@ -15,12 +19,20 @@ Contents:
 Installation
 ------------
 
+Installation can be easily done using ``pip``:
+
+```bash
+pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
+``
+
+
 
 .. note::
 
-    Installation can be easily done with ``pip``:
-    
-    ``$ pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master``
+    You can also directly download a fully working python distribution (including NeuroKit) `here
+<http://neurokit.readthedocs.io/en/latest/tutorials/Python.html#installation>`_
+
+
 
 
 Index
