@@ -175,6 +175,11 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
     """
     events = localize_events(events_channel, treshold=treshold, cut=cut, time_index=time_index)
 
+    # Warning when no events detected
+    if len(events["onsets"]) == 0:
+        print("NeuroKit warning: find_events(): No events found. Check your events_channel or adjust trehsold.")
+        return()
+
     # Remove less than duration
     toremove = []
     for event in range(len(events["onsets"])):

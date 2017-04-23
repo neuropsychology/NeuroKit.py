@@ -91,7 +91,8 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     # Store SCR onsets
     scr_onsets = np.array([np.nan]*len(eda))
-    scr_onsets[biosppy_eda['onsets']] = 1
+    if len(biosppy_eda['onsets']) > 0:
+        scr_onsets[biosppy_eda['onsets']] = 1
     eda_df["SCR_Onsets"] = scr_onsets
 
     # Store SCR peaks and amplitudes
