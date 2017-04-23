@@ -151,7 +151,7 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
     before : int
         If number different than "all", before what time should it select the events.
     min_duration : int
-        The minimum duration of an event.
+        The minimum duration of an event (in timepoints).
 
     Returns
     ----------
