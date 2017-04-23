@@ -119,32 +119,34 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
 
     # HRV
-    rri = np.diff(biosppy_ecg["rpeaks"])
-    rri_time = np.cumsum(rri) / 1000.0
-    rri_time -= rri_time[0]
+    if sampling_rate == 1000:
+        rri = np.diff(biosppy_ecg["rpeaks"])
+        rri_time = np.cumsum(rri) / sampling_rate
+        rri_time -= rri_time[0]
 
-    # Calculate time domain indexes
-    hrv_time_domain = hrv.classical.time_domain(rri)
-    hrv_features = {"HRV_MHR": hrv_time_domain['mhr'],
-                    "HRV_MRRI": hrv_time_domain['mrri'],
-                    "HRV_NN50": hrv_time_domain['nn50'],
-                    "HRV_PNN50": hrv_time_domain['pnn50'],
-                    "HRV_RMSSD": hrv_time_domain['rmssd'],
-                    "HRV_SDNN": hrv_time_domain['sdnn']
-            }
-    # Calculate frequency domain indexes
-    try:
-        hrv_freq_domain = hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0)
-        hrv_features["HRV_HF"] = hrv_freq_domain["hf"]
-        hrv_features["HRV_HFNU"] = hrv_freq_domain["hfnu"]
-        hrv_features["HRV_LF"] = hrv_freq_domain["lf"]
-        hrv_features["HRV_LF_HF"] = hrv_freq_domain["lf_hf"]
-        hrv_features["HRV_LFNU"] = hrv_freq_domain["lfnu"]
-        hrv_features["HRV_total_power"] = hrv_freq_domain["total_power"]
-        hrv_features["HRV_VLF"] = hrv_freq_domain["vlf"]
-    except:
-        print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
-
+        # Calculate time domain indexes
+        hrv_time_domain = hrv.classical.time_domain(rri)
+        hrv_features = {"HRV_MHR": hrv_time_domain['mhr'],
+                        "HRV_MRRI": hrv_time_domain['mrri'],
+                        "HRV_NN50": hrv_time_domain['nn50'],
+                        "HRV_PNN50": hrv_time_domain['pnn50'],
+                        "HRV_RMSSD": hrv_time_domain['rmssd'],
+                        "HRV_SDNN": hrv_time_domain['sdnn']
+                }
+        # Calculate frequency domain indexes
+        try:
+            hrv_freq_domain = hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0)
+            hrv_features["HRV_HF"] = hrv_freq_domain["hf"]
+            hrv_features["HRV_HFNU"] = hrv_freq_domain["hfnu"]
+            hrv_features["HRV_LF"] = hrv_freq_domain["lf"]
+            hrv_features["HRV_LF_HF"] = hrv_freq_domain["lf_hf"]
+            hrv_features["HRV_LFNU"] = hrv_freq_domain["lfnu"]
+            hrv_features["HRV_total_power"] = hrv_freq_domain["total_power"]
+            hrv_features["HRV_VLF"] = hrv_freq_domain["vlf"]
+        except:
+            print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
+    else:
+        print("NeuroKit Warning: ecg_process(): No HRV computation supported for sampling rates different from 1000Hz for now.")
 
     # Store results
     processed_ecg = {"df": ecg_df,
