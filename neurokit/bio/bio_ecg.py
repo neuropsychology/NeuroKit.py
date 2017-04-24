@@ -125,7 +125,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
                      "ECG": {
                             "RRis": rri,
                             "Heart_Beats": biosppy_ecg["templates"],
-                            "Rpeaks": biosppy_ecg["rpeaks"]
+                            "Rpeaks": biosppy_ecg["rpeaks"],
+                            "HRV": np.nan
                             }}
 
 
