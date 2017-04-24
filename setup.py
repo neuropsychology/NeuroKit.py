@@ -24,7 +24,8 @@ install_requires = [
         "hrv",
         "Pillow",
         "cvxopt"],
-dependency_links=[],
+dependency_links=[
+	"https://github.com/rhenanbartels/hrv/zipball/develop"],
 long_description = open('README.md').read(),
 keywords = "python signal processing EEG EDA ECG hrv rpeaks biosignals",
 url = "https://github.com/neuropsychology/NeuroKit.py",
