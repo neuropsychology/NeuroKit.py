@@ -117,10 +117,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         ecg_df["Heart_Rate"] = np.array([heart_rate[-1]]*(len(ecg)-len(heart_rate)) + list(heart_rate))
 #        ecg_features["Heart_Rate"] = scipy.signal.resample(heart_rate, len(ecg))  # Looks more badly when resampling with scipy
 
+    # RR intervals (RRis)
+    rri = np.diff(biosppy_ecg["rpeaks"])
 
     # HRV
     if sampling_rate == 1000:
-        rri = np.diff(biosppy_ecg["rpeaks"])
+
         rri_time = np.cumsum(rri) / sampling_rate
         rri_time -= rri_time[0]
 
@@ -151,6 +153,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # Store results
     processed_ecg = {"df": ecg_df,
                      "ECG": {
+                            "RRis": rri,
                             "Heart_Beats": biosppy_ecg["templates"],
                             "Rpeaks": biosppy_ecg["rpeaks"],
                             "HRV": hrv_features}}
