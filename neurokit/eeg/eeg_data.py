@@ -243,7 +243,12 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     if diff < 0:
         channel = [np.nan]*diff + list(channel)
         channel = list(channel)[0:len(channel)]
-    channel = list(channel)[0:len(raw)]  # Crop to fit the raw data
+
+    # Adjust to raw size
+    if len(channel) < len(raw):
+        channel = list(channel) + [np.nan]*(len(raw)-len(channel))
+    else:
+        channel = list(channel)[0:len(raw)]  # Crop to fit the raw data
 
     info = mne.create_info([channel_name], raw.info["sfreq"], ch_types=channel_type)
     channel = mne.io.RawArray([channel], info)
