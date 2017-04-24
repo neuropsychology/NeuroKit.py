@@ -120,6 +120,16 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # RR intervals (RRis)
     rri = np.diff(biosppy_ecg["rpeaks"])
 
+    # Store results
+    processed_ecg = {"df": ecg_df,
+                     "ECG": {
+                            "RRis": rri,
+                            "Heart_Beats": biosppy_ecg["templates"],
+                            "Rpeaks": biosppy_ecg["rpeaks"]
+                            }}
+
+
+
     # HRV
     if sampling_rate == 1000:
 
@@ -147,16 +157,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
             hrv_features["HRV_VLF"] = hrv_freq_domain["vlf"]
         except:
             print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
+
+        processed_ecg["ECG"]["HRV"] = hrv_features
     else:
         print("NeuroKit Warning: ecg_process(): No HRV computation supported for sampling rates different from 1000Hz for now.")
 
-    # Store results
-    processed_ecg = {"df": ecg_df,
-                     "ECG": {
-                            "RRis": rri,
-                            "Heart_Beats": biosppy_ecg["templates"],
-                            "Rpeaks": biosppy_ecg["rpeaks"],
-                            "HRV": hrv_features}}
+
 
     # RSP
     if rsp is not None:
