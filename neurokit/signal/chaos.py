@@ -10,7 +10,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=True):
+def chaos(signal, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=True, emb_dim=2, tolerance="default"):
     """
     Returns several chaos/complexity indices of a signal (including entropy, fractal dimensions, Hurst and Lyapunov exponent etc.).
 
@@ -18,8 +18,8 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     ----------
     signal : list or array
         List or array of values.
-    entropy : bool
-        Compute approximate entropy.
+    sampen : bool
+        Compute approximate sample entropy (sampen).
     fractal_dim : bool
         Compute the fractal dimension.
     hurst : bool
@@ -30,6 +30,10 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
         Compute Positive Lyapunov exponents (Rosenstein et al. (1993) method).
     lyap_e : bool
         Compute Positive Lyapunov exponents (Eckmann et al. (1986) method).
+    emb_dim : int
+        The embedding dimension (length of vectors to compare).
+    tolerance : float
+        Distance threshold for two template vectors to be considered equal. Default is 0.2*std(signal).
 
     Returns
     ----------
@@ -48,7 +52,8 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     ----------
     *Details*
 
-    - **entropy**: Measures the complexity of a time-series, based on approximate entropy. The sample entropy of a time series is defined as the negative natural logarithm of the conditional probability that two sequences similar for emb_dim points remain similar at the next point, excluding self-matches. A lower value for the sample entropy therefore corresponds to a higher probability indicating more self-similarity.
+    - **shannon entropy**: Entropy is a measure of unpredictability of the state, or equivalently, of its average information content.
+    - **sample entropy (sampen)**: Measures the complexity of a time-series, based on approximate entropy. The sample entropy of a time series is defined as the negative natural logarithm of the conditional probability that two sequences similar for emb_dim points remain similar at the next point, excluding self-matches. A lower value for the sample entropy therefore corresponds to a higher probability indicating more self-similarity.
     - **correlation dimension**: A measure of the fractal dimension of a time series which is also related to complexity. The correlation dimension is a characteristic measure that can be used to describe the geometry of chaotic attractors. It is defined using the correlation sum C(r) which is the fraction of pairs of points X_i in the phase space whose distance is smaller than r.
     - **hurst**: The Hurst exponent is a measure of the "long-term memory" of a time series. It can be used to determine whether the time series is more, less, or equally likely to increase if it has increased in previous steps. This property makes the Hurst exponent especially interesting for the analysis of stock data.
     - **dfa**: DFA measures the Hurst parameter H, which is very similar to the Hurst exponent. The main difference is that DFA can be used for non-stationary processes (whose mean and/or variance change over time).
@@ -58,6 +63,7 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     *Authors*
 
     - Christopher Schölzel (https://github.com/CSchoel)
+    - tjugo (https://github.com/nikdon)
     - Dominique Makowski (https://github.com/DominiqueMakowski)
 
     *Dependencies*
@@ -71,17 +77,23 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
     References
     -----------
     - Richman, J. S., & Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy and sample entropy. American Journal of Physiology-Heart and Circulatory Physiology, 278(6), H2039-H2049.
+    - Costa, M., Goldberger, A. L., & Peng, C. K. (2005). Multiscale entropy analysis of biological signals. Physical review E, 71(2), 021906.
     """
+
+    if tolerance == "default":
+        tolerance = 0.2*np.std(signal)
+
+
     chaos = {}
-    if entropy == True:
+    if sampen == True:
         try:
-            chaos["Entropy"] = nolds.sampen(signal)
+            chaos["Sample_Entropy"] = nolds.sampen(signal, emb_dim, tolerance)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
             chaos["Entropy"] = np.nan
     if fractal_dim == True:
         try:
-            chaos["Fractal_Dim"] = nolds.corr_dim(signal, 2)
+            chaos["Fractal_Dim"] = nolds.corr_dim(signal, emb_dim)
         except:
             print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
             chaos["Fractal_Dim"] = np.nan
@@ -111,3 +123,81 @@ def chaos(signal, entropy=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=T
             chaos["Lyapunov_E"] = np.nan
 
     return(chaos)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def chaos_shannon_entropy(signal):
+    """
+    Returns the shannon entropy. Entirely stolen from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ package by tjugo.
+
+    Parameters
+    ----------
+    signal : list or array
+        List or array of values.
+
+
+    Returns
+    ----------
+    shannon_entropy : float
+        The Shannon Entropy as float value.
+
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>>
+    >>> signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
+    >>> shannon_entropy = nk.chaos_shannon_entropy(signal)
+
+    Notes
+    ----------
+    *Details*
+
+    - **shannon entropy**: Entropy is a measure of unpredictability of the state, or equivalently, of its average information content.
+
+
+    *Authors*
+
+    - tjugo (https://github.com/nikdon)
+
+    *Dependencies*
+
+    - None
+
+    *See Also*
+
+    - pyEntropy package: https://github.com/nikdon/pyEntropy
+
+    References
+    -----------
+    - None
+    """
+
+    # Check if string
+    if not isinstance(signal, str):
+        signal = list(signal)
+
+    # Create a frequency data
+    data_set = list(set(signal))
+    freq_list = []
+    for entry in data_set:
+        counter = 0.
+        for i in signal:
+            if i == entry:
+                counter += 1
+        freq_list.append(float(counter) / len(signal))
+
+    # Shannon entropy
+    shannon_entropy = 0.0
+    for freq in freq_list:
+        shannon_entropy += freq * np.log2(freq)
+    shannon_entropy = -shannon_entropy
+
+    return(shannon_entropy)
