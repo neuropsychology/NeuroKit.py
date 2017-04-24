@@ -30,7 +30,7 @@ Installation can be easily done using ``pip``:
 
 .. note::
 
-   A fully working python distribution (including NeuroKit) can be downloaded **`here <http://neurokit.readthedocs.io/en/latest/tutorials/Python.html#installation>`_**.
+   A fully working python distribution (including NeuroKit) can be downloaded `here <http://neurokit.readthedocs.io/en/latest/tutorials/Python.html#installation>`_.
 
 
 
