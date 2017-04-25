@@ -10,7 +10,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=True, emb_dim=2, tolerance="default"):
+def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=False, emb_dim=2, tolerance="default"):
     """
     Returns several chaos/complexity indices of a signal (including entropy, fractal dimensions, Hurst and Lyapunov exponent etc.).
 
@@ -21,7 +21,7 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
     shannon : bool
         Computes Shannon entropy.
     sampen : bool
-        Computes approximate sample entropy (sampen).
+        Computes approximate sample entropy (sampen) using 'chebychev' distance.
     fractal_dim : bool
         Computes the fractal (correlation) dimension.
     hurst : bool
@@ -33,9 +33,9 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
     lyap_e : bool
         Computes Positive Lyapunov exponents (Eckmann et al. (1986) method).
     emb_dim : int
-        The embedding dimension (length of vectors to compare).
+        The embedding dimension (length of vectors to compare). Used in sampen and fractal_dim.
     tolerance : float
-        Distance threshold for two template vectors to be considered equal. Default is 0.2*std(signal).
+        Distance threshold for two template vectors to be considered equal. Default is 0.2*std(signal).  Used in sampen and fractal_dim.
 
     Returns
     ----------
@@ -87,46 +87,63 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
     if tolerance == "default":
         tolerance = 0.2*np.std(signal)
 
+    # Initialize results storing
     chaos = {}
+
+    # Shannon
     if shannon is True:
         try:
-            chaos["Shannon"] = entropy_shannon(signal)
+            chaos["Shannon_Entropy"] = entropy_shannon(signal)
         except:
             print("NeuroKit warning: chaos(): Failed to compute Shannon entropy.")
-            chaos["Entropy"] = np.nan
+            chaos["Shannon_Entropy"] = np.nan
+
+    # Sampen
     if sampen is True:
         try:
-            chaos["Sample_Entropy"] = nolds.sampen(signal, emb_dim, tolerance)
+            chaos["Sample_Entropy"] = nolds.sampen(signal, emb_dim, tolerance, dist="chebychev", debug_plot=False, plot_file=None)
         except:
             print("NeuroKit warning: chaos(): Failed to compute sample entropy (sampen).")
-            chaos["Entropy"] = np.nan
+            chaos["Sample_Entropy"] = np.nan
+
+    # fractal_dim
     if fractal_dim is True:
         try:
-            chaos["Fractal_Dim"] = nolds.corr_dim(signal, emb_dim)
+            chaos["Fractal_Dimension"] = nolds.corr_dim(signal, emb_dim, rvals=None, fit="RANSAC", debug_plot=False, plot_file=None)
         except:
             print("NeuroKit warning: chaos(): Failed to compute fractal_dim.")
-            chaos["Fractal_Dim"] = np.nan
+            chaos["Fractal_Dimension"] = np.nan
+
+    # Hurst
     if hurst is True:
         try:
-            chaos["Hurst"] = nolds.hurst_rs(signal)
+            chaos["Hurst"] = nolds.hurst_rs(signal, nvals=None, fit="RANSAC", debug_plot=False, plot_file=None)
         except:
             print("NeuroKit warning: chaos(): Failed to compute hurst.")
             chaos["Hurst"] = np.nan
+
+    # DFA
     if dfa is True:
         try:
-            chaos["DFA"] = nolds.dfa(signal)
+            chaos["DFA"] = nolds.dfa(signal, nvals=None, overlap=True, order=1, fit_trend="poly", fit_exp="RANSAC", debug_plot=False, plot_file=None)
         except:
             print("NeuroKit warning: chaos(): Failed to compute dfa.")
             chaos["DFA"] = np.nan
+
+    # Lyap_r
     if lyap_r is True:
         try:
-            chaos["Lyapunov_R"] = nolds.lyap_r(signal)
+            chaos["Lyapunov_R"] = nolds.lyap_r(signal, emb_dim=10, lag=None, min_tsep=None, tau=1, min_vectors=20, trajectory_len=20, fit="RANSAC", debug_plot=False, plot_file=None)
         except:
             print("NeuroKit warning: chaos(): Failed to compute lyap_r.")
             chaos["Lyapunov_R"] = np.nan
+
+    # Lyap_e
     if lyap_e is True:
         try:
-            chaos["Lyapunov_E"] = nolds.lyap_e(signal)
+            result = nolds.lyap_e(signal, emb_dim=10, matrix_dim=4, min_nb=None, min_tsep=0, tau=1, debug_plot=False, plot_file=None)
+            for i, value in enumerate(result):
+                chaos["Lyapunov_E_" + str(i)] = value
         except:
             print("NeuroKit warning: chaos(): Failed to compute lyap_e.")
             chaos["Lyapunov_E"] = np.nan
