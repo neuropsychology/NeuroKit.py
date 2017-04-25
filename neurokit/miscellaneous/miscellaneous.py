@@ -278,7 +278,8 @@ def BMI(height, weight, age, sex):
 
     References
     -----------
-    - Deurenberg et al. (1991): https://www.cambridge.org/core/services/aop-cambridge-core/content/view/S0007114591000193
+    - Deurenberg, P., Andreoli, A., Borg, P., & Kukkonen-Harjula, K. (2001). The validity of predicted body fat percentage from body mass index and from impedance in samples of five European populations. European Journal of Clinical Nutrition, 55(11), 973.
+    - Deurenberg, P., Weststrate, J. A., & Seidell, J. C. (1991). Body mass index as a measure of body fatness: age-and sex-specific prediction formulas. British journal of nutrition, 65(02), 105-114.
     """
     # BMI
     height = height/100
