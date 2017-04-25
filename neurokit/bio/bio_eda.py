@@ -71,7 +71,8 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     References
     -----------
-    - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
+    - Greco, A., Valenza, G., & Scilingo, E. P. (2016). Evaluation of CDA and CvxEDA Models. In Advances in Electrodermal Activity Processing with Applications for Mental Health (pp. 35-43). Springer International Publishing.
+    - Greco, A., Valenza, G., Lanata, A., Scilingo, E. P., & Citi, L. (2016). cvxEDA: A convex optimization approach to electrodermal activity processing. IEEE Transactions on Biomedical Engineering, 63(4), 797-804.
 
     """
     eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
