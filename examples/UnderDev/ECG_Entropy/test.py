@@ -66,6 +66,5 @@ df = pd.read_csv('data.csv')
 df = nk.bio_process(ecg=df["ECG"])
 rri = df["ECG"]["RRis"]
 
-
 nolds.sampen(rri, 2, 0.1*np.std(rri), dist="euler")
 sample_entropy(rri,2, 0.1*np.std(rri))[0]

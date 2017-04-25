@@ -18,18 +18,20 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
     ----------
     signal : list or array
         List or array of values.
+    shannon : bool
+        Computes Shannon's entropy.
     sampen : bool
-        Compute approximate sample entropy (sampen).
+        Computes approximate sample entropy (sampen).
     fractal_dim : bool
-        Compute the fractal dimension.
+        Computes the fractal dimension.
     hurst : bool
-        Compute the Hurst exponent.
+        Computes the Hurst exponent.
     dfa : bool
-        Compute DFA.
+        Computes DFA.
     lyap_r : bool
-        Compute Positive Lyapunov exponents (Rosenstein et al. (1993) method).
+        Computes Positive Lyapunov exponents (Rosenstein et al. (1993) method).
     lyap_e : bool
-        Compute Positive Lyapunov exponents (Eckmann et al. (1986) method).
+        Computes Positive Lyapunov exponents (Eckmann et al. (1986) method).
     emb_dim : int
         The embedding dimension (length of vectors to compare).
     tolerance : float
