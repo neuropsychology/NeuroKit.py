@@ -47,16 +47,25 @@ read_eeg
 .. autofunction:: neurokit.read_eeg
 
 
+eeg_add_channel
+--------------------
+
+.. autofunction:: neurokit.eeg_add_channel
+
+
+
+eeg_add_events
+--------------------
+
+.. autofunction:: neurokit.eeg_add_events
+
+
+
 eeg_select_sensor_area
 -------------------------
 
 .. autofunction:: neurokit.eeg_select_sensor_area
 
-
-eeg_add_channel
---------------------
-
-.. autofunction:: neurokit.eeg_add_channel
 
 
 eeg_filter

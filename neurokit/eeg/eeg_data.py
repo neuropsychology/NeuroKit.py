@@ -1,9 +1,8 @@
 """
-Loading data submodule.
+Loading data and events submodule.
 """
 from ..signal import find_events
-from ..miscellaneous import read_data
-from .eeg_preprocessing import *
+#from .eeg_preprocessing import *
 
 import numpy as np
 import pandas as pd
@@ -121,62 +120,6 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
 
 
 
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_select_channels(raw, channel_names):
-    """
-    Select one or several channels by name and returns them in a dataframe.
-
-    Parameters
-    ----------
-    raw = mne.io.Raw
-        Raw EEG data.
-    channel_names = str or list
-        Channel's name(s).
-
-    Returns
-    ----------
-    channels = pd.DataFrame
-        Channel.
-
-    Example
-    ----------
-    >>> import neurokit as nk
-    >>> raw = nk.eeg_select_channel(raw, "TP7")
-
-    Notes
-    ----------
-    *Authors*
-
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
-
-    *Dependencies*
-
-    - mne
-
-    *See Also*
-
-    - mne package: http://martinos.org/mne/dev/index.html
-    """
-    if isinstance(channel_names, list) is False:
-        channel_names = [channel_names]
-
-    channels, time_index = raw.copy().pick_channels(channel_names)[:]
-    if len(channel_names) > 1:
-        channels = pd.DataFrame(channels.T, columns=channel_names)
-    else:
-        channels = pd.Series(channels[0])
-        channels.name = channel_names[0]
-    return(channels)
-
-
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -224,7 +167,7 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
 
     *See Also*
 
-    - mne package: http://martinos.org/mne/dev/index.html
+    - mne: http://martinos.org/mne/dev/index.html
     """
     if channel_name is None:
         if isinstance(channel, pd.core.series.Series):
@@ -260,6 +203,66 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
 
 
 
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_select_channels(raw, channel_names):
+    """
+    Select one or several channels by name and returns them in a dataframe.
+
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        Raw EEG data.
+    channel_names : str or list
+        Channel's name(s).
+
+    Returns
+    ----------
+    channels : pd.DataFrame
+        Channel.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> raw = nk.eeg_select_channel(raw, "TP7")
+
+    Notes
+    ----------
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - mne
+
+    *See Also*
+
+    - mne package: http://martinos.org/mne/dev/index.html
+    """
+    if isinstance(channel_names, list) is False:
+        channel_names = [channel_names]
+
+    channels, time_index = raw.copy().pick_channels(channel_names)[:]
+    if len(channel_names) > 1:
+        channels = pd.DataFrame(channels.T, columns=channel_names)
+    else:
+        channels = pd.Series(channels[0])
+        channels.name = channel_names[0]
+    return(channels)
+
+
+
+
+
+
+
 
 
 
@@ -277,21 +280,21 @@ def eeg_create_events(onsets, conditions=None):
 
     Parameters
     ----------
-    onsets = list
-        Events onsets (from find_events() or find_events()).
-    conditions = list
+    onsets : list or array
+        Events onsets.
+    conditions : list
         A list of equal length containing the stimuli types/conditions.
 
 
     Returns
     ----------
-    tuple
-        events and a dictionary with event's names.
+    (events, event_id) : tuple
+        MNE-formated events and a dictionary with event's names.
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> events_onset = nk.create_mne_events(events_onset, trigger_list)
+    >>> events, event_id = nk.create_mne_events(events_onset, trigger_list)
 
     Authors
     ----------
@@ -331,111 +334,77 @@ def eeg_create_events(onsets, conditions=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_add_events(raw, stim_channel_name, treshold=0.04, cut="higher", number=None, after=0, before=None, events_list=None, events_from_file=None, path="", experiment="", conditions=None, order_column="Order", events_channel="STI 014"):
+def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
     """
     Create MNE compatible events.
 
     Parameters
     ----------
-    raw = mne.io.Raw
+    raw : mne.io.Raw
         Raw EEG data.
-    stim_channel_name = str
-        Name of the trigger channel.
-    treshold = float
-        The treshold value by which to select the events.
-    cut = str
-        "higher" or "lower", define the events as above or under the treshold.
-    events_from_file = str
-        Name of the dataframe that contain the events.
-    ...
-
+    events_channel : str or array
+        Name of the trigger channel if in the raw, or array of equal length if externally supplied.
+    conditions : list
+        A list containing the stimuli types/conditions.
+    treshold : float
+        The treshold value by which to select the events. If "auto", takes the value between the max and the min.
+    cut : str
+        "higher" or "lower", define the events as above or under the treshold. For photosensors, a white screen corresponds usually to higher values. Therefore, if your events were signalled by a black colour, events values would be the lower ones, and you should set the cut to "lower".
+        Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
+    number : str or int
+        How many events should it select.
+    after : int
+        If number different than "all", then at what time should it start selecting the events.
+    before : int
+        If number different than "all", before what time should it select the events.
+    min_duration : int
+        The minimum duration of an event (in timepoints).
 
     Returns
     ----------
-    raw = mne.io.Raw
+    raw : mne.io.Raw
         The raw file with events.
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> events_onset = nk.create_mne_events(events_onset, trigger_list)
+    >>>
+    >>> raw, events, event_id = nk.eeg_add_events(raw, events_channel, conditions)
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
-    None
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - pandas
+
+    *See Also*
+
+    - mne: http://martinos.org/mne/dev/index.html
+
+
+    References
+    -----------
+    - None
     """
-
-    # Read the dataframe
-    if events_from_file is not None:
-        if experiment != "":
-            experiment = "_" + experiment
-        file = events_from_file + experiment
-        df = read_data(file, path=path)
-
-        # Sort the dataframe
+    # Extract the events_channel from raw if needed
+    if isinstance(events_channel, str):
         try:
-            df = df.sort_values(order_column)
-        except KeyError:
-            print("NeuroKit Warning: add_events(): Wrong order_column provided. Dataframe will remain unsorted.")
+            events_channel = eeg_select_channels(raw, events_channel)
+        except:
+            print("NeuroKit error: eeg_add_events(): Wrong events_channel name provided.")
 
-        if number == "all":
-            number = len(df)
+    # Find event onsets
+    events = find_events(events_channel, treshold=treshold, cut=cut, time_index=time_index, number=number, after=after, before=before, min_duration=min_duration)
 
-        # Create dic of events
-        if conditions is not None:
+    # Create mne compatible events
+    events, event_id = eeg_create_events(events["onsets"], conditions)
 
-            # If only one name provided
-            if isinstance(conditions, str):
-                conditions = [conditions]
-
-            triggers = {}
-            for condition in list(conditions):
-                triggers[condition] = df[condition][0:number]
-
-
-            # create events_list
-            events_list = []
-            conditions_names = list(triggers.keys())
-
-            # For each row, concatenate all conditions
-            for row in range(len(triggers[conditions_names[0]])):
-                element = ""
-                for condition in conditions_names:
-                    element += triggers[condition][row] + "/"
-                events_list.append(element[:-1])  # Remove last "/"
-
-        else:
-            print("NeuroKit Warning: add_events(): No condition name(s) provided.")
-
-
-
-
-
-
-    # Extract time serie from stim channel
-    signal, time_index = raw.copy().pick_channels([stim_channel])[:]
-
-    # Select events based on the treshold value
-    events_onset, events_time = find_events(signal[0],
-                                            treshold=treshold,
-                                            upper=upper,
-                                            time_index=time_index,
-                                            number=number,
-                                            after=after,
-                                            before=before)
-
-    # if events_list is None, replace with range
-    if events_list is None and conditions is None:
-        events_list = range(len(events_onset))
-
-
-
-    events, event_id = eeg_create_events(events_onset, events_list)
-    raw.add_events(events, stim_channel=events_channel)
+    # Add them
+    raw.add_events(events)
 
     return(raw, events, event_id)
 
@@ -445,6 +414,7 @@ def eeg_add_events(raw, stim_channel_name, treshold=0.04, cut="higher", number=N
 
 
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -453,33 +423,33 @@ def eeg_add_events(raw, stim_channel_name, treshold=0.04, cut="higher", number=N
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_create_raws(filename, path, participants=None, runs=None, lowpass_filter=None, highpass_filter=None, notch_filter=False, ica_eog=False, ica_ecg=False, resample=False):
-    """
-    """
-    if participants is None:
-        participants = os.listdir(path)
-
-    raws = {}  # Initialize empty dic
-    for participant in participants:
-
-        if runs is None:
-            runs = os.listdir(path + "/" + participant + "/")
-
-        raws[participant] = {}
-        for run in runs:
-            # Load the participant's file into a raw object
-            raw = eeg_load_raw(filename=filename, path=path + "/" + participant + "/" + run + "/")
-            # Filter and downsample
-            raw = eeg_filter(raw, lowpass=lowpass_filter, highpass=highpass_filter, notch=notch_filter)
-
-            # Apply ICA to remove EOG and ECG artifacts
-            raw, ica = eeg_ica(raw, eog=ica_eog, ecg=ica_ecg)
-
-            # Resample to 125 points/s
-            raw = raw.resample(resample)
-
-            # Add data to dict
-            raws[participant][run] = raw
-
-    return(raws)
-
+#def eeg_create_raws(filename, path, participants=None, runs=None, lowpass_filter=None, highpass_filter=None, notch_filter=False, ica_eog=False, ica_ecg=False, resample=False):
+#    """
+#    """
+#    if participants is None:
+#        participants = os.listdir(path)
+#
+#    raws = {}  # Initialize empty dic
+#    for participant in participants:
+#
+#        if runs is None:
+#            runs = os.listdir(path + "/" + participant + "/")
+#
+#        raws[participant] = {}
+#        for run in runs:
+#            # Load the participant's file into a raw object
+#            raw = eeg_load_raw(filename=filename, path=path + "/" + participant + "/" + run + "/")
+#            # Filter and downsample
+#            raw = eeg_filter(raw, lowpass=lowpass_filter, highpass=highpass_filter, notch=notch_filter)
+#
+#            # Apply ICA to remove EOG and ECG artifacts
+#            raw, ica = eeg_ica(raw, eog=ica_eog, ecg=ica_ecg)
+#
+#            # Resample to 125 points/s
+#            raw = raw.resample(resample)
+#
+#            # Add data to dict
+#            raws[participant][run] = raw
+#
+#    return(raws)
+#
