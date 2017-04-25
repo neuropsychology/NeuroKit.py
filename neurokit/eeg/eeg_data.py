@@ -362,8 +362,8 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
 
     Returns
     ----------
-    raw : mne.io.Raw
-        The raw file with events.
+    (raw, events, event_id) : tuple
+        The raw file with events, the mne-formatted events and event_id.
 
     Example
     ----------
