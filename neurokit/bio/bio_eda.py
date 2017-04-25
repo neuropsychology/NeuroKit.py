@@ -66,6 +66,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 
     *See Also*
 
+    - BioSPPy: https://github.com/PIA-Group/BioSPPy
     - cvxEDA: https://github.com/lciti/cvxEDA
 
     References
@@ -73,7 +74,6 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
 
     """
-
     eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
 
     # Convex optimization

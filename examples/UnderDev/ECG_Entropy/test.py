@@ -70,4 +70,3 @@ nolds.sampen(rri, 2, 0.1*np.std(rri))
 sample_entropy(rri,2, 0.1*np.std(rri))
 sample_entropy(rri,1, 0.1*np.std(rri))
 
-entropy_multiscale(rri)
