@@ -72,8 +72,8 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
 
     *See Also*
 
-    - BioSPPY package: https://github.com/PIA-Group/BioSPPy
-    - hrv package: https://github.com/rhenanbartels/hrv
+    - BioSPPY: https://github.com/PIA-Group/BioSPPy
+    - hrv: https://github.com/rhenanbartels/hrv
     - cvxEDA: https://github.com/lciti/cvxEDA
 
     References

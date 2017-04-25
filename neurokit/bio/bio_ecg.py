@@ -72,7 +72,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     *See Also*
 
     - BioSPPY: https://github.com/PIA-Group/BioSPPy
-    - hrv package: https://github.com/rhenanbartels/hrv
+    - hrv: https://github.com/rhenanbartels/hrv
 
     References
     ------------
