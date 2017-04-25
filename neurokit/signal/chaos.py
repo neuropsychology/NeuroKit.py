@@ -133,7 +133,7 @@ def chaos(signal, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=Tr
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def chaos_shannon_entropy(signal):
+def entropy_shannon(signal):
     """
     Returns the shannon entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo.
 
@@ -154,7 +154,7 @@ def chaos_shannon_entropy(signal):
     >>> import neurokit as nk
     >>>
     >>> signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
-    >>> shannon_entropy = nk.chaos_shannon_entropy(signal)
+    >>> shannon_entropy = nk.entropy_shannon(signal)
 
     Notes
     ----------
