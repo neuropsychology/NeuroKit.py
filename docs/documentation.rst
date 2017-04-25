@@ -16,6 +16,11 @@ eda_process
 
 .. autofunction:: neurokit.eda_process
 
+emg_process
+---------------
+
+.. autofunction:: neurokit.emg_process
+
 ecg_process
 ---------------
 
