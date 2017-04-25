@@ -135,7 +135,7 @@ def chaos(signal, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=Tr
 # ==============================================================================
 def chaos_shannon_entropy(signal):
     """
-    Returns the shannon entropy. Entirely stolen from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ package by tjugo.
+    Returns the shannon entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo.
 
     Parameters
     ----------
