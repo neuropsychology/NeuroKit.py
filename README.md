@@ -47,13 +47,13 @@ This package provides a high level integration of complex statistical routines f
 Main features:
 
 - **M/EEG**
-  - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read many EEG and MEG files into an [`mne.io.Raw`](http://martinos.org/mne/stable/generated/mne.io.Raw.html#mne.io.Raw) object
+  - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read and convert many EEG and MEG files tp an [`mne.io.Raw`](http://martinos.org/mne/stable/generated/mne.io.Raw.html#mne.io.Raw) object
   - Preprocessing: Under development
   - ERP: Under development
   - Time/Frequency: Under development
   - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
-  - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a `pandas`' dataframe
+  - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a dataframe
   - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV))
   - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
 - **Statistics**
