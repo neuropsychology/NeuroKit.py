@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import nolds  # Fractal
+import nolds
 import numpy as np
 
 # ==============================================================================
@@ -19,11 +19,11 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
     signal : list or array
         List or array of values.
     shannon : bool
-        Computes Shannon's entropy.
+        Computes Shannon entropy.
     sampen : bool
         Computes approximate sample entropy (sampen).
     fractal_dim : bool
-        Computes the fractal dimension.
+        Computes the fractal (correlation) dimension.
     hurst : bool
         Computes the Hurst exponent.
     dfa : bool
@@ -56,7 +56,7 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
 
     - **shannon entropy**: Entropy is a measure of unpredictability of the state, or equivalently, of its average information content.
     - **sample entropy (sampen)**: Measures the complexity of a time-series, based on approximate entropy. The sample entropy of a time series is defined as the negative natural logarithm of the conditional probability that two sequences similar for emb_dim points remain similar at the next point, excluding self-matches. A lower value for the sample entropy therefore corresponds to a higher probability indicating more self-similarity.
-    - **correlation dimension**: A measure of the fractal dimension of a time series which is also related to complexity. The correlation dimension is a characteristic measure that can be used to describe the geometry of chaotic attractors. It is defined using the correlation sum C(r) which is the fraction of pairs of points X_i in the phase space whose distance is smaller than r.
+    - **fractal dimension**: A measure of the fractal (or correlation) dimension of a time series which is also related to complexity. The correlation dimension is a characteristic measure that can be used to describe the geometry of chaotic attractors. It is defined using the correlation sum C(r) which is the fraction of pairs of points X_i in the phase space whose distance is smaller than r.
     - **hurst**: The Hurst exponent is a measure of the "long-term memory" of a time series. It can be used to determine whether the time series is more, less, or equally likely to increase if it has increased in previous steps. This property makes the Hurst exponent especially interesting for the analysis of stock data.
     - **dfa**: DFA measures the Hurst parameter H, which is very similar to the Hurst exponent. The main difference is that DFA can be used for non-stationary processes (whose mean and/or variance change over time).
     - **lyap**: Positive Lyapunov exponents indicate chaos and unpredictability. Provides the algorithm of Rosenstein et al. (1993) to estimate the largest Lyapunov exponent and the algorithm of Eckmann et al. (1986) to estimate the whole spectrum of Lyapunov exponents.
@@ -71,10 +71,12 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
     *Dependencies*
 
     - nolds
+    - numpy
 
     *See Also*
 
     - nolds package: https://github.com/CSchoel/nolds
+    - pyEntropy package: https://github.com/nikdon/pyEntropy
 
     References
     -----------
@@ -90,13 +92,13 @@ def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=T
         try:
             chaos["Shannon"] = entropy_shannon(signal)
         except:
-            print("NeuroKit warning: chaos(): Failed to compute Shannon's entropy.")
+            print("NeuroKit warning: chaos(): Failed to compute Shannon entropy.")
             chaos["Entropy"] = np.nan
     if sampen is True:
         try:
             chaos["Sample_Entropy"] = nolds.sampen(signal, emb_dim, tolerance)
         except:
-            print("NeuroKit warning: chaos(): Failed to compute sampen.")
+            print("NeuroKit warning: chaos(): Failed to compute sample entropy (sampen).")
             chaos["Entropy"] = np.nan
     if fractal_dim is True:
         try:
@@ -176,7 +178,7 @@ def entropy_shannon(signal):
 
     *Dependencies*
 
-    - None
+    - numpy
 
     *See Also*
 
