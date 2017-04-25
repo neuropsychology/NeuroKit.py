@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 name = "neurokit",
 description = ("A Python Toolbox for Statistics and Signal Processing (EEG, EDA, ECG, EMG...)."),
-version = "0.1.0",
+version = "0.1.1",
 license = "MIT",
 author = "Dominique Makowski",
 author_email = "dom.makowski@gmail.com",
@@ -27,7 +27,7 @@ install_requires = [
 dependency_links=[
 	"https://github.com/rhenanbartels/hrv/zipball/develop"],
 long_description = open('README.md').read(),
-keywords = "python signal processing EEG EDA ECG hrv rpeaks biosignals",
+keywords = "python signal processing EEG EDA ECG hrv rpeaks biosignals complexity",
 url = "https://github.com/neuropsychology/NeuroKit.py",
 download_url = 'https://github.com/neuropsychology/NeuroKit.py/tarball/master',
 test_suite='nose.collector',

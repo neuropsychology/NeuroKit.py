@@ -96,7 +96,7 @@ create_epochs
 chaos
 --------------------
 
-.. autofunction:: neurokit.chaos
+.. autofunction:: neurokit.complexity
 
 
 
