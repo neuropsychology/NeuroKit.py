@@ -23,7 +23,7 @@ def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=T
     sampen : bool
         Computes approximate sample entropy (sampen) using 'chebychev' distance.
     multiscale : bool
-        Computes multiscale entropy (uses sample entropy with 'chebychev' distance).
+        Computes multiscale entropy (MSE). Note that it uses the 'chebychev' distance.
     fractal_dim : bool
         Computes the fractal (correlation) dimension.
     hurst : bool
@@ -108,6 +108,15 @@ def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=T
         except:
             print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen).")
             complexity["Sample_Entropy"] = np.nan
+
+    # multiscale
+    if multiscale is True:
+        try:
+            complexity["Multiscale_Entropy"] = entropy_multiscale(signal, emb_dim, tolerance)
+        except:
+            print("NeuroKit warning: complexity(): Failed to compute Multiscale Entropy (MSE).")
+            complexity["Multiscale_Entropy"] = np.nan
+
 
     # fractal_dim
     if fractal_dim is True:
