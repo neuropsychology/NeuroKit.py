@@ -246,7 +246,7 @@ def entropy_shannon(signal):
 # ==============================================================================
 def entropy_multiscale(signal, emb_dim=2, tolerance="default"):
     """
-    Returns the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo.
+    Returns the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo. Uses sample entropy with 'chebychev' distance.
 
     Parameters
     ----------
