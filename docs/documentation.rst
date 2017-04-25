@@ -93,7 +93,7 @@ create_epochs
 .. autofunction:: neurokit.create_epochs
 
 
-chaos
+complexity
 --------------------
 
 .. autofunction:: neurokit.complexity
