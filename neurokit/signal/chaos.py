@@ -10,7 +10,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def chaos(signal, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=True, emb_dim=2, tolerance="default"):
+def chaos(signal, shannon=True, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=True, emb_dim=2, tolerance="default"):
     """
     Returns several chaos/complexity indices of a signal (including entropy, fractal dimensions, Hurst and Lyapunov exponent etc.).
 
@@ -83,43 +83,48 @@ def chaos(signal, sampen=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=Tr
     if tolerance == "default":
         tolerance = 0.2*np.std(signal)
 
-
     chaos = {}
-    if sampen == True:
+    if shannon is True:
+        try:
+            chaos["Shannon"] = entropy_shannon(signal)
+        except:
+            print("NeuroKit warning: chaos(): Failed to compute Shannon's entropy.")
+            chaos["Entropy"] = np.nan
+    if sampen is True:
         try:
             chaos["Sample_Entropy"] = nolds.sampen(signal, emb_dim, tolerance)
         except:
-            print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
+            print("NeuroKit warning: chaos(): Failed to compute sampen.")
             chaos["Entropy"] = np.nan
-    if fractal_dim == True:
+    if fractal_dim is True:
         try:
             chaos["Fractal_Dim"] = nolds.corr_dim(signal, emb_dim)
         except:
-            print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
+            print("NeuroKit warning: chaos(): Failed to compute fractal_dim.")
             chaos["Fractal_Dim"] = np.nan
-    if hurst == True:
+    if hurst is True:
         try:
             chaos["Hurst"] = nolds.hurst_rs(signal)
         except:
-            print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
+            print("NeuroKit warning: chaos(): Failed to compute hurst.")
             chaos["Hurst"] = np.nan
-    if dfa == True:
+    if dfa is True:
         try:
             chaos["DFA"] = nolds.dfa(signal)
         except:
-            print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
+            print("NeuroKit warning: chaos(): Failed to compute dfa.")
             chaos["DFA"] = np.nan
-    if lyap_r == True:
+    if lyap_r is True:
         try:
             chaos["Lyapunov_R"] = nolds.lyap_r(signal)
         except:
-            print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
+            print("NeuroKit warning: chaos(): Failed to compute lyap_r.")
             chaos["Lyapunov_R"] = np.nan
-    if lyap_e == True:
+    if lyap_e is True:
         try:
             chaos["Lyapunov_E"] = nolds.lyap_e(signal)
         except:
-            print("NeuroKit warning: fractal_dimensions(): Failed to compute entropy.")
+            print("NeuroKit warning: chaos(): Failed to compute lyap_e.")
             chaos["Lyapunov_E"] = np.nan
 
     return(chaos)
