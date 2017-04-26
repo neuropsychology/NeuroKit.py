@@ -21,7 +21,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
+def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2):
     """
     Automated processing of EDA signal.
 
@@ -33,6 +33,12 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
         Sampling rate (samples/second).
     use_cvxEDA : bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
+    cvxEDA_normalize : bool
+        Normalize the signal before applying cvx algorithm.
+    cvxEDA_alpha : float
+        Penalization for the sparse SMNA driver.
+    cvxEDA_gamma : float
+        Penalization for the tonic spline coefficients.
 
     Returns
     ----------
@@ -80,7 +86,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
     # Convex optimization
     if use_cvxEDA is True:
         try:
-            eda = cvxeda(eda, sampling_rate=sampling_rate)
+            eda = cvxEDA(eda, sampling_rate=sampling_rate, normalize=cvxEDA_normalize, alpha=cvxEDA_alpha, gamma=cvxEDA_gamma)
             eda_df["EDA_Phasic"] = eda
         except:
             print("NeuroKit Warning: couln't apply cvxEDA on EDA signal. Using normal.")
@@ -127,7 +133,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
+def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
     """
     A convex optimization approach to electrodermal activity processing (CVXEDA).
 
@@ -140,6 +146,8 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
            raw EDA signal array.
        sampling_rate : int
            Sampling rate (samples/second).
+       normalize : bool
+           Normalize the signal before applying cvx algorithm.
        tau0 : float
            Slow time constant of the Bateman function.
        tau1 : float
@@ -182,15 +190,17 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
 
     References
     -----------
-    - Greco et al. (2015): http://ieeexplore.ieee.org/abstract/document/7229284/?reload=true
+    - Greco, A., Valenza, G., & Scilingo, E. P. (2016). Evaluation of CDA and CvxEDA Models. In Advances in Electrodermal Activity Processing with Applications for Mental Health (pp. 35-43). Springer International Publishing.
+    - Greco, A., Valenza, G., Lanata, A., Scilingo, E. P., & Citi, L. (2016). cvxEDA: A convex optimization approach to electrodermal activity processing. IEEE Transactions on Biomedical Engineering, 63(4), 797-804.
     """
     frequency = 1/sampling_rate
 
-    z_eda = z_score(eda)
-    z_eda = np.array(z_eda)[:,0]
+    if normalize is True:
+        eda = z_score(eda)
+    eda = np.array(eda)[:,0]
 
-    n = len(z_eda)
-    z_eda = cv.matrix(z_eda)
+    n = len(eda)
+    eda = cv.matrix(eda)
 
     # bateman ARMA model
     a1 = 1./min(tau1, tau0) # a1 > a0
@@ -222,7 +232,7 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
     nC = C.size[1]
 
     # Solve the problem:
-    # .5*(M*q + B*l + C*d - z_eda)^2 + alpha*sum(A,1)*p + .5*gamma*l'*l
+    # .5*(M*q + B*l + C*d - eda)^2 + alpha*sum(A,1)*p + .5*gamma*l'*l
     # s.t. A*q >= 0
 
     if verbose is False:
@@ -236,7 +246,7 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
         G = cv.sparse([[-A,z(2,n),M,z(nB+2,n)],[z(n+2,nC),C,z(nB+2,nC)],
                     [z(n,1),-1,1,z(n+nB+2,1)],[z(2*n+2,1),-1,1,z(nB,1)],
                     [z(n+2,nB),B,z(2,nB),cv.spmatrix(1.0, range(nB), range(nB))]])
-        h = cv.matrix([z(n,1),.5,.5,z_eda,.5,.5,z(nB,1)])
+        h = cv.matrix([z(n,1),.5,.5,eda,.5,.5,z(nB,1)])
         c = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T,z(nC,1),1,gamma,z(nB,1)])
         res = cv.solvers.conelp(c, G, h, dims={'l':n,'q':[n+2,nB+2],'s':[]})
         obj = res['primal objective']
@@ -245,10 +255,10 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
         Mt, Ct, Bt = M.T, C.T, B.T
         H = cv.sparse([[Mt*M, Ct*M, Bt*M], [Mt*C, Ct*C, Bt*C],
                     [Mt*B, Ct*B, Bt*B+gamma*cv.spmatrix(1.0, range(nB), range(nB))]])
-        f = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T - Mt*z_eda,  -(Ct*z_eda), -(Bt*z_eda)])
+        f = cv.matrix([(cv.matrix(alpha, (1,n)) * A).T - Mt*eda,  -(Ct*eda), -(Bt*eda)])
         res = cv.solvers.qp(H, f, cv.spmatrix(-A.V, A.I, A.J, (n,len(f))),
                             cv.matrix(0., (n,1)), solver=solver)
-        obj = res['primal objective'] + .5 * (z_eda.T * z_eda)
+        obj = res['primal objective'] + .5 * (eda.T * eda)
     cv.solvers.options.clear()
     cv.solvers.options.update(old_options)
 
@@ -258,7 +268,7 @@ def cvxeda(eda, sampling_rate, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, ga
     q = res['x'][:n]
     p = A * q
     phasic = M * q
-    e = z_eda - phasic - tonic
+    e = eda - phasic - tonic
 
     phasic = np.array(phasic)[:,0]
 #    results = (np.array(a).ravel() for a in (r, t, p, l, d, e, obj))
