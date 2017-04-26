@@ -345,7 +345,7 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
     events_channel : str or array
         Name of the trigger channel if in the raw, or array of equal length if externally supplied.
     conditions : list
-        A list containing the stimuli types/conditions.
+        List containing the stimuli types/conditions.
     treshold : float
         The treshold value by which to select the events. If "auto", takes the value between the max and the min.
     cut : str
