@@ -46,7 +46,7 @@ Do it on the dedicated chats!
 .. _Gitter: https://gitter.im/NeuroKit-py/Lobby
 
 .. |Gitter-Bio| image:: https://badges.gitter.im/NeuroKit-py/Lobby.svg
-.. _Gitte-Bio: https://gitter.im/NeuroKit-py/Bio
+.. _Gitter-Bio: https://gitter.im/NeuroKit-py/Bio
 
 .. |Gitter-EEG| image:: https://badges.gitter.im/NeuroKit-py/Lobby.svg
 .. _Gitter-EEG: https://gitter.im/NeuroKit-py/EEG
