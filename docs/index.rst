@@ -36,7 +36,7 @@ Installation can be easily done using ``pip``:
 Questions? Help? Movie Recommendations?
 ------------------------------------------
 
-Do it on the dedicated chat!
+Do it on the dedicated chats!
 
 - General: |Gitter|_
 - Biosignals: |Gitter|_
