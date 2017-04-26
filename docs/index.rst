@@ -42,8 +42,8 @@ Do it on the dedicated chat!
 - Biosignals chat: |Gitter|_
 - EEG chat: |Gitter|_
 
-.. |ImageLink| image:: https://badges.gitter.im/NeuroKit-py/Lobby.svg
-.. _ImageLink: https://gitter.im/NeuroKit-py/Lobby
+.. |Gitter| image:: https://badges.gitter.im/NeuroKit-py/Lobby.svg
+.. _Gitter: https://gitter.im/NeuroKit-py/Lobby
 
  
 Index
