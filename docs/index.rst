@@ -39,11 +39,18 @@ Questions? Help? Movie Recommendations?
 Do it on the dedicated chats!
 
 - General: |Gitter|_
-- Biosignals: |Gitter|_
-- EEG: |Gitter|_
+- Biosignals: |Gitter-Bio|_
+- EEG: |Gitter-EEG|_
 
 .. |Gitter| image:: https://badges.gitter.im/NeuroKit-py/Lobby.svg
 .. _Gitter: https://gitter.im/NeuroKit-py/Lobby
+
+.. |Gitter-Bio| image:: https://badges.gitter.im/NeuroKit-py/Lobby.svg
+.. _Gitte-Bio: https://gitter.im/NeuroKit-py/Bio
+
+.. |Gitter-EEG| image:: https://badges.gitter.im/NeuroKit-py/Lobby.svg
+.. _Gitter-EEG: https://gitter.im/NeuroKit-py/EEG
+
 
  
 Index
