@@ -4,6 +4,8 @@ import numpy as np
 
 from .bio_ecg import *
 from .bio_eda import *
+from .bio_emg import *
+
 
 # ==============================================================================
 # ==============================================================================
@@ -13,7 +15,7 @@ from .bio_eda import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True, add=None):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True, add=None, emg_names=None):
     """
     Automated processing of bio signals. Wrapper function for :func:`neurokit.ecg_process()` and :func:`neurokit.eda_process()`.
 
@@ -25,6 +27,8 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         Respiratory signal array.
     eda :  list or array
         EDA signal array.
+    emg :  list, array or DataFrame
+        EMG signal array. Can include multiple channels.
     sampling_rate : int
         Sampling rate (samples/second).
     resampling_method : str
@@ -33,13 +37,15 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
     add : pandas.DataFrame
         Dataframe or channels to add by concatenation to the processed dataframe.
+    emg_names : list
+        List of EMG channel names.
 
     Returns
     ----------
     processed_bio : dict
         Dict containing processed bio features.
 
-        Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided), the EDA raw signal, the filtered signal, the phasic compnent (if cvxEDA is True), the SCR onsets, peak indexes and amplitudes.
+        Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided), the EDA raw signal, the filtered signal, the phasic component (if cvxEDA is True), the SCR onsets, peak indexes and amplitudes, the EMG raw signal, the filtered signal and pulse onsets.
 
 
 
@@ -98,6 +104,14 @@ def bio_process(ecg=None, rsp=None, eda=None, sampling_rate=1000, resampling_met
         eda = eda_process(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA)
         processed_bio["EDA"] = eda["EDA"]
         bio_df = pd.concat([bio_df, eda["df"]], axis=1)
+
+    # EMG
+    if emg is not None:
+        emg = emg_process(emg=emg, sampling_rate=sampling_rate, emg_names=emg_names)
+        bio_df = pd.concat([bio_df, emg.pop("df")], axis=1)
+        for i in emg:
+            processed_bio[i] = emg[i]
+
 
     if add is not None:
         add = add.reset_index()
