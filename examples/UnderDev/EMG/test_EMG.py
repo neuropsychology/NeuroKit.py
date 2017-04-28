@@ -5,6 +5,8 @@ import numpy as np
 
 emg = pd.DataFrame.from_csv("test.csv")
 emg["EMG_1"] = emg["EMG"] + np.random.normal(scale=0.01, size=len(emg))
+
+#df = nk.bio_process()
 #emg = emg["EMG"]
 
 

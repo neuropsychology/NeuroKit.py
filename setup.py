@@ -11,6 +11,8 @@ maintainer = "Dominique Makowski",
 maintainer_email = "dom.makowski@gmail.com",
 packages = find_packages(),
 package_data = {},
+package_data = {
+        "neuropsydia.data":["*.csv"]},
 install_requires = [
         'numpy',
         'pandas',
