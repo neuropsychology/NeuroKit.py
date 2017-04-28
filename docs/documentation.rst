@@ -100,6 +100,10 @@ find_events
 
 .. autofunction:: neurokit.find_events
 
+visually_check_events_in_signal
+-----------------------------------
+
+.. autofunction:: neurokit.visually_check_events_in_signal
 
 create_epochs
 ---------------

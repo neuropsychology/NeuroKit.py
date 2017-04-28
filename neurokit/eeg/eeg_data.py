@@ -99,11 +99,13 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
         else:
             print("NeuroKit Error: read_eeg(): couldn't find compatible reader of data.")
             return()
+    except KeyError:
+        print("NeuroKit Error: read_eeg(): something went wrong. This might be because you have channel names that are missing from the montage definition. Try do read data manually using mne.")
     except FileNotFoundError:
         print("NeuroKit Error: read_eeg(): something went wrong, check the file names that are inside your info files (.vhdr, .vmrk, ...)")
         return()
     except:
-        print("NeuroKit Error: read_eeg(): error in data loading.")
+        print("NeuroKit Error: read_eeg(): error in data loading. Try to do it manually using mne.")
         return()
 
 
