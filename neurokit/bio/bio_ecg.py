@@ -134,9 +134,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # HRV
     if sampling_rate == 1000:
 
-        rri_time = np.cumsum(rri) / sampling_rate
-        rri_time -= rri_time[0]
-
         # Calculate time domain indexes
         hrv_time_domain = hrv.classical.time_domain(rri)
         hrv_features = {"HRV_MHR": hrv_time_domain['mhr'],
@@ -147,17 +144,18 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
                         "HRV_SDNN": hrv_time_domain['sdnn']
                 }
         # Calculate frequency domain indexes
-        try:
-            hrv_freq_domain = hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0)
-            hrv_features["HRV_HF"] = hrv_freq_domain["hf"]
-            hrv_features["HRV_HFNU"] = hrv_freq_domain["hfnu"]
-            hrv_features["HRV_LF"] = hrv_freq_domain["lf"]
-            hrv_features["HRV_LF_HF"] = hrv_freq_domain["lf_hf"]
-            hrv_features["HRV_LFNU"] = hrv_freq_domain["lfnu"]
-            hrv_features["HRV_total_power"] = hrv_freq_domain["total_power"]
-            hrv_features["HRV_VLF"] = hrv_freq_domain["vlf"]
-        except:
-            print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
+# NOT WORKING FOR NOW
+#        try:
+#            hrv_freq_domain = hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0)
+#            hrv_features["HRV_HF"] = hrv_freq_domain["hf"]
+#            hrv_features["HRV_HFNU"] = hrv_freq_domain["hfnu"]
+#            hrv_features["HRV_LF"] = hrv_freq_domain["lf"]
+#            hrv_features["HRV_LF_HF"] = hrv_freq_domain["lf_hf"]
+#            hrv_features["HRV_LFNU"] = hrv_freq_domain["lfnu"]
+#            hrv_features["HRV_total_power"] = hrv_freq_domain["total_power"]
+#            hrv_features["HRV_VLF"] = hrv_freq_domain["vlf"]
+#        except:
+#            print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
 
         processed_ecg["ECG"]["HRV"] = hrv_features
     else:
