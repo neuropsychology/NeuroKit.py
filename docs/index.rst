@@ -2,7 +2,7 @@ Home
 ====
 
 
-**NeuroKit** is a Python module written by neuroscientists for neuroscientists. It provides high-level integrative functions with good and flexible defaults, to allow them focus on what's important.
+**NeuroKit** is a Python module that provides high-level integrative functions with good and flexible defaults, to allow users to focus on what's important.
 
 
 **Contents:**
