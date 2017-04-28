@@ -5,14 +5,15 @@ import matplotlib
 import seaborn as sns
 import biosppy
 
-df = pd.read_csv("https://raw.githubusercontent.com/neuropsychology/NeuroKit.py/master/examples/Bio/data/bio_rest.csv")
+df = pd.read_csv("https://raw.githubusercontent.com/neuropsychology/NeuroKit.py/master/examples/Bio/data/bio_rest.csv", index_col=0)
 events = nk.find_events(df["Photosensor"], cut="lower")
 
 df = nk.create_epochs(df, events["onsets"], duration=events["durations"], onset=0)
 df = df[0]  # Select the first element of that list.
 
 bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], add=df["Photosensor"])
-#
+
+bio["df"].plot()
 #ecg = nk.ecg_process(ecg=df["ECG"])
 #
 #biosppy_ecg = biosppy.ecg.ecg(df["ECG"], show=False)

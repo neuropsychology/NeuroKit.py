@@ -114,7 +114,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, resa
 
 
     if add is not None:
-        add = add.reset_index()
+        add = add.reset_index(drop=True)
         bio_df = pd.concat([bio_df, add], axis=1)
     processed_bio["df"] = bio_df
 
