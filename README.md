@@ -1,4 +1,4 @@
-<p align="center"><a href=http://neurokit.readthedocs.io/en/latest/?badge=latest><img src="https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/neurokit.png" width="400" align="center" alt="neurokit python eeg biosignals meg electrophysiology logo"></a></p>
+<p align="center"><a href=http://neurokit.readthedocs.io/><img src="https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/neurokit.png" width="400" align="center" alt="neurokit python eeg biosignals meg electrophysiology logo"></a></p>
 
 <h2 align="center">Neuroscience made easy!</h2>
 
