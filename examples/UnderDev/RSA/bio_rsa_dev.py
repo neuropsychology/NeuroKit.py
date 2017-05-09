@@ -17,7 +17,7 @@ http://ieeexplore.ieee.org.sci-hub.cc/document/470252/?reload=true
 
 
 # ==============================================================================
-def bio_rsa(rpeaks, rsp_cycles):
+def bio_rsa(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1000):
 
     # Find all RSP cycles and the Rpeaks within
     cycles_rri = []
@@ -30,9 +30,33 @@ def bio_rsa(rpeaks, rsp_cycles):
     # Iterate over all cycles
     RSA = []
     for cycle in cycles_rri:
-        RRis = np.diff(cycle)
-        if len(RRis < 2):
+        RRis = np.diff(cycle)/sampling_rate
+        if len(RRis) > 1:
             RSA.append(np.max(RRis) - np.min(RRis))
+        else:
+            RSA.append(np.nan())
+
+
+    # Continuous RSA
+    current_rsa = np.nan
+
+    continuous_rsa = []
+    phase_counter = 0
+    for i in range(len(rsp_signal)):
+        if i == rsp_cycles[phase_counter]:
+            current_rsa = RSA[phase_counter]
+            if phase_counter < len(rsp_cycles)-2:
+                phase_counter += 1
+        continuous_rsa.append(current_rsa)
+
+    # Find last phase
+    continuous_rsa = np.array(continuous_rsa)
+    continuous_rsa[max(rsp_cycles):] = np.nan
+
+    RSA = {"RSA": continuous_rsa,
+           "RSA_Values": RSA,
+           "RSA_Mean": pd.Series(RSA).mean(),
+           "RSA_Variability": pd.Series(RSA).std()}
 
     return(RSA)
 
@@ -59,7 +83,21 @@ plt.plot(df.index[cycles_onsets][0:15000],
 
 
 
+
+
 # RSA
-rpeaks = bio["ECG"]["Rpeaks"]
+rpeaks = bio["ECG"]["R_Peaks"]
 rsp_cycles = bio["RSP"]['Cycles_Onsets']
-bio_rsa(rpeaks, rsp_cycles)
+rsp_signal = bio["df"]["RSP_Filtered"]
+
+RSA = bio_rsa(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1000)
+
+df = df.reset_index(drop=True)
+df["RSA"] = RSA["RSA"]
+
+# Plot only the 15s of data
+df[0:15000].plot()
+
+
+
+

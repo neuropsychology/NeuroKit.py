@@ -63,6 +63,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
 
