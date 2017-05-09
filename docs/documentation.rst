@@ -11,6 +11,18 @@ bio_process
 
 .. autofunction:: neurokit.bio_process
 
+
+ecg_process
+---------------
+
+.. autofunction:: neurokit.ecg_process
+
+
+rsp_process
+---------------
+
+.. autofunction:: neurokit.rsp_process
+
 eda_process
 ---------------
 
@@ -21,10 +33,6 @@ emg_process
 
 .. autofunction:: neurokit.emg_process
 
-ecg_process
----------------
-
-.. autofunction:: neurokit.ecg_process
 
 ecg_find_peaks
 -----------------
