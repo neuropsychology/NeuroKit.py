@@ -41,28 +41,17 @@ def bio_rsa(rpeaks, rsp_zero_crossings):
 
 
 
-def _get_useful_signals(data, *cols):
-    ecg = biosppy.ecg.ecg(data[cols[0]], show=False)
-    rsp = biosppy.resp.resp(data[cols[1]], show=False)
 
-    rpeaks = ecg['rpeaks']
-    rsp_zero_crossings = rsp['zeros']
+#==============================================================================
+# TEST
+#==============================================================================
+data = pd.read_csv('clean_rsp.csv')
+processed_rsp = rsp_process(data["RSP"])
+df = processed_rsp["df"][["RSP_Raw", "RSP_Filtered", "RSP_Inspiration"]]
 
-    return(ecg, rsp, rpeaks, rsp_zero_crossings)
 
-
-# ==============================================================================
-
-if __name__ == "__main__":
-    data = pd.read_csv('noisy_rsp.csv')
-    ecg, rsp, rpeaks, rsp_zero_crossings = _get_useful_signals(data, 'ECG','RSP')
-    cycles_rri = bio_rsa(rpeaks, rsp_zero_crossings)
-
-    # Some plots to check if the RRi found within the resp cycles are correct.
-    # Later use tdd
-
-    plt.figure()
-    plt.plot(ecg['ts'], ecg['filtered'])
-    plt.plot(rsp['ts'], rsp['filtered'], 'k')
-    plt.plot(rsp['ts'][rsp_zero_crossings],
-             rsp['filtered'][rsp_zero_crossings], 'ro')
+# Check RSP cycles onsets
+cycles_onsets = processed_rsp["RSP"]["Cycles_Onsets"]
+df[0:15000].plot()
+plt.plot(df.index[cycles_onsets][0:15000],
+         df['RSP_Filtered'][cycles_onsets][0:15000], 'ro')

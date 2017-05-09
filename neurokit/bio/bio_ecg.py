@@ -8,6 +8,7 @@ import biosppy
 import datetime
 import hrv
 
+from .bio_rsp import *
 
 # ==============================================================================
 # ==============================================================================
@@ -26,7 +27,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     ecg : list or array
         ECG signal array.
     rsp : list or array
-        Respiratory signal array.
+        Respiratory (RSP) signal array.
     sampling_rate : int
         Sampling rate (samples/second).
     resampling_method : str
@@ -141,6 +142,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
                         "HRV_NN50": hrv_time_domain['nn50'],
                         "HRV_PNN50": hrv_time_domain['pnn50'],
                         "HRV_RMSSD": hrv_time_domain['rmssd'],
+                        "HRV_RMSSD_Log": np.log(hrv_time_domain['rmssd']),
                         "HRV_SDNN": hrv_time_domain['sdnn']
                 }
         # Calculate frequency domain indexes
@@ -165,29 +167,10 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # RSP
     if rsp is not None:
-        biosppy_rsp = dict(biosppy.signals.resp.resp(rsp, sampling_rate=sampling_rate, show=False))
-        processed_ecg["df"]["RSP_Raw"] = rsp
-        processed_ecg["df"]["RSP_Filtered"] = biosppy_rsp["filtered"]
+        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        processed_ecg["RSP"] = rsp["RSP"]
+        processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
 
-        # RSP rate index creation
-        time_now = datetime.datetime.now()
-        # Convert seconds to datetime deltas
-        time_index = [datetime.timedelta(seconds=x) for x in biosppy_rsp["resp_rate_ts"]]
-        time_index = np.array(time_index) + time_now
-        rsp_rate = pd.Series(biosppy_rsp["resp_rate"], index=time_index)
-
-        if resampling_method == "mean":
-            rsp_rate = rsp_rate.resample(resampling_rate).mean()
-        if resampling_method == "pad":
-            rsp_rate = rsp_rate.resample(resampling_rate).pad()
-        if resampling_method == "bfill":
-            rsp_rate = rsp_rate.resample(resampling_rate).bfill()
-
-        if len(rsp_rate) >= len(rsp):
-            rsp_rate = rsp_rate[0:len(rsp)]
-        else:
-            rsp_rate = [rsp_rate[-1]]*(len(rsp)-len(rsp_rate)) + list(rsp_rate)
-        processed_ecg["df"]["RSP_Rate"] = np.array(rsp_rate)*60  # From Hz to respiration per seconds
 
     return(processed_ecg)
 
@@ -239,3 +222,18 @@ def ecg_find_peaks(signal, sampling_rate=1000):
     """
     rpeaks, = biosppy.ecg.hamilton_segmenter(signal, sampling_rate=sampling_rate)
     return(rpeaks)
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_plot_cardiac_cycles(signal, sampling_rate=1000):
+    """
+    """
+    # To do
