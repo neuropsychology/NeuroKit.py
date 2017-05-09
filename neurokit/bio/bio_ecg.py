@@ -178,11 +178,11 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         rsp_signal = rsp["df"]["RSP_Filtered"]
         rsa = respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
 
-        biosppy_ecg["ECG"]["RSA"] = {}
-        biosppy_ecg["df"]["RSA"] = rsa["RSA"]
-        biosppy_ecg["ECG"]["RSA"]["RSA_Mean"] = rsa["RSA_Mean"]
-        biosppy_ecg["ECG"]["RSA"]["RSA_Variability"] = rsa["RSA_Variability"]
-        biosppy_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]
+        processed_ecg["ECG"]["RSA"] = {}
+        processed_ecg["df"]["RSA"] = rsa["RSA"]
+        processed_ecg["ECG"]["RSA"]["RSA_Mean"] = rsa["RSA_Mean"]
+        processed_ecg["ECG"]["RSA"]["RSA_Variability"] = rsa["RSA_Variability"]
+        processed_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]
 
 
 
