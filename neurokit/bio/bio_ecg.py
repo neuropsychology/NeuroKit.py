@@ -38,7 +38,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     processed_ecg : dict
         Dict containing processed ECG features.
 
-        Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, and the RSP filtered signal (if respiration provided).
+        Contains the ECG raw signal, the filtered signal, the R peaks indexes, HRV characteristics, all the heartbeats, the Heart Rate, the RSP filtered signal (if respiration provided) and the respiratory sinus arrhythmia (RSA) features.
 
         This function is mainly a wrapper for the biosppy.ecg.ecg() and the hrv.hrv() functions. Credits go to their authors.
 
@@ -178,8 +178,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         rsp_signal = rsp["df"]["RSP_Filtered"]
         rsa = respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
 
-        processed_ecg["ECG"]["RSA"] = {}
         processed_ecg["df"]["RSA"] = rsa["RSA"]
+
+        processed_ecg["ECG"]["RSA"] = {}
         processed_ecg["ECG"]["RSA"]["RSA_Mean"] = rsa["RSA_Mean"]
         processed_ecg["ECG"]["RSA"]["RSA_Variability"] = rsa["RSA_Variability"]
         processed_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]

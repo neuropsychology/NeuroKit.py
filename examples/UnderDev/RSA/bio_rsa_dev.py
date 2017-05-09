@@ -26,7 +26,7 @@ http://ieeexplore.ieee.org.sci-hub.cc/document/470252/?reload=true
 #==============================================================================
 data = pd.read_csv('clean_rsp.csv')
 bio = nk.ecg_process(ecg=data["ECG"], rsp=data["RSP"])
-df = bio["df"][["ECG_Filtered", "RSP_Raw", "RSP_Filtered", "RSP_Inspiration"]]
+df = bio["df"][["ECG_Filtered", "RSP_Raw", "RSA", "RSP_Inspiration"]]
 #
 ## Check RSP cycles onsets
 #cycles_onsets = bio["RSP"]["Cycles_Onsets"]

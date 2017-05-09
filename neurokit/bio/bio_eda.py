@@ -21,7 +21,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2):
+def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, scr_min_amplitude=0.1):
     """
     Automated processing of EDA signal.
 
@@ -39,6 +39,8 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True,
         Penalization for the sparse SMNA driver.
     cvxEDA_gamma : float
         Penalization for the tonic spline coefficients.
+    scr_min_amplitude : float
+        Minimum treshold by which to exclude Skin Conductance Responses (SCRs).
 
     Returns
     ----------
@@ -59,6 +61,11 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True,
 
     Notes
     ----------
+    *Details*
+
+    - **cvxEDA**: Based on a model which describes EDA as the sum of three terms: the phasic component, the tonic component, and an additive white Gaussian noise term incorporating model prediction errors as well as measurement errors and artifacts. This model is physiologically inspired and fully explains EDA through a rigorous methodology based on Bayesian statistics, mathematical convex optimization and sparsity.
+
+
     *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
@@ -92,7 +99,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True,
             print("NeuroKit Warning: couln't apply cvxEDA on EDA signal. Using normal.")
 
     # Compute several features using biosppy
-    biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False))
+    biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False, min_amplitude=scr_min_amplitude))
 
     eda_df["EDA_Filtered"] = biosppy_eda["filtered"]
 
