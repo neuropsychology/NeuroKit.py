@@ -312,7 +312,7 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
         if len(RRis) > 1:
             RSA.append(np.max(RRis) - np.min(RRis))
         else:
-            RSA.append(np.nan())
+            RSA.append(np.nan)
 
 
     # Continuous RSA
