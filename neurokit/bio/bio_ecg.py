@@ -52,6 +52,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     ----------
     *Details*
 
+    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity.
     - **HRV**: Heart-Rate Variability is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013).
 
        - **SDNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine.
@@ -127,9 +128,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
                      "ECG": {
                             "RR_Intervals": rri,
                             "Cardiac_Cycles": biosppy_ecg["templates"],
-                            "R_Peaks": biosppy_ecg["rpeaks"],
-                            "HRV": np.nan
-                            }}
+                            "R_Peaks": biosppy_ecg["rpeaks"]}
+                     }
 
 
 
@@ -172,6 +172,19 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         processed_ecg["RSP"] = rsp["RSP"]
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
 
+        # RSA
+        rpeaks = biosppy_ecg["rpeaks"]
+        rsp_cycles = biosppy_ecg["RSP"]['Cycles_Onsets']
+        rsp_signal = biosppy_ecg["df"]["RSP_Filtered"]
+        rsa = respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
+
+        biosppy_ecg["ECG"]["RSA"] = {}
+        biosppy_ecg["df"]["RSA"] = rsa["RSA"]
+        biosppy_ecg["ECG"]["RSA"]["RSA_Mean"] = rsa["RSA_Mean"]
+        biosppy_ecg["ECG"]["RSA"]["RSA_Variability"] = rsa["RSA_Variability"]
+        biosppy_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]
+
+
 
     return(processed_ecg)
 
@@ -193,7 +206,7 @@ def ecg_find_peaks(signal, sampling_rate=1000):
     signal : list or array
         ECG signal (preferably filtered).
     sampling_rate : int
-        sampling_rate = int
+        Sampling rate (samples/second).
 
 
     Returns
@@ -222,7 +235,107 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 
     """
     rpeaks, = biosppy.ecg.hamilton_segmenter(signal, sampling_rate=sampling_rate)
+    rpeaks, = biosppy.ecg.correct_rpeaks(signal=signal, rpeaks=rpeaks, sampling_rate=sampling_rate, tol=0.05)
     return(rpeaks)
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1000):
+    """
+    Returns Respiratory Sinus Arrhythmia (RSA) features.
+
+    Parameters
+    ----------
+    rpeaks : list or array
+        List of R peaks indices.
+    rsp_cycles : list or array
+        List of respiratory cycles onsets.
+    rsp_signal : list or array
+        RSP signal.
+    sampling_rate : int
+        Sampling rate (samples/second).
+
+
+    Returns
+    ----------
+    rsa : dict
+        Contains RSA features.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> rsa = nk.respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
+
+    Notes
+    ----------
+    *Details*
+
+    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity.
+
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Rhenan Bartels (https://github.com/rhenanbartels)
+
+    *Dependencies*
+
+    - biosppy
+    - numpy
+    - pandas
+
+    *See Also*
+
+    - BioSPPY: https://github.com/PIA-Group/BioSPPy
+
+    """
+    # Find all RSP cycles and the Rpeaks within
+    cycles_rri = []
+    for idx in range(len(rsp_cycles) - 1):
+        cycle_init = rsp_cycles[idx]
+        cycle_end = rsp_cycles[idx + 1]
+        cycles_rri.append(rpeaks[np.logical_and(rpeaks >= cycle_init,
+                                                rpeaks < cycle_end)])
+
+    # Iterate over all cycles
+    RSA = []
+    for cycle in cycles_rri:
+        RRis = np.diff(cycle)/sampling_rate
+        if len(RRis) > 1:
+            RSA.append(np.max(RRis) - np.min(RRis))
+        else:
+            RSA.append(np.nan())
+
+
+    # Continuous RSA
+    current_rsa = np.nan
+
+    continuous_rsa = []
+    phase_counter = 0
+    for i in range(len(rsp_signal)):
+        if i == rsp_cycles[phase_counter]:
+            current_rsa = RSA[phase_counter]
+            if phase_counter < len(rsp_cycles)-2:
+                phase_counter += 1
+        continuous_rsa.append(current_rsa)
+
+    # Find last phase
+    continuous_rsa = np.array(continuous_rsa)
+    continuous_rsa[max(rsp_cycles):] = np.nan
+
+    RSA = {"RSA": continuous_rsa,
+           "RSA_Values": RSA,
+           "RSA_Mean": pd.Series(RSA).mean(),
+           "RSA_Variability": pd.Series(RSA).std()}
+
+    return(RSA)
 
 
 
