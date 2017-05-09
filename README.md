@@ -46,7 +46,7 @@ This package provides a high level integration of complex statistical routines f
 Main features:
 
 - **M/EEG**
-  - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read and convert many EEG and MEG files tp an [`mne.io.Raw`](http://martinos.org/mne/stable/generated/mne.io.Raw.html#mne.io.Raw) object
+  - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read and convert many EEG and MEG files to an [`mne.io.Raw`](http://martinos.org/mne/stable/generated/mne.io.Raw.html#mne.io.Raw) object
   - Preprocessing: Under development
   - ERP: Under development
   - Time/Frequency: Under development
