@@ -58,7 +58,7 @@ def rsp_process(rsp, sampling_rate=1000, resampling_method="bfill"):
 
     - BioSPPY: https://github.com/PIA-Group/BioSPPy
     """
-    processed_rsp = {"df": pd.DataFrame({"RSP_Raw":rsp})}
+    processed_rsp = {"df": pd.DataFrame({"RSP_Raw": np.array(rsp)})}
 
     biosppy_rsp = dict(biosppy.signals.resp.resp(rsp, sampling_rate=sampling_rate, show=False))
     processed_rsp["df"]["RSP_Filtered"] = biosppy_rsp["filtered"]
