@@ -3,6 +3,7 @@ import biosppy
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import neurokit as nk
 
 plt.ion()
 
@@ -46,8 +47,8 @@ def bio_rsa(rpeaks, rsp_zero_crossings):
 # TEST
 #==============================================================================
 data = pd.read_csv('clean_rsp.csv')
-processed_rsp = rsp_process(data["RSP"])
-df = processed_rsp["df"][["RSP_Raw", "RSP_Filtered", "RSP_Inspiration"]]
+processed_rsp = nk.ecg_process(ecg=data["ECG"], rsp=data["RSP"])
+df = processed_rsp["df"][["ECG_Filtered", "RSP_Raw", "RSP_Filtered", "RSP_Inspiration"]]
 
 
 # Check RSP cycles onsets
