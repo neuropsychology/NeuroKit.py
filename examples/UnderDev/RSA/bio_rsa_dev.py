@@ -17,13 +17,13 @@ http://ieeexplore.ieee.org.sci-hub.cc/document/470252/?reload=true
 
 
 # ==============================================================================
-def bio_rsa(rpeaks, rsp_zero_crossings):
+def bio_rsa(rpeaks, rsp_cycles):
 
     # Find all RSP cycles and the Rpeaks within
     cycles_rri = []
-    for idx in range(len(rsp_zero_crossings) - 1):
-        cycle_init = rsp_zero_crossings[idx]
-        cycle_end = rsp_zero_crossings[idx + 1]
+    for idx in range(len(rsp_cycles) - 1):
+        cycle_init = rsp_cycles[idx]
+        cycle_end = rsp_cycles[idx + 1]
         cycles_rri.append(rpeaks[np.logical_and(rpeaks >= cycle_init,
                                                 rpeaks < cycle_end)])
 
@@ -47,12 +47,19 @@ def bio_rsa(rpeaks, rsp_zero_crossings):
 # TEST
 #==============================================================================
 data = pd.read_csv('clean_rsp.csv')
-processed_rsp = nk.ecg_process(ecg=data["ECG"], rsp=data["RSP"])
-df = processed_rsp["df"][["ECG_Filtered", "RSP_Raw", "RSP_Filtered", "RSP_Inspiration"]]
-
+bio = nk.ecg_process(ecg=data["ECG"], rsp=data["RSP"])
+df = bio["df"][["ECG_Filtered", "RSP_Raw", "RSP_Filtered", "RSP_Inspiration"]]
 
 # Check RSP cycles onsets
-cycles_onsets = processed_rsp["RSP"]["Cycles_Onsets"]
+cycles_onsets = bio["RSP"]["Cycles_Onsets"]
+# Plot only the 15s of data
 df[0:15000].plot()
 plt.plot(df.index[cycles_onsets][0:15000],
          df['RSP_Filtered'][cycles_onsets][0:15000], 'ro')
+
+
+
+# RSA
+rpeaks = bio["ECG"]["Rpeaks"]
+rsp_cycles = bio["RSP"]['Cycles_Onsets']
+bio_rsa(rpeaks, rsp_cycles)

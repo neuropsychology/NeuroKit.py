@@ -106,9 +106,9 @@ def rsp_process(rsp, sampling_rate=1000, resampling_method="bfill"):
     rsp_diff = processed_rsp["RSP"]["Cycles_Length"]
 
     processed_rsp["RSP"]["Respiratory_Variability"] = {}
-    processed_rsp["RSP"]["Respiratory_Variability"]["SD"] = np.std(rsp_diff)
-    processed_rsp["RSP"]["Respiratory_Variability"]["RMSSD"] = np.sqrt(np.mean(rsp_diff ** 2))
-    processed_rsp["RSP"]["Respiratory_Variability"]["RMSSD_Log"] = np.log(processed_rsp["RSP"]["Respiratory_Variability"]["RMSSD"])
+    processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_SD"] = np.std(rsp_diff)
+    processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"] = np.sqrt(np.mean(rsp_diff ** 2))
+    processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD_Log"] = np.log(processed_rsp["RSP"]["Respiratory_Variability"]["RSPV_RMSSD"])
 
 
     return(processed_rsp)
