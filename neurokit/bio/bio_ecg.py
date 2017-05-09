@@ -174,8 +174,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
         # RSA
         rpeaks = biosppy_ecg["rpeaks"]
-        rsp_cycles = biosppy_ecg["RSP"]['Cycles_Onsets']
-        rsp_signal = biosppy_ecg["df"]["RSP_Filtered"]
+        rsp_cycles = rsp["RSP"]["Cycles_Onsets"]
+        rsp_signal = rsp["df"]["RSP_Filtered"]
         rsa = respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
 
         biosppy_ecg["ECG"]["RSA"] = {}
