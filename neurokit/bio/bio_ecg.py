@@ -186,6 +186,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         processed_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]
 
 
+    # Complexity
+    processed_ecg["ECG"]["Complexity"] = {}
+    chaos = complexity(rri)
 
     return(processed_ecg)
 

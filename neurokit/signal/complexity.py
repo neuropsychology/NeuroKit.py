@@ -21,9 +21,9 @@ def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=T
     shannon : bool
         Computes Shannon entropy.
     sampen : bool
-        Computes approximate sample entropy (sampen) using 'chebychev' distance.
+        Computes approximate sample entropy (sampen) using Chebychev and Euclidean distances.
     multiscale : bool
-        Computes multiscale entropy (MSE). Note that it uses the 'chebychev' distance.
+        Computes multiscale entropy (MSE). Note that it uses the 'euclidean' distance.
     fractal_dim : bool
         Computes the fractal (correlation) dimension.
     hurst : bool
@@ -104,10 +104,15 @@ def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=T
     # Sampen
     if sampen is True:
         try:
-            complexity["Sample_Entropy"] = nolds.sampen(signal, emb_dim, tolerance, dist="chebychev", debug_plot=False, plot_file=None)
+            complexity["Sample_Entropy_Chebychev"] = nolds.sampen(signal, emb_dim, tolerance, dist="chebychev", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen).")
-            complexity["Sample_Entropy"] = np.nan
+            print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen) using chebychev distance.")
+            complexity["Sample_Entropy_Chebychev"] = np.nan
+        try:
+            complexity["Sample_Entropy_Euclidean"] = nolds.sampen(signal, emb_dim, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
+        except:
+            print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen) using euclidean distance.")
+            complexity["Sample_Entropy_Euclidean"] = np.nan
 
     # multiscale
     if multiscale is True:
@@ -321,7 +326,7 @@ def entropy_multiscale(signal, emb_dim=2, tolerance="default"):
             temp_ts[j] = float(num) / float(den)
         # Replaced the sample entropy computation with nolds' one...
 #        se = sample_entropy(temp_ts, 1, tolerance)
-        se = nolds.sampen(temp_ts, 1, tolerance, dist="chebychev", debug_plot=False, plot_file=None)
+        se = nolds.sampen(temp_ts, 1, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
 
         mse[0, i] = se
 
