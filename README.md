@@ -21,7 +21,6 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 
 ---
 
-**Warning: This package is under development.**
 
 ## Installation
 
