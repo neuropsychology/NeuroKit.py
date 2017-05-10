@@ -82,4 +82,4 @@ Memory and Cognition Lab' Day, 01 November, Paris, France
 *Note: The authors do not give any warranty. If this software causes your keyboard to blow up, your brain to liquefy, your toilet to clog or a zombie plague to leak, the authors CANNOT IN ANY WAY be held responsible.*
 
 ## Credits
-Note that important credits go to the developpers of the many packages upon which NeuroKit is built. Those include, among others, [mne](http://mne-tools.github.io/stable/index.html) (M/EEG), [bioSPPy](https://github.com/PIA-Group/BioSPPy) (bio), [hrv](https://github.com/rhenanbartels/hrv) (ecg), [bioread](https://github.com/njvack/bioread) (bio)... Make sure you cite them!
+Note that important credits go to the developpers of the many packages upon which NeuroKit is built. Those include, [mne](http://mne-tools.github.io/stable/index.html), [bioSPPy](https://github.com/PIA-Group/BioSPPy), [hrv](https://github.com/rhenanbartels/hrv), [bioread](https://github.com/njvack/bioread)... Make sure you cite them!
