@@ -4,7 +4,7 @@
 
 
 # NeuroKit.py 
-![](https://img.shields.io/pypi/pyversions/neurokit.svg) ![https://pypi.python.org/pypi/neurokit](https://img.shields.io/pypi/v/neurokit.svg) ![](https://travis-ci.org/neuropsychology/NeuroKit.py.svg?branch=master) [![codecov](https://codecov.io/gh/neuropsychology/NeuroKit.py/branch/master/graph/badge.svg)](https://codecov.io/gh/neuropsychology/NeuroKit.py)
+![[pypi](https://pypi.python.org/pypi/neurokit)](https://img.shields.io/pypi/pyversions/neurokit.svg) ![[pypi](https://pypi.python.org/pypi/neurokit)](https://img.shields.io/pypi/v/neurokit.svg) ![](https://travis-ci.org/neuropsychology/NeuroKit.py.svg?branch=master) [![codecov](https://codecov.io/gh/neuropsychology/NeuroKit.py/branch/master/graph/badge.svg)](https://codecov.io/gh/neuropsychology/NeuroKit.py)
 
 A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, EDA, ECG, EMG...).
 
