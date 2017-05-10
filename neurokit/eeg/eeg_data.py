@@ -24,7 +24,7 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
     Parameters
     ----------
     filename : str
-        Filename (with or without the extension).
+        Filename.
     path : str
         File's path.
     eog : list
