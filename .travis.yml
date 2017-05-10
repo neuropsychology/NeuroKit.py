@@ -10,6 +10,7 @@ install: "pip install https://github.com/neuropsychology/NeuroKit.py/zipball/mas
 # command to run tests
 install:
   - pip install codecov
+  - pip install -r requirements.txt
 
 script:
   - python setup.py install

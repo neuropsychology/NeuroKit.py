@@ -1,0 +1,12 @@
+numpy
+pandas
+scipy
+sklearn
+matplotlib
+mne
+bioread
+nolds
+biosppy
+hrv
+Pillow
+cvxopt
