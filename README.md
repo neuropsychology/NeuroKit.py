@@ -4,7 +4,7 @@
 
 
 # NeuroKit.py 
-[![License](https://img.shields.io/pypi/l/neurokit.svg)](https://github.com/neuropsychology/NeuroKit.py/blob/master/LICENSE) [![pypi](https://img.shields.io/pypi/pyversions/neurokit.svg)](https://pypi.python.org/pypi/neurokit) [![pypi](https://img.shields.io/pypi/v/neurokit.svg)](https://pypi.python.org/pypi/neurokit) [![](https://travis-ci.org/neuropsychology/NeuroKit.py.svg?branch=master)](https://travis-ci.org/neuropsychology/NeuroKit.py) [![codecov](https://codecov.io/gh/neuropsychology/NeuroKit.py/branch/master/graph/badge.svg)](https://codecov.io/gh/neuropsychology/NeuroKit.py)
+[![pypi](https://img.shields.io/pypi/pyversions/neurokit.svg)](https://pypi.python.org/pypi/neurokit) [![pypi](https://img.shields.io/pypi/v/neurokit.svg)](https://pypi.python.org/pypi/neurokit) [![](https://travis-ci.org/neuropsychology/NeuroKit.py.svg?branch=master)](https://travis-ci.org/neuropsychology/NeuroKit.py) [![codecov](https://codecov.io/gh/neuropsychology/NeuroKit.py/branch/master/graph/badge.svg)](https://codecov.io/gh/neuropsychology/NeuroKit.py) [![License](https://img.shields.io/pypi/l/neurokit.svg)](https://github.com/neuropsychology/NeuroKit.py/blob/master/LICENSE)
 
 A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, EDA, ECG, EMG...).
 
