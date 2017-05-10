@@ -6,19 +6,15 @@ import neurokit as nk
 
 
 class Test(unittest.TestCase):
-
-
 #==============================================================================
 # BIO
 #==============================================================================
-    # If running from travis:
-    data_path = os.getcwd() + r"/tests/test_bio_data.acq"
-    # If running in local:
-#    data_path = "test_bio_data.acq"
-
     def test_read_acqknowledge(self):
+
+        data_path = os.getcwd() + r"/tests/test_bio_data.acq"  # If running from travis
+#        data_path = "test_bio_data.acq"  # If running in local
         # Read data
-        df = nk.read_acqknowledge(self.data_path)
+        df = nk.read_acqknowledge(data_path)
         # Resample to 100Hz
         df = df.resample("10L").mean()
         df.columns = ['ECG', 'EDA', 'PPG', 'Photosensor', 'RSP']

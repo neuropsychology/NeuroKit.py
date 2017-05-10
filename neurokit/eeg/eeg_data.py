@@ -74,17 +74,22 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
     else:
         extension = "." + extension[-1]
 
-    if extension is None:
-        extension = ".vhdr"
-    if os.path.exists(file + extension) is False:
-        extension = ".raw"
-    if os.path.exists(file + extension) is False:
-        extension = ".set"
-    if os.path.exists(file + extension) is False:
-        extension = ".fif"
-    if os.path.exists(file + extension) is False:
-        print("NeuroKit Error: read_eeg(): couldn't find compatible format of data.")
-        return()
+    if extension in [".vhdr", ".raw", ".set", ".fif", ".edf"]:
+        file = file.split(".")[0]
+    else:
+        if extension is None:
+            extension = ".vhdr"
+        if os.path.exists(file + extension) is False:
+            extension = ".raw"
+        if os.path.exists(file + extension) is False:
+            extension = ".set"
+        if os.path.exists(file + extension) is False:
+            extension = ".fif"
+        if os.path.exists(file + extension) is False:
+            extension = ".edf"
+        if os.path.exists(file + extension) is False:
+            print("NeuroKit Error: read_eeg(): couldn't find compatible format of data.")
+            return()
 
     # Load the data
     try:
@@ -96,6 +101,8 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
             raw = mne.io.read_raw_eeglab(file + extension, eog=eog, misc=misc, montage=montage, preload=preload, verbose=verbose)
         elif extension == ".fif":
             raw = mne.io.read_raw_fif(file + extension, preload=preload, verbose=verbose)
+        elif extension == ".edf":
+            raw = mne.io.read_raw_edf(file + extension, preload=preload, verbose=verbose)
         else:
             print("NeuroKit Error: read_eeg(): couldn't find compatible reader of data.")
             return()
