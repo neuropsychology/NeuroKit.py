@@ -62,6 +62,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
        - **LF**  is the variance (*i.e.*, power) in HRV in the Low Frequency (.04 to .15 Hz). Reflects a mixture of sympathetic and parasympathetic activity, but in long-term recordings like ours, it reflects sympathetic activity and can be reduced by the beta-adrenergic antagonist propanolol (McCraty & Atkinson, 1996).
        - **HF**  is the variance (*i.e.*, power) in HRV in the High Frequency (.15 to .40 Hz). Reflects fast changes in beat-to-beat variability due to parasympathetic (vagal) activity. Sometimes called the respiratory band because it corresponds to HRV changes related to the respiratory cycle and can be increased by slow, deep breathing (about 6 or 7 breaths per minute) (Kawachi et al., 1995) and decreased by anticholinergic drugs or vagal blockade (Hainsworth, 1995).
 
+    - **Complexity**: Non-linear chaos/complexity measures of RR intervals. See `neurokit.complexity`.
+
+
     *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)

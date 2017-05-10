@@ -10,7 +10,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=True, lyap_e=False, emb_dim=2, tolerance="default"):
+def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False, emb_dim=2, tolerance="default"):
     """
     Returns several chaos/complexity indices of a signal (including entropy, fractal dimensions, Hurst and Lyapunov exponent etc.).
 
@@ -48,8 +48,9 @@ def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=T
     Example
     ----------
     >>> import neurokit as nk
+    >>> import numpy as np
     >>>
-    >>> signal = [5, 1, 7, 2, 5, 1, 7, 4, 6, 7, 5, 4, 1, 1, 4, 4]
+    >>> signal = np.sin(np.log(np.random.sample(666)))
     >>> complexity = nk.complexity(signal)
 
     Notes
