@@ -7,6 +7,7 @@ import neurokit as nk
 
 class Test(unittest.TestCase):
 
+
     # If running from travis:
     data_path = os.getcwd() + r"/tests/test_bio_data.acq"
     # If running in local:
