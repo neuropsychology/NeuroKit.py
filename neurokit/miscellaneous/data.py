@@ -6,6 +6,7 @@ import numpy as np
 import platform
 import os
 import pickle
+import gzip
 
 # ==============================================================================
 # ==============================================================================
@@ -144,9 +145,9 @@ def save_data(df, filename="data", extension="all", participant_id="", path="", 
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def save_object(raws, filename="file.nk", path=""):
+def save_nk_object(file, filename="file", path="", extension="nk", compress=False, compatibility=-1):
     """
-    Save an object to a pickle's file.
+    Save an object to a pickled file.
 
     Parameters
     ----------
@@ -168,8 +169,12 @@ def save_object(raws, filename="file.nk", path=""):
     ----------
     - pickle
     """
-    with open(path + filename, 'wb') as file:
-        pickle.dump(raws, file)
+    if compress is True:
+        with gzip.open(path + filename + "." + extension, 'wb') as name:
+            pickle.dump(file, name, protocol=compatibility)
+    else:
+        with open(path + filename + "." + extension, 'wb') as name:
+            pickle.dump(file, name, protocol=compatibility)
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -178,9 +183,9 @@ def save_object(raws, filename="file.nk", path=""):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def load_object(filename, path=""):
+def read_nk_object(filename, path=""):
     """
-    Load a pickle file.
+    Read a pickled file.
 
     Parameters
     ----------
@@ -202,9 +207,13 @@ def load_object(filename, path=""):
     ----------
     - pickle
     """
-    with open(filename, 'rb') as file:
-        raws = pickle.load(file)
-    return(raws)
+    try:
+        with open(filename, 'rb') as name:
+            file = pickle.load(name)
+    except pickle.UnpicklingError:
+        with gzip.open(filename, 'rb') as name:
+            file = pickle.load(name)
+    return(file)
 
 # ==============================================================================
 # ==============================================================================
