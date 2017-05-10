@@ -8,6 +8,9 @@ import neurokit as nk
 class Test(unittest.TestCase):
 
 
+#==============================================================================
+# BIO
+#==============================================================================
     # If running from travis:
     data_path = os.getcwd() + r"/tests/test_bio_data.acq"
     # If running in local:
@@ -31,6 +34,10 @@ class Test(unittest.TestCase):
         self.assertEqual(len(bio["EDA"]["SCR_Onsets"]), 5)
         return(bio)
 
+
+#==============================================================================
+# SIGNAL
+#==============================================================================
 # Not working for some reasons...
 #    def test_complexity(self):
 #        np.random.seed(666)
@@ -43,6 +50,15 @@ class Test(unittest.TestCase):
 #        self.assertEqual("%.2f" %complexity["Sample_Entropy_Chebychev"], '2.07')
 #        self.assertEqual("%.2f" %complexity["Sample_Entropy_Euclidean"], '2.25')
 #        self.assertEqual("%.2f" %complexity["Shannon_Entropy"], '6.64')
+
+
+#==============================================================================
+# MISCELLANEOUS
+#==============================================================================
+    def test_BMI(self):
+            self.assertEqual(round(nk.BMI(182, 70, 27, "m")['BMI_old'], 2), 21.13)
+
+
 
 if __name__ == '__main__':
     unittest.main()
