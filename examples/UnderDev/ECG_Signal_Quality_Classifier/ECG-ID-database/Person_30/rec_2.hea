@@ -1,0 +1,7 @@
+rec_2 2 500 10000
+rec_2.dat 16 200 12 0 -37 -23275 0 ECG I
+rec_2.dat 16 200 12 0 -4 1412 0 ECG I filtered
+
+# Age: 28
+# Sex: male
+# ECG date: 12.05.2005

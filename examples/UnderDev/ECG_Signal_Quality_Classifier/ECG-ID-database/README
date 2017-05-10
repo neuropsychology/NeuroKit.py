@@ -1,0 +1,29 @@
+
+Database name: Biometric human identification ECG database  (ecgiddb)
+
+
+Creator: 
+Tatiana Lugovaya
+for master's thesis "Biometric human identification based on ECG" in 2005
+Department of Applied Mathematics and Computer Science
+Electrotechnical University "LETI", Saint-Petersburg, Russian Federation
+
+
+Database contains 310 ECG recordings, obtained from 90 persons:
+- each recording contain 20-second I-lead ECG signal;
+- 10 beats in every recording are annotated (unaudited R- and T-wave peaks annotations from an automated detector);
+- signals were digitized at 500 Hz with 12-bit resolution;
+- number of records for each person vary from 2 (collected during one day) to 20 (collected periodically during 6 months);
+- each recording is supplied with an information containing age, gender and record date;
+- records were obtained from volunteers among students, colleagues and friends (44 men and 46 women aged from 13 to 75 years);
+
+
+Collected raw data is rather noisy and contain both high and low frequency noise components. 
+Each recording combine both raw and filtered signals:
+	- Column 0 "ECG I": 		raw signal;
+	- Column 1 "ECG I filtered": 	filtered signal;
+
+
+Contact information: 
+Tatiana Lugovaya
+e-mail: ts.lugovaya@gmail.com

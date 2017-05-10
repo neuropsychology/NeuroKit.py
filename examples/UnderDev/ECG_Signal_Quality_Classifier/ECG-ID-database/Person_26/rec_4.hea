@@ -1,0 +1,7 @@
+rec_4 2 500 10000
+rec_4.dat 16 200 12 0 -74 -20026 0 ECG I
+rec_4.dat 16 200 12 0 -7 -2117 0 ECG I filtered
+
+# Age: 31
+# Sex: female
+# ECG date: 13.05.2005

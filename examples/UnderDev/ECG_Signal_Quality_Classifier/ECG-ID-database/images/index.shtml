@@ -1,0 +1,334 @@
+<!--#set var="TITLE" value="Biometric Human Identification based on ECG"-->
+<!--#include virtual="/head.shtml"-->
+
+
+<center><h1>Biometric Human Identification based on ECG</h1></center>
+
+
+<p align="center">T. Lugovaya</p>
+
+<p align="center">Department of Applied Mathematics and Computer Science,
+ Electrotechnical University "LETI", Saint-Petersburg, Russian Federation</p>
+
+
+<p>
+<center><table bgcolor="lightblue">
+<tr>
+<td>This material originally appeared in master's thesis "Biometric human identification based on ECG" in 2005.
+ Please cite this publication when referencing this material.</td>
+</tr>
+</table></center></p>
+
+<a name="abstract">
+<h2>Abstract</h2></a>
+
+<p><i>This research investigates the feasibility of using the electrocardiogram (ECG) as a new biometric for human identification.
+ It is well known that the shapes of the ECG waveforms depend on human heart anatomic features and are different for different persons.
+ But it is unclear whether such differences can be used to identify different individuals. This research demonstrates that it is possible
+ to identify a specific person in a predetermined group using a one-lead ECG. A one-lead ECG is a one-dimensional, low-frequency signal that
+ can be recorded from electrodes on the hands. ECG fragments containing QRS complex, P and T waves extracted from the ECG are processed by
+ principal component analysis and classified using linear discriminant analysis. Using this method on a predetermined group of 90 subjects,
+ the experimental results showed that the rate of correct identification was 96%.</i></p>
+
+
+
+<a name="introduction">
+<h2>1. Introduction</h2></a>
+
+<p>Biometric technologies are among fast-developing fields of information security, gradually entering into all
+ spheres of human activity. Today only three biometric methods have proved their efficiency, namely, identification based on
+ fingerprints, iris or retina, and face. Hand geometry, voice, writing and typing dynamics, etc.
+ are also useful, depending on the purpose and range of application.</p>
+
+<p>This research aims to develop identification system based on ECG (figure 1).
+ ECG is assumed as an almost unique human characteristic because morphology and amplitudes of registered cardiac complexes are
+ governed by multiple individual factors, in particular, by formation and position of the heart, presence and nature
+ of pathologies, etc.</p>
+
+
+<center>
+<img src="ecg.png" alt="[example of ECG]">
+<p><b>Figure 1.</b> Example of ECG with agreed notations.</p>
+</center>
+
+
+<a name="database">
+<h2>2. The ECG-ID Database</h2></a>
+
+<p>Database contains 310 ECG recordings, obtained from 90 persons:
+<li>each recording contain 20-second I-lead ECG signal;
+<li>10 beats in every recording are annotated (unaudited R- and T-wave peaks annotations from an automated detector);
+<li>signals were digitized at 500 Hz with 12-bit resolution;
+<li>number of records for each person vary from 2 (collected during one day) to 20 (collected periodically during 6 months);
+<li>each recording is supplied with an information containing age, gender and record date;
+<li>records were obtained from volunteers among students, colleagues and friends (44 men and 46 women aged from 13 to 75 years);</p>
+
+
+<p>Collected raw data is rather noisy and contain both high and low frequency noise components. 
+Each recording combine both raw and filtered signals:
+<li>Column 0 "ECG I": raw signal;
+<li>Column 1 "ECG I filtered": filtered signal;</p>
+
+<p>The ECG-ID Database itself is available <a href="../">here</a>.</p>
+
+<center>
+<img src="ecg_db_record.png" alt="[example of ECG-ID database record]">
+<p><b>Figure 2.</b> Example of ECG-ID Database record.</p></center>
+
+
+<a name="system">
+<h2>3. Identification system</h2></a>
+
+
+<p>The system feasibility was discussed in [1, 2]. This study suggests other data interpretation and classification
+ techniques, with the system tested on a higher level of live input data. The respective findings are compared
+ below (table 2).</p>
+
+
+<p>The identification system uses a classical scheme including data preprocessing, formation of input data space, transition to reduced
+ feature space, ECG cycles classification and ECG record identification.</p>
+
+<p>On usability grounds, the study uses brief ECG (10-20 sec) records from a single upper extremity lead
+ (lead I) with sample rate 500Hz and digit 12.</p>
+
+
+<a name="preprocessing">
+<h3>3.1. Data preprocessing</h3></a>
+
+<p>Collected raw data is rather noisy and contain distortions of various origins, both high and low frequency noise components are in presence (figure 3).</p>
+
+<center>
+<table>
+<tr>
+<td align=center><img src="ecg_noise_net.png" alt="[power-line noise]"><br>A. ECG with power-line noise</td>
+</tr>
+<tr>
+<td align=center><img src="ecg_noise_high.png" alt="[high-frequency noise]"><br>B. ECG with high-frequency noise</td>
+</tr>
+<tr>
+<td align=center><img src="ecg_noise_both.png" alt="[power-line and high-frequency noise]"><br>C. ECG with both power-line and high-frequency noise</td>
+</tr>
+<tr>
+<td align=center><img src="ecg_noise_drift.png" alt="[isoline drift]"><br>D. ECG with isoline drift</td>
+</tr>
+</table>
+
+<b>Figure 3.</b> Examples of noisy ECG.
+</center>
+
+
+<p>Frequency-selective signal filtering was implemented using a set of adaptive bandstop filter and low-pas filter (figure 4).</p>
+
+
+<center>
+<table>
+<tr>
+<td><img src="noise_filter_1.png" alt="[signal filtering 1]"></td>
+</tr>
+<tr>
+<td><img src="noise_filter_2.png" alt="[signal filtering 2]"></td>
+</tr>
+</table>
+
+<b>Figure 4.</b> Examples of frequency-selective signal filtering results.
+</center>
+
+
+<p>Isoline drift correction was implemented using multilevel one-dimensional wavelet analysis. Original signal was decomposed at level 9
+ using biorthogonal wavelet. Signal reconstructed using final approximation coefficients is assumed to be drifting isoline, which is subtracted
+ from the original signal (figure 5). This method shows good results in both cases of clear and rather noisy ECG signals.</p>
+
+
+<center>
+<table>
+<tr>
+<td><img src="wavelet_drift_correction.png" alt="[wavelet drift correction]"></td>
+</tr>
+<tr>
+<td><img src="wavelet_drift_correction_noisy.png" alt="[wavelet drift correction noisy]"></td>
+</tr>
+</table>
+
+<b>Figure 5.</b> Examples of isoline drift correction results.
+</center>
+
+
+<a name="feature_space">
+<h3>3.2. Initial feature space</h3></a>
+
+<p>The study focuses on ininitial feature space formation. Obviously information on cardiac performance is basically held in the pulse cycle
+ fragment containing the QRS complex and P- and T waves (referred here as the PQRST-fragment). Therefore the stage begins with extraction of
+ a set of R-peak synchronized PQRST-fragments (figure 6). The PQRST fragments length is invariably 0.5 sec or 250 counts.</p>
+
+<center>
+<table>
+<tr>
+<td align="center"><img src="pqrst_set_1.png" alt="[PQRST-fragments extraction]"></td>
+</tr>
+<tr>
+<td align="center"><img src="pqrst_set_2.png" alt="[PQRST-fragments extraction]"></td>
+</tr>
+</table>
+
+<b>Figure 6.</b> R-peak detection and PQRST-fragments extraction.
+</center>
+
+
+<p>PQRST-fragment samples are used as informative features. Therefore extracted PQRST-fragments are then processed to enhance their similarity as follows:
+<table>
+<tr>
+<td>1.</td>
+<td>Correcting PQRST-fragment mutual "vertical" shift due to eventual residual isoline drift:</td>
+</tr>
+<tr>
+<td></td>
+<td align="center"><img src="pqrst_set_vertical_correction.png" alt="[vertical shift correction]"></td>
+</tr>
+<tr>
+<td>2.</td>
+<td>Culling eventual "atypical" PQRST-fragments due to gestures, deep breathing or certain pathologies:</td>
+</tr>
+<tr>
+<td></td>
+<td align="center"><img src="pqrst_set_atypical.png" alt="[atypical PQRST-fragments]"></td>
+</tr>
+<tr>
+<td>3.</td>
+<td>Correcting PQRST-fragments depending on heart rate using Bazett's formula:</td>
+</tr>
+<tr>
+<td></td>
+<td align="center"><img src="pqrst_set_rate_original.png" alt="[heart rate influence]">
+<br><img src="arrow_ver.png">
+<br><img src="pqrst_set_rate_corrected.png" alt="[heart rate correction]"></td>
+</tr>
+</table>
+</p>
+
+
+<p>Thus in the initial feature space (dimension N=250) ECG appears as a set of PQRST-fragments with each seen as a separate pattern at subsequent
+ system stages, to be interpreted and classified independently.</p>
+
+<a name="reduction">
+<h3>3.3. Feature space reduction</h3></a>
+
+<p>The feature space is reduced using Principal Components Analysis (PCA) so that space dimension can be reduced to 30 (with the Kaiser criterion)
+ or even to 10 (with the scree test).</p>
+<p>Or, alternately, the space is reduced with wavelet transform (WT) providing the same space reduction but with
+ slightly poorer final identification.</p>
+
+
+<a name="classification">
+<h3>3.4. Classification and Identification</h3></a>
+
+<p>The resulting PQRST-fragment patterns are then classified in reduced feature space using linear discriminant analysis.</p>
+
+<p>At the final stage, the ECG record identification is based on PQRST-fragments classification results.</p>
+
+
+<a name="results">
+<h2>4. Results</h2></a>
+
+<p>Experimental studies involve 90 human. ECG records were made in the sitting position, heart rate, physical and emotional state were not limited.
+ Collected data set contains 320 records, of which 200 records were assigned to the training set and 120 records to test set.
+ Differentiation between trainig and test sets aimed to provide for maximum performance complexity, i.e. maximum difference between records
+ in different sets both in monitoring time and human physical state.</p>
+
+
+<p>Averaged results of series of experiments on PQRST-fragments classification and ECG record identification with different feature space reduction
+ methods are tabulated in Table 1. ECG identification leveling is thus 96%.
+
+<center>
+<table border="1" cellspacing="2" bordercolor="#808080" cellpadding="3">
+<tbody>
+<tr>
+<td align="center" rowspan="2">Reduction technique</td>
+<td align="center" rowspan="2">Number of features</td>
+<td align="center" colspan="2">PQRST-fragments classification, %</td>
+<td align="center">ECG identification, %</td>
+</tr>
+<tr>
+<td align="center">Training set</td>
+<td align="center">Test set</td>
+<td align="center">Test set</td>
+</tr>
+<tr>
+<td align="center">PCA</td>
+<td align="center">10</td>
+<td align="center">99</td>
+<td align="center">85</td>
+<td align="center">89</td>
+</tr>
+<tr>
+<td align="center">WT</td>
+<td align="center">9</td>
+<td align="center">98</td>
+<td align="center">79</td>
+<td align="center">82</td>
+</tr>
+<tr>
+<td align="center"><b>PCA</b></td>
+<td align="center"><b>30</b></td>
+<td align="center">99</td>
+<td align="center">91</td>
+<td align="center"><b>96</b></td>
+</tr>
+<tr>
+<td align="center">WT</td>
+<td align="center">34</td>
+<td align="center">99</td>
+<td align="center">88</td>
+<td align="center">91</td>
+</tr>
+</tbody></table>
+
+<b>Table 1. </b>Experimental results.
+</center></p>
+
+
+<p>Additionally, results from [1, 2] and this research are compared in Table 2.
+
+<center>
+<table border="1" cellspacing="2" bordercolor="#808080" cellpadding="3">
+<tbody>
+<tr>
+<td align="center">Research</td>
+<td align="center">Class count</td>
+<td align="center">Identification results, %</td>
+</tr>
+<tr>
+<td align="center">[1]</td>
+<td align="center">20</td>
+<td align="center">98</td>
+</tr>
+<tr>
+<td align="center">[2]</td>
+<td align="center">9</td>
+<td align="center">95</td>
+</tr>
+<tr>
+<td align="center">this</td>
+<td align="center">90</td>
+<td align="center">96</td>
+</tr>
+</tbody></table>
+<b>Table 2. </b> Results comparison.
+</center></p>
+
+
+<p>As a result of this research a recognition system was developed, it solved the problem of biometric human identification based on ECG on
+ sufficiently large set of input data. The findings represent primary arguments for ECG usability as a biometric characteristic in various biometric
+ access control problems, opening up brand new perspective for the study of biometric technologies, and extending potentialities of security- and modern
+ amenity systems.</p>
+
+<a name="refs">
+<h2>References</h2></a>
+
+<p>[1] L.Biel, O.Pettersson, L.Philipson, P.Wide "ECG Analysis: A New Approach in Human Identification",
+ IEEE Transactions on Instrumentation and Measurement, vol.50, N3, June 2001, pp. 808-812.</p>
+
+<p>[2] W.J. Yi, K.S. Park, D.U. Jeong "Personal Identification From ECG Measured Without Body Surface Electrodes
+ Using Probabilistic Neural Networks".</p>
+
+
+<!--#include virtual="/footer.shtml" -->

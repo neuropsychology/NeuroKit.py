@@ -1,0 +1,58 @@
+<!--#set var="TITLE" value="The ECG-ID Database"-->
+<!--#set var="USELOCALCSS" value="1"-->
+<!--#include virtual="/head.shtml"-->
+
+<div class="notice">
+<p>
+This database was created and contributed by Tatiana Lugovaya, who used it
+in her master's thesis:</p>
+
+<div class="reference">
+Lugovaya T.S.  Biometric human identification based on electrocardiogram.
+[Master's thesis] Faculty of Computing Technologies and Informatics,
+Electrotechnical University "LETI",  Saint-Petersburg, Russian Federation;
+June 2005.
+</div> <!-- end reference -->
+
+<p>Read a <a href="biometric.shtml">brief summary of the thesis</a> by its author.
+</b>Please cite this thesis when referencing this material, and also include
+the standard citation for PhysioNet:</b></p>
+
+<div class="reference">
+Goldberger AL, Amaral LAN, Glass L, Hausdorff JM, Ivanov PCh, Mark RG,
+Mietus JE, Moody GB, Peng C-K, Stanley HE.  PhysioBank, PhysioToolkit, and
+PhysioNet: Components of a New Research Resource for Complex Physiologic
+Signals.
+<i>Circulation</i> <b>101</b>(23):e215-e220 [Circulation Electronic Pages;
+<a href="http://circ.ahajournals.org/cgi/content/full/101/23/e215"
+target="other">http://circ.ahajournals.org/cgi/content/full/101/23/e215</a>];
+2000 (June 13).
+</div> <!-- end reference -->
+</div>
+
+<p> The database contains 310 ECG recordings, obtained from 90 persons.  Each
+recording contains:</p>
+
+<ul>
+<li> ECG lead I, recorded for 20 seconds, digitized at 500 Hz with 12-bit
+resolution over a nominal &plusmn;10 mV range;</li>
+<li> 10 annotated beats (unaudited R- and T-wave peaks annotations from an
+automated detector);</li>
+<li> information (in the <tt>.hea</tt> file for the record) containing age,
+gender and recording date.</li>
+</ul>
+
+<p>
+The records were obtained from volunteers (44 men and 46 women aged from 13
+to 75 years who were students, colleagues, and friends of the author).  The
+number of records for each person varies from 2 (collected during one day)
+to 20 (collected periodically over 6 months).</p>
+
+<p> The raw ECG signals are rather noisy and contain both high and low
+frequency noise components.  Each record includes both raw and filtered
+signals:</p>
+
+<ul>
+<li>Signal 0: ECG I (raw signal)</li>
+<li>Signal 1: ECG I filtered (filtered signal)</li>
+</ul>

@@ -1,0 +1,139 @@
+#page {max-width: 9in; margin: 0 auto; padding-top: .25em;} /* padding and margin at top to line up with toc */
+div.notice {margin-top: 1.25em; }
+h1 { padding-top: .4em;}
+h2 { clear: none; }
+
+/* center video: see http://stackoverflow.com/questions/3300660/how-do-i-center-an-image-if-its-wider-than-its-container */
+div.outer {
+    margin: 0 auto; 
+    overflow: visible;
+    width: 100%;  /* some width amount needed */ 
+}
+div.inner {
+    position:relative;
+    float: right; /* this was added and display removed */
+    right: 50%;
+}
+div.inner img {
+    position: relative; 
+    right:-50%; /* this was changed from "left" in original */
+    padding-bottom: 2em;
+    z-index: 0;
+}
+
+div.outer2 {
+    text-align: center;
+    position: relative; 
+/*    float: right;  */
+    left: -50%; 
+    width: 100%; /* if necessary, redefine the outer width locally, to equal width of image to be centered */
+    margin: 1em auto;
+}
+
+div.outer2 + p {
+   clear: both; /* keep paragraph following image from overlapping */
+}
+
+div.inner2 {
+    position: relative; 
+    left: 50%;
+    overflow: hidden;
+    z-index: -1; /* put it behind page navigation pane */
+    padding-bottom: 1em;
+}
+/* table styles for crisdb */
+div.rrtable table {
+   margin: 1em auto;
+}
+div.rrtable th {
+   padding: 0 .5em .75em .5em;
+   text-align: center;
+   vertical-align: bottom;
+}
+div.rrtable td {
+   text-align: center;
+}
+div.rrtable tr.headerrow th {
+   padding-bottom: 1em;
+}
+
+/* table styles for edb */
+div.edbtable table {
+   margin: 1em auto;
+}
+div.edbtable table table {
+   margin: 1em 4em;
+}
+div.edbtable th {
+   padding: 0 .5em .75em .5em;
+   text-align: left;
+   vertical-align: bottom;
+}
+div.edbtable {
+   text-align: left;
+}
+div.edbtable tr.headerrow th {
+   padding-bottom: 1em;
+}
+
+/* local index listing on software index page */
+#index {
+    padding: 1em 0 4em 0;
+}
+#index dl {
+    padding: .4em 0;
+}
+#index dt {
+    padding: .2em 0;
+}
+#index th {
+    padding: .6em 1em .6em 0;
+    text-align: left;
+}
+/* styles for doi display */
+/* adjust doi color to coordinate with header colors -- done in /head.shtml */
+#doi { float: right; font-size: 10pt; max-width: 16em; width: 10em;
+       padding: 1em 1.5em; background: #ecf3ff;
+       border: solid 2px #44a; margin: 0 .2em 1em 1em; border-radius: 5px; border-radius: 10px; display: block; clear: both;} /* overrides */
+#doi:before {
+ /*  content: "DOI for this page:"; */
+}
+/* styles for table of contents (which is auto-generated) */
+#tocwrapper {
+    max-width: 15in;
+    margin: 0 auto;
+    float: right;
+}
+/* adjust toc color to coordinate with header colors -- done in /head.shtml */
+#toc { float: right; font-size: 10pt; max-width: 16em; width: 10em;
+       padding: 1em 1.5em; margin: 0 .2em 1em 1em; border-radius: 5px; border-radius: 10px;} /* overrides */
+#toc:before {
+    content: "On this page:";
+}
+#toc li:first-child {
+    margin-top: .5em;
+}
+#toc li ul {
+    padding: .2em;
+}
+#toc li ul li:first-child {
+    margin-top: .1em;
+}
+#toc a {
+    text-decoration: none;
+}
+/***/
+/* styles for breadcrumbs (top of page) */
+.crumb {
+    font-size: .9em;
+}
+.breadcrumbs {
+    background: #fff9f6;
+    border-radius: 2px;
+    padding: .25em 1em;
+}
+/***/
+
+pre {
+    overflow: auto;
+}
