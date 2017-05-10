@@ -353,8 +353,8 @@ def eeg_microstates(gfp, n_microstates=4, clustering_method="kmeans", n_jobs=1, 
     """
 #    if isinstance(gfp, str):
 #        results = load_object(filename=gfp)
-    else:
-        results = gfp
+#    else:
+#        results = gfp
 
     if verbose is True:
         print("""
