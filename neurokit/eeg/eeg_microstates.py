@@ -3,7 +3,7 @@ Microstates submodule.
 """
 from ..signal import complexity
 from ..miscellaneous import find_following_duplicates
-from ..miscellaneous import load_object
+from ..miscellaneous import read_nk_object
 from ..statistics import feature_reduction
 from ..statistics import z_score
 
@@ -107,8 +107,8 @@ def eeg_gfp(raws, gflp_method="GFPL1", scale=True, normalize=True, smoothing=Non
     """
 
     # Load data if necessary
-    if isinstance(raws, str):
-        raws = load_object(filename=raws)
+#    if isinstance(raws, str):
+#        raws = load_object(filename=raws)
 
     # Initialize empty dict
     gfp = {}
@@ -351,8 +351,8 @@ def eeg_microstates(gfp, n_microstates=4, clustering_method="kmeans", n_jobs=1, 
     ----------
     - pygame 1.9.2
     """
-    if isinstance(gfp, str):
-        results = load_object(filename=gfp)
+#    if isinstance(gfp, str):
+#        results = load_object(filename=gfp)
     else:
         results = gfp
 
