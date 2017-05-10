@@ -30,10 +30,11 @@ class Test(unittest.TestCase):
         self.assertEqual(len(bio["EDA"]["SCR_Onsets"]), 5)
         return(bio)
 
+# Not working for some reasons...
 #    def test_complexity(self):
 #        np.random.seed(666)
 #        signal = np.sin(np.log(np.random.sample(100)))
-#        complexity  = nk.complexity(signal, lyap_r=False, lyap_e=False)
+#        complexity = nk.complexity(signal, lyap_r=False, lyap_e=False)
 #        self.assertEqual("%.2f" %complexity["DFA"], "0.64")
 #        self.assertEqual("%.2f" %complexity["Fractal_Dimension"], '1.13')
 #        self.assertEqual("%.2f" %complexity["Hurst"], '0.60')
