@@ -9,7 +9,6 @@ author = "Dominique Makowski",
 author_email = "dom.makowski@gmail.com",
 maintainer = "Dominique Makowski",
 maintainer_email = "dom.makowski@gmail.com",
-packages=['neurokit'],
 packages = find_packages(),
 package_data = {},
 install_requires = [
