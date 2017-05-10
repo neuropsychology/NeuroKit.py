@@ -8,7 +8,7 @@ class Test(unittest.TestCase):
 
     def test_read_acqknowledge(self):
         # Read data
-        df = nk.read_acqknowledge(os.getcwd() + r"/test_bio_data.acq")
+        df = nk.read_acqknowledge(os.getcwd() + r"/tests/test_bio_data.acq")
         # Resample to 100Hz
         df = df.resample("10L").mean()
         df.columns = ['ECG', 'EDA', 'PPG', 'Photosensor', 'RSP']
