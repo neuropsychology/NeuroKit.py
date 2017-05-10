@@ -189,7 +189,10 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # Complexity
     processed_ecg["ECG"]["Complexity"] = {}
-    chaos = complexity(rri)
+    chaos = nk.complexity(rri, lyap_r=False, lyap_e=False)
+    chaos = pd.Series(chaos)
+    chaos.index = ["ECG_Complexity_" + s for s in chaos.index]
+    processed_ecg["ECG"]["Complexity"] = chaos.to_dict()
 
     return(processed_ecg)
 

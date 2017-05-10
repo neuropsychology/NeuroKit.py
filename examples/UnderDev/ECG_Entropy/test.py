@@ -8,7 +8,7 @@ import nolds
 
 df = pd.read_csv('data.csv')
 df = nk.ecg_process(ecg=df["ECG"])
-rri = df["ECG"]["RRis"]
+rri = df["ECG"]["RR_Intervals"]
 
 #nolds.sampen(rri, 2, 0.1*np.std(rri), dist="euler")
 #sample_entropy(rri,2, 0.1*np.std(rri))[1]
