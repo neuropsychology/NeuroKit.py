@@ -111,8 +111,11 @@ def complexity(signal, shannon=True, sampen=True, multiscale=True, fractal_dim=T
         try:
             complexity["Sample_Entropy_Euclidean"] = nolds.sampen(signal, emb_dim, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen) using euclidean distance.")
-            complexity["Sample_Entropy_Euclidean"] = np.nan
+            try:
+                complexity["Sample_Entropy_Euclidean"] = nolds.sampen(signal, emb_dim, tolerance, dist="euler", debug_plot=False, plot_file=None)
+            except:
+                print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen) using euclidean distance.")
+                complexity["Sample_Entropy_Euclidean"] = np.nan
 
     # multiscale
     if multiscale is True:
@@ -326,7 +329,12 @@ def entropy_multiscale(signal, emb_dim=2, tolerance="default"):
             temp_ts[j] = float(num) / float(den)
         # Replaced the sample entropy computation with nolds' one...
 #        se = sample_entropy(temp_ts, 1, tolerance)
-        se = nolds.sampen(temp_ts, 1, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
+
+        try:
+            se = nolds.sampen(temp_ts, 1, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
+        except:
+            se = nolds.sampen(temp_ts, 1, tolerance, dist="euler", debug_plot=False, plot_file=None)
+
 
         mse[0, i] = se
 
