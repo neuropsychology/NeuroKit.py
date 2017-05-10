@@ -33,17 +33,17 @@ download_url = 'https://github.com/neuropsychology/NeuroKit.py/tarball/master',
 test_suite="nose.collector",
 tests_require=[
         'nose',
-        'coverage']
+        'coverage'],
 classifiers = [
-	'Intended Audience :: Science/Research',
-	'Intended Audience :: Developers',
-	'Programming Language :: Python',
-	'Topic :: Software Development',
-	'Topic :: Scientific/Engineering',
-	'Operating System :: Microsoft :: Windows',
-	'Operating System :: Unix',
-	'Operating System :: MacOS',
-	'Programming Language :: Python :: 3.4',
-	'Programming Language :: Python :: 3.5',
-	'Programming Language :: Python :: 3.6']
+        'Intended Audience :: Science/Research',
+        'Intended Audience :: Developers',
+        'Programming Language :: Python',
+        'Topic :: Software Development',
+        'Topic :: Scientific/Engineering',
+        'Operating System :: Microsoft :: Windows',
+        'Operating System :: Unix',
+        'Operating System :: MacOS',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6']
 )
