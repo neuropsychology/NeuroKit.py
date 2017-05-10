@@ -1,13 +1,13 @@
 import unittest
 
-import neurokit as nk
+from ..neurokit import *
 
 
 
 
-class TestMethods(unittest.TestCase):
+class Test(unittest.TestCase):
     def test_BMI(self):
-        self.assertEqual(round(nk.BMI(182, 70, 27, "m")["BFP"], 2), 15.37)
+        self.assertEqual(round(BMI(182, 70, 27, "m")["BFP"], 2), 15.37)
 
 
 if __name__ == '__main__':
