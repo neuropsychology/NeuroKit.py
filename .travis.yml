@@ -6,8 +6,11 @@ python:
 # command to install dependencies
 install: "pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master"
 # command to run tests
-script: nosetests
-before_install:
-  pip install codecov
+install:
+  - pip install codecov
+
+script:
+  - coverage run tests/tests.py
+
 after_success:
-  codecov
+  - codecov
