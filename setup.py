@@ -31,7 +31,7 @@ long_description = open('README.md').read(),
 keywords = "python signal processing EEG EDA ECG hrv rpeaks biosignals complexity",
 url = "https://github.com/neuropsychology/NeuroKit.py",
 download_url = 'https://github.com/neuropsychology/NeuroKit.py/tarball/master',
-test_suite='nose.collector',
+test_suite=['nose.collector', "tests.test_bio"],
 tests_require=['nose'],
 classifiers = [
 	'Intended Audience :: Science/Research',
