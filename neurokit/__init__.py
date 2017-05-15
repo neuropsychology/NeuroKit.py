@@ -8,3 +8,4 @@ from .statistics import *
 from .signal import *
 from .bio import *
 from .eeg import *
+from .materials import *
