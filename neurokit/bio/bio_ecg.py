@@ -131,7 +131,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # Heartbeats
     heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
-    heartbeats.index = pd.date_range(pd.datetime.today(), periods=600, freq="ms")
+#    heartbeats.index = pd.date_range(pd.datetime.today(), periods=600, freq="ms")
 
     # Store results
     processed_ecg = {"df": ecg_df,
