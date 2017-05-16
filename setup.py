@@ -10,7 +10,8 @@ author_email = "dom.makowski@gmail.com",
 maintainer = "Dominique Makowski",
 maintainer_email = "dom.makowski@gmail.com",
 packages = find_packages(),
-package_data = {},
+package_data = {
+        "neurokit.materials":["*.model"]},
 install_requires = [
         'numpy',
         'pandas',
