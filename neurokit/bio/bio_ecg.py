@@ -7,9 +7,11 @@ import pandas as pd
 import biosppy
 import datetime
 import hrv
+import sklearn
 
 from .bio_rsp import *
 from ..signal import complexity
+from ..materials import Path
 
 # ==============================================================================
 # ==============================================================================
@@ -127,11 +129,15 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     # RR intervals (RRis)
     rri = np.diff(biosppy_ecg["rpeaks"])
 
+    # Heartbeats
+    heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
+    heartbeats.index = pd.date_range(pd.datetime.today(), periods=600, freq="ms")
+
     # Store results
     processed_ecg = {"df": ecg_df,
                      "ECG": {
                             "RR_Intervals": rri,
-                            "Cardiac_Cycles": biosppy_ecg["templates"],
+                            "Cardiac_Cycles": heartbeats,
                             "R_Peaks": biosppy_ecg["rpeaks"]}
                      }
 
@@ -349,16 +355,57 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
     return(RSA)
 
 
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_classify_heartbeats(heartbeats):
+    """
+    Attempt to find the lead and the overall and individual quality of hearbeats signal.
 
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def ecg_plot_cardiac_cycles(signal, sampling_rate=1000):
+    Parameters
+    ----------
+    heartbeats : pd.DataFrame
+        DataFrame containing heartbeats. Computed by :function:neurokit.ecg_process().
+
+    Returns
+    ----------
+    classification : dict
+        Contains classification features.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> rsa = nk.respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
+
+    Notes
+    ----------
+    *Details*
+
+    Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECGs signal from the healthy participants.
+
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Rhenan Bartels (https://github.com/rhenanbartels)
+
+    *Dependencies*
+
+    - numpy
+    - pandas
     """
-    """
-    # To do
+    heartbeats = heartbeats.rolling(20).mean().resample("3L").pad()
+    heartbeats = heartbeats.reset_index(drop=True)[8:200]
+    heartbeats = nk.z_score(heartbeats).T
+    heartbeats = np.array(heartbeats)
+
+
+    model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
+#    predict = model.predict_proba(heartbeats)
+#    predict = pd.DataFrame(predict)
+#    predict.columns = model.classes_
+    return(model, heartbeats)
