@@ -24,7 +24,7 @@ class Test(unittest.TestCase):
 
     def test_bio_process(self):
         df = self.test_read_acqknowledge()
-        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"])
+        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], model=os.getcwd() + r"/neurokit/materials/heartbeat_classification.model")
         self.assertEqual(len(bio), 3)
         self.assertEqual(len(bio["ECG"]["R_Peaks"]), 499)
         self.assertEqual(len(bio["EDA"]["SCR_Onsets"]), 5)

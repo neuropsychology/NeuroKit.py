@@ -21,7 +21,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default"):
     """
     Automated processing of ECG and RSP signals.
 
@@ -35,6 +35,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
         Sampling rate (samples/second).
     resampling_method : str
         "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
+    quality_model : str
+        Path to model used to check signal quality. "default" uses the builtin model.
 
     Returns
     ----------
@@ -134,7 +136,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=resampling_rate)
 
     # Signal quality
-    quality = ecg_signal_quality(heartbeats, sampling_rate)
+    quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
 
     # Store results
@@ -369,7 +371,7 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_signal_quality(cardiac_cycles, sampling_rate):
+def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     """
     Attempt to find the recording lead and the overall and individual quality of hearbeats signal.
 
@@ -377,6 +379,8 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate):
     ----------
     cardiac_cycles : pd.DataFrame
         DataFrame containing heartbeats. Computed by :function:neurokit.ecg_process().
+    quality_model : str
+        Path to model used to check signal quality. "default" uses the builtin model.
 
     Returns
     ----------
@@ -420,7 +424,10 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate):
     cardiac_cycles = z_score(cardiac_cycles).T
     cardiac_cycles = np.array(cardiac_cycles)
 
-    model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
+    if model == "default":
+        model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
+    else:
+        model = sklearn.externals.joblib.load(model)
 
     quality = {}
 

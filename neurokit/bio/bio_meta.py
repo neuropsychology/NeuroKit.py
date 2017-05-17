@@ -15,7 +15,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, resampling_method="bfill", use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, resampling_method="bfill", ecg_quality_model="default", use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
     """
     Automated processing of bio signals. Wrapper function for :func:`neurokit.ecg_process()` and :func:`neurokit.eda_process()`.
 
@@ -33,6 +33,8 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, resa
         Sampling rate (samples/second).
     resampling_method : str
         "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
+    ecg_quality_model : str
+        Path to model used to check signal quality. "default" uses the builtin model.
     use_cvxEDA : bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
     add : pandas.DataFrame
@@ -101,7 +103,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, resa
 
     # ECG & RSP
     if ecg is not None:
-        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method, model=ecg_quality_model)
         processed_bio["ECG"] = ecg["ECG"]
         bio_df = pd.concat([bio_df, ecg["df"]], axis=1)
 
