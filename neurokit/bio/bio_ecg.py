@@ -369,13 +369,13 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_signal_quality(heartbeats, sampling_rate):
+def ecg_signal_quality(cardiac_cycles, sampling_rate):
     """
     Attempt to find the recording lead and the overall and individual quality of hearbeats signal.
 
     Parameters
     ----------
-    heartbeats : pd.DataFrame
+    cardiac_cycles : pd.DataFrame
         DataFrame containing heartbeats. Computed by :function:neurokit.ecg_process().
 
     Returns
@@ -392,7 +392,7 @@ def ecg_signal_quality(heartbeats, sampling_rate):
     ----------
     *Details*
 
-    Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECGs signal from the healthy participants.
+    Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECGs signal from the healthy participants. For each ECG, the 15 leads were available. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
 
     *Authors*
 
@@ -403,33 +403,33 @@ def ecg_signal_quality(heartbeats, sampling_rate):
     - numpy
     - pandas
     """
-    if len(heartbeats) > 200:
-        heartbeats = heartbeats.rolling(20).mean().resample("3L").pad()
-    if len(heartbeats) < 200:
-        heartbeats = heartbeats.resample("1L").pad()
-        heartbeats = heartbeats.rolling(20).mean().resample("3L").pad()
+    if len(cardiac_cycles) > 200:
+        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
+    if len(cardiac_cycles) < 200:
+        cardiac_cycles = cardiac_cycles.resample("1L").pad()
+        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
 
-    if len(heartbeats) < 200:
+    if len(cardiac_cycles) < 200:
         fill_dict = {}
-        for i in heartbeats.columns:
-            fill_dict[i] = [np.nan] * (200-len(heartbeats))
-        heartbeats = pd.concat([pd.DataFrame(fill_dict), heartbeats], ignore_index=True)
+        for i in cardiac_cycles.columns:
+            fill_dict[i] = [np.nan] * (200-len(cardiac_cycles))
+        cardiac_cycles = pd.concat([pd.DataFrame(fill_dict), cardiac_cycles], ignore_index=True)
 
-    heartbeats = heartbeats.fillna(method="bfill")
-    heartbeats = heartbeats.reset_index(drop=True)[8:200]
-    heartbeats = z_score(heartbeats).T
-    heartbeats = np.array(heartbeats)
+    cardiac_cycles = cardiac_cycles.fillna(method="bfill")
+    cardiac_cycles = cardiac_cycles.reset_index(drop=True)[8:200]
+    cardiac_cycles = z_score(cardiac_cycles).T
+    cardiac_cycles = np.array(cardiac_cycles)
 
     model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
 
     quality = {}
 
     # Find dominant class
-    lead = model.predict(heartbeats)
+    lead = model.predict(cardiac_cycles)
     lead = pd.Series(lead).value_counts().index[0]
     quality["Probable_Lead"] = lead
 
-    predict = pd.DataFrame(model.predict_proba(heartbeats))
+    predict = pd.DataFrame(model.predict_proba(cardiac_cycles))
     predict.columns = model.classes_
     quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
     quality["Average_Signal_Quality"] = predict[lead].mean()
