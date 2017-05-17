@@ -133,6 +133,10 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
     heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
     heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=resampling_rate)
 
+    # Signal quality
+    quality = ecg_signal_quality(heartbeats, sampling_rate)
+
+
     # Store results
     processed_ecg = {"df": ecg_df,
                      "ECG": {
@@ -140,6 +144,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
                             "Cardiac_Cycles": heartbeats,
                             "R_Peaks": biosppy_ecg["rpeaks"]}
                      }
+    processed_ecg["ECG"].update(quality)
+
 
 
 
