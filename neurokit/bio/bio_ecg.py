@@ -12,7 +12,7 @@ import sklearn
 from .bio_rsp import *
 from ..signal import complexity
 from ..materials import Path
-
+from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -131,7 +131,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # Heartbeats
     heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
-#    heartbeats.index = pd.date_range(pd.datetime.today(), periods=600, freq="ms")
+    heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=resampling_rate)
 
     # Store results
     processed_ecg = {"df": ecg_df,
@@ -198,7 +198,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill"):
 
     # Complexity
     processed_ecg["ECG"]["Complexity"] = {}
-    chaos = complexity(rri, lyap_r=False, lyap_e=False, emb_dim=2)
+    chaos = complexity(rri, lyap_r=False, lyap_e=False, emb_dim=2, k_max=8)
     chaos = pd.Series(chaos)
     chaos.index = ["ECG_Complexity_" + s for s in chaos.index]
     processed_ecg["ECG"]["Complexity"] = chaos.to_dict()
@@ -363,9 +363,9 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_classify_heartbeats(heartbeats):
+def ecg_signal_quality(heartbeats, sampling_rate):
     """
-    Attempt to find the lead and the overall and individual quality of hearbeats signal.
+    Attempt to find the recording lead and the overall and individual quality of hearbeats signal.
 
     Parameters
     ----------
@@ -391,21 +391,41 @@ def ecg_classify_heartbeats(heartbeats):
     *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
-    - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
 
     - numpy
     - pandas
     """
-    heartbeats = heartbeats.rolling(20).mean().resample("3L").pad()
+    if len(heartbeats) > 200:
+        heartbeats = heartbeats.rolling(20).mean().resample("3L").pad()
+    if len(heartbeats) < 200:
+        heartbeats = heartbeats.resample("1L").pad()
+        heartbeats = heartbeats.rolling(20).mean().resample("3L").pad()
+
+    if len(heartbeats) < 200:
+        fill_dict = {}
+        for i in heartbeats.columns:
+            fill_dict[i] = [np.nan] * (200-len(heartbeats))
+        heartbeats = pd.concat([pd.DataFrame(fill_dict), heartbeats], ignore_index=True)
+
+    heartbeats = heartbeats.fillna(method="bfill")
     heartbeats = heartbeats.reset_index(drop=True)[8:200]
-    heartbeats = nk.z_score(heartbeats).T
+    heartbeats = z_score(heartbeats).T
     heartbeats = np.array(heartbeats)
 
-
     model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
-#    predict = model.predict_proba(heartbeats)
-#    predict = pd.DataFrame(predict)
-#    predict.columns = model.classes_
-    return(model, heartbeats)
+
+    quality = {}
+
+    # Find dominant class
+    lead = model.predict(heartbeats)
+    lead = pd.Series(lead).value_counts().index[0]
+    quality["Probable_Lead"] = lead
+
+    predict = pd.DataFrame(model.predict_proba(heartbeats))
+    predict.columns = model.classes_
+    quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
+    quality["Average_Signal_Quality"] = predict[lead].mean()
+
+    return(quality)
