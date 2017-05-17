@@ -104,26 +104,25 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
         elif extension == ".edf":
             raw = mne.io.read_raw_edf(file + extension, preload=preload, verbose=verbose)
         else:
-            print("NeuroKit Error: read_eeg(): couldn't find compatible reader of data.")
-            return()
+            print("NeuroKit Error: read_eeg(): couldn't find compatible reader of data. Try to do it manually using mne.")
+
+        # Re-reference if needed and if not MEG data
+        if True not in ["MEG" in chan for chan in raw.info["ch_names"]]:
+            if reference is None:
+                raw.set_eeg_reference()
+            else:
+                raw.set_eeg_reference(reference)
+
     except KeyError:
         print("NeuroKit Error: read_eeg(): something went wrong. This might be because you have channel names that are missing from the montage definition. Try do read data manually using mne.")
     except FileNotFoundError:
         print("NeuroKit Error: read_eeg(): something went wrong, check the file names that are inside your info files (.vhdr, .vmrk, ...)")
-        return()
     except:
         print("NeuroKit Error: read_eeg(): error in data loading. Try to do it manually using mne.")
-        return()
 
-
-    # Re-reference if needed and if not MEG data
-    if True not in ["MEG" in chan for chan in raw.info["ch_names"]]:
-        if reference is None:
-            raw.set_eeg_reference()
-        else:
-            raw.set_eeg_reference(reference)
 
     return(raw)
+
 
 
 
