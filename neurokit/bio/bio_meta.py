@@ -103,7 +103,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, resa
 
     # ECG & RSP
     if ecg is not None:
-        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method, model=ecg_quality_model)
+        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method, quality_model=ecg_quality_model)
         processed_bio["ECG"] = ecg["ECG"]
         bio_df = pd.concat([bio_df, ecg["df"]], axis=1)
 
