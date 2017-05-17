@@ -424,10 +424,10 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     cardiac_cycles = z_score(cardiac_cycles).T
     cardiac_cycles = np.array(cardiac_cycles)
 
-    if model == "default":
+    if quality_model == "default":
         model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
     else:
-        model = sklearn.externals.joblib.load(model)
+        model = sklearn.externals.joblib.load(quality_model)
 
     quality = {}
 
