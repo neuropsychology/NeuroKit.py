@@ -6,7 +6,6 @@ import numpy as np
 import pandas as pd
 import biosppy
 import datetime
-import hrv
 import sklearn
 import scipy
 
@@ -22,7 +21,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default"):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default", hrv_segment_length=60):
     """
     Automated processing of ECG and RSP signals.
 
@@ -38,6 +37,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
         "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
+    hrv_segment_length : int
+        Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
 
     Returns
     ----------
@@ -97,6 +98,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     References
     ------------
     - Zohar, A. H., Cloninger, C. R., & McCraty, R. (2013). Personality and heart rate variability: exploring pathways from personality to cardiac coherence and health. Open Journal of Social Sciences, 1(06), 32.
+    - Smith, A. L., Owen, H., & Reynolds, K. J. (2013). Heart rate variability indices for very short-term (30 beat) analysis. Part 2: validation. Journal of clinical monitoring and computing, 27(5), 577-585.
     """
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
@@ -148,7 +150,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
     # HRV
-    hrv = ecg_hrv(rri, sampling_rate)
+    hrv = ecg_hrv(rri, sampling_rate, segment_length=hrv_segment_length)
 
     # Store results
     processed_ecg = {"df": ecg_df,
@@ -429,7 +431,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rri, sampling_rate, segment_length=256, window="hanning"):
+def ecg_hrv(rri, sampling_rate, segment_length=60):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the great `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
@@ -439,6 +441,8 @@ def ecg_hrv(rri, sampling_rate, segment_length=256, window="hanning"):
         RR intervals.
     sampling_rate : int
         Sampling rate (samples/second).
+    segment_length : int
+        Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
 
     Returns
     ----------
@@ -479,6 +483,11 @@ def ecg_hrv(rri, sampling_rate, segment_length=256, window="hanning"):
 
     - scipy
     - numpy
+
+    References
+    -----------
+    - Zohar, A. H., Cloninger, C. R., & McCraty, R. (2013). Personality and heart rate variability: exploring pathways from personality to cardiac coherence and health. Open Journal of Social Sciences, 1(06), 32.
+    - Smith, A. L., Owen, H., & Reynolds, K. J. (2013). Heart rate variability indices for very short-term (30 beat) analysis. Part 2: validation. Journal of clinical monitoring and computing, 27(5), 577-585.
     """
     # Resample RRis as if the sampling rate was 1000Hz
     rri = rri*1000/sampling_rate
@@ -497,26 +506,47 @@ def ecg_hrv(rri, sampling_rate, segment_length=256, window="hanning"):
 
     # Frequency Domain
     # =================
+    # Sanity check
+    if segment_length > len(rri):
+        print("NeuroKit warning: ecg_hrv(): Number of RR intervals smaller than segment size... setting segment_size to %i." %(len(rri)))
+        segment_length = len(rri)
+
+
     # Parameters
     vlf_band=(0.003, 0.04)
     lf_band=(0.04, 0.15)
     hf_band=(0.15, 0.40)
-    segment_length=segment_length  # This value needs to be confirmed... 256 is the scipy default.
 
-    freq, power = scipy.signal.welch(x=rri, fs=1, window=window, nperseg=segment_length)
+    # Computation
+    freq, power = scipy.signal.welch(x=rri, fs=1, window="triang", nperseg=segment_length, detrend="constant")
 
     vlf_indexes = np.logical_and(freq >= vlf_band[0], freq < vlf_band[1])
     lf_indexes = np.logical_and(freq >= lf_band[0], freq < lf_band[1])
     hf_indexes = np.logical_and(freq >= hf_band[0], freq < hf_band[1])
 
-    hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
-    hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
     hrv["HF"] = np.trapz(y=power[hf_indexes], x=freq[hf_indexes])
+    if segment_length >= 20:
+        hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
+        hrv["LF_HF"] = hrv["LF"] / hrv["HF"]
+        hrv["LFNU"] = (hrv["LF"] / (hrv["LF"] + hrv["HF"])) * 100
+        hrv["HFNU"] = (hrv["HF"] / (hrv["LF"] + hrv["HF"])) * 100
+        if segment_length >= 60:
+            hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
+            hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
+        else:
+            print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the very low frequency (VLF) and the low frequency (LF) domain.")
+            hrv["VLF"] = np.nan
+            hrv["Total_Power"] = np.nan
+    else:
+        print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the low frequency (LF) domain.")
+        hrv["VLF"] = np.nan
+        hrv["LF"] = np.nan
+        hrv["Total_Power"] = np.nan
+        hrv["LF_HF"] = np.nan
+        hrv["LFNU"] = np.nan
+        hrv["HFNU"] = np.nan
 
-    hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
-    hrv["LF_HF"] = hrv["LF"] / hrv["HF"]
-    hrv["LFNU"] = (hrv["LF"] / (hrv["Total_Power"] - hrv["VLF"])) * 100
-    hrv["HFNU"] = (hrv["HF"] / (hrv["Total_Power"] - hrv["VLF"])) * 100
+
 
     return(hrv)
 

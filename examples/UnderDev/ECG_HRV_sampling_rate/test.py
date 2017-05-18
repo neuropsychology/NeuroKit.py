@@ -4,7 +4,7 @@ import pandas as pd
 import neurokit as nk
 import hrv
 import scipy
-
+import matplotlib.pyplot as plt
 
 # window comparison
 df = nk.read_acqknowledge('long.acq')
@@ -17,25 +17,23 @@ df_lf = {}
 df_hf = {}
 df_tp = {}
 
-for window in ["boxcar", "triang", "blackman", "hamming", "hann", "bartlett", "flattop", "parzen", "bohman", "blackmanharris", "nuttall", "barthann"]:
 
-    vlf = []
-    lf = []
-    hf = []
-    total_power = []
-    length = []
-#    for i in range(50, len(df["ECG"]["RR_Intervals"])):
-    for i in range(50, len(rri)):
-        length.append(i)
-        vlf.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i, window=window)["VLF"])
-        lf.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i, window=window)["LF"])
-        hf.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i, window=window)["HF"])
-        total_power.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i, window=window)["Total_Power"])
+vlf = []
+lf = []
+hf = []
+total_power = []
+length = []
+for i in range(61, 1000):
+    length.append(i)
+    vlf.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i)["VLF"])
+    lf.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i)["LF"])
+    hf.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i)["HF"])
+    total_power.append(ecg_hrv(rri, sampling_rate=1000, segment_length=i)["Total_Power"])
 
-    df_vlf[window] = vlf
-    df_lf[window] = lf
-    df_hf[window] = lf
-    df_tp[window] = total_power
+df_vlf[detrend] = vlf
+df_lf[detrend] = lf
+df_hf[detrend] = hf
+df_tp[detrend] = total_power
 
 df_vlf = pd.DataFrame.from_dict(df_vlf)
 df_vlf.index = length
@@ -50,3 +48,21 @@ df_vlf.plot()
 df_lf.plot()
 df_hf.plot()
 df_tp.plot()
+
+
+
+p = np.polynomial.Polynomial.fit(df_hf.index, df_hf["linear"], 2)
+df_hf.plot()
+plt.plot(*p.linspace(1000))
+
+p = np.polynomial.Polynomial.fit(df_lf.index, df_lf["linear"], 2)
+df_lf.plot()
+plt.plot(*p.linspace(1000))
+
+p = np.polynomial.Polynomial.fit(df_vlf.index, df_vlf["linear"], 2)
+df_vlf.plot()
+plt.plot(*p.linspace(1000))
+
+p = np.polynomial.Polynomial.fit(df_vlf.index, df_vlf["linear"], 2)
+df_vlf.plot()
+plt.plot(*p.linspace(1000))
