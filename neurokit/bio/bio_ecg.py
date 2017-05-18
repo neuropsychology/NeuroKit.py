@@ -8,6 +8,7 @@ import biosppy
 import datetime
 import hrv
 import sklearn
+import scipy
 
 from .bio_rsp import *
 from ..signal import complexity
@@ -61,12 +62,20 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     - **HRV**: Heart-Rate Variability is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013).
 
        - **SDNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine.
-       - The **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
+       - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
+       - **NN50**: This description is waiting your contribution!
+       - **PNN50**: This description is waiting your contribution!
+       - **mRR** is the mean RR interval.
+       - **mHR** is the mean RR interval expressed in seconds.
        - **VLF** is the variance (*i.e.*, power) in HRV in the Very Low Frequency (.003 to .04 Hz). Reflect an intrinsic rhythm produced by the heart which is modulated by primarily by sympathetic activity.
        - **LF**  is the variance (*i.e.*, power) in HRV in the Low Frequency (.04 to .15 Hz). Reflects a mixture of sympathetic and parasympathetic activity, but in long-term recordings like ours, it reflects sympathetic activity and can be reduced by the beta-adrenergic antagonist propanolol (McCraty & Atkinson, 1996).
        - **HF**  is the variance (*i.e.*, power) in HRV in the High Frequency (.15 to .40 Hz). Reflects fast changes in beat-to-beat variability due to parasympathetic (vagal) activity. Sometimes called the respiratory band because it corresponds to HRV changes related to the respiratory cycle and can be increased by slow, deep breathing (about 6 or 7 breaths per minute) (Kawachi et al., 1995) and decreased by anticholinergic drugs or vagal blockade (Hainsworth, 1995).
+       - **Total_Power**: no description :'(.
+       - **LF_HF**: This description is waiting your contribution!
+       - **LFNU**: This description is waiting your contribution!
+       - **HFNU**: This description is waiting your contribution!
 
-    - **Complexity**: Non-linear chaos/complexity measures of RR intervals. See `neurokit.complexity`.
+    - **Complexity**: Non-linear chaos/complexity measures of RR intervals. See :function:`neurokit.complexity`.
 
 
     *Authors*
@@ -138,51 +147,19 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # Signal quality
     quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
+    # HRV
+    hrv = ecg_hrv(rri, sampling_rate)
 
     # Store results
     processed_ecg = {"df": ecg_df,
                      "ECG": {
                             "RR_Intervals": rri,
                             "Cardiac_Cycles": heartbeats,
-                            "R_Peaks": biosppy_ecg["rpeaks"]}
+                            "R_Peaks": biosppy_ecg["rpeaks"],
+                            "HRV": hrv}
                      }
+
     processed_ecg["ECG"].update(quality)
-
-
-
-
-    # HRV
-    if sampling_rate == 1000:
-
-        # Calculate time domain indexes
-        hrv_time_domain = hrv.classical.time_domain(rri)
-        hrv_features = {"HRV_MHR": hrv_time_domain['mhr'],
-                        "HRV_MRRI": hrv_time_domain['mrri'],
-                        "HRV_NN50": hrv_time_domain['nn50'],
-                        "HRV_PNN50": hrv_time_domain['pnn50'],
-                        "HRV_RMSSD": hrv_time_domain['rmssd'],
-                        "HRV_RMSSD_Log": np.log(hrv_time_domain['rmssd']),
-                        "HRV_SDNN": hrv_time_domain['sdnn']
-                }
-        # Calculate frequency domain indexes
-# NOT WORKING FOR NOW
-#        try:
-#            hrv_freq_domain = hrv.classical.frequency_domain(rri, method='welch', interp_freq=4.0)
-#            hrv_features["HRV_HF"] = hrv_freq_domain["hf"]
-#            hrv_features["HRV_HFNU"] = hrv_freq_domain["hfnu"]
-#            hrv_features["HRV_LF"] = hrv_freq_domain["lf"]
-#            hrv_features["HRV_LF_HF"] = hrv_freq_domain["lf_hf"]
-#            hrv_features["HRV_LFNU"] = hrv_freq_domain["lfnu"]
-#            hrv_features["HRV_total_power"] = hrv_freq_domain["total_power"]
-#            hrv_features["HRV_VLF"] = hrv_freq_domain["vlf"]
-#        except:
-#            print("NeuroKit Error: ecg_process(): Signal to short to compute frequency domains HRV. Must me longer than 3.4 minutes.")
-
-        processed_ecg["ECG"]["HRV"] = hrv_features
-    else:
-        print("NeuroKit Warning: ecg_process(): No HRV computation supported for sampling rates different from 1000Hz for now.")
-
-
 
     # RSP
     if rsp is not None:
@@ -442,3 +419,104 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     quality["Average_Signal_Quality"] = predict[lead].mean()
 
     return(quality)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_hrv(rri, sampling_rate, segment_length=256, window="hanning"):
+    """
+    Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the great `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
+
+    Parameters
+    ----------
+    rri : ndarray
+        RR intervals.
+    sampling_rate : int
+        Sampling rate (samples/second).
+
+    Returns
+    ----------
+    hrv : dict
+        Contains hrv features.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> hrv = nk.hrv(rri, 1000)
+
+    Notes
+    ----------
+    *Details*
+
+    - **HRV**: Heart-Rate Variability is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013).
+
+       - **SDNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine.
+       - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
+       - **NN50**: This description is waiting your contribution!
+       - **PNN50**: This description is waiting your contribution!
+       - **mRR** is the mean RR interval.
+       - **mHR** is the mean RR interval expressed in seconds.
+       - **VLF** is the variance (*i.e.*, power) in HRV in the Very Low Frequency (.003 to .04 Hz). Reflect an intrinsic rhythm produced by the heart which is modulated by primarily by sympathetic activity.
+       - **LF**  is the variance (*i.e.*, power) in HRV in the Low Frequency (.04 to .15 Hz). Reflects a mixture of sympathetic and parasympathetic activity, but in long-term recordings like ours, it reflects sympathetic activity and can be reduced by the beta-adrenergic antagonist propanolol (McCraty & Atkinson, 1996).
+       - **HF**  is the variance (*i.e.*, power) in HRV in the High Frequency (.15 to .40 Hz). Reflects fast changes in beat-to-beat variability due to parasympathetic (vagal) activity. Sometimes called the respiratory band because it corresponds to HRV changes related to the respiratory cycle and can be increased by slow, deep breathing (about 6 or 7 breaths per minute) (Kawachi et al., 1995) and decreased by anticholinergic drugs or vagal blockade (Hainsworth, 1995).
+       - **Total_Power**: no description :'(.
+       - **LF_HF**: This description is waiting your contribution!
+       - **LFNU**: This description is waiting your contribution!
+       - **HFNU**: This description is waiting your contribution!
+
+    *Authors*
+
+    - Rhenan Bartels (https://github.com/rhenanbartels)
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - scipy
+    - numpy
+    """
+    # Resample RRis as if the sampling rate was 1000Hz
+    rri = rri*1000/sampling_rate
+
+    # Initialize empty dict
+    hrv = {}
+
+    # Time Domain
+    # ==================
+    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(rri) ** 2))
+    hrv["SDNN"] = np.std(rri, ddof=1)  # make it calculate N-1
+    hrv["NN50"] = sum(abs(np.diff(rri)) > 50)
+    hrv["PNN50"] = hrv["NN50"] / len(rri) * 100
+    hrv["mRR"] = np.mean(rri)
+    hrv["mHR"] = np.mean(60 / (rri / 1000))
+
+    # Frequency Domain
+    # =================
+    # Parameters
+    vlf_band=(0.003, 0.04)
+    lf_band=(0.04, 0.15)
+    hf_band=(0.15, 0.40)
+    segment_length=segment_length  # This value needs to be confirmed... 256 is the scipy default.
+
+    freq, power = scipy.signal.welch(x=rri, fs=1, window=window, nperseg=segment_length)
+
+    vlf_indexes = np.logical_and(freq >= vlf_band[0], freq < vlf_band[1])
+    lf_indexes = np.logical_and(freq >= lf_band[0], freq < lf_band[1])
+    hf_indexes = np.logical_and(freq >= hf_band[0], freq < hf_band[1])
+
+    hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
+    hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
+    hrv["HF"] = np.trapz(y=power[hf_indexes], x=freq[hf_indexes])
+
+    hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
+    hrv["LF_HF"] = hrv["LF"] / hrv["HF"]
+    hrv["LFNU"] = (hrv["LF"] / (hrv["Total_Power"] - hrv["VLF"])) * 100
+    hrv["HFNU"] = (hrv["HF"] / (hrv["Total_Power"] - hrv["VLF"])) * 100
+
+    return(hrv)
+
