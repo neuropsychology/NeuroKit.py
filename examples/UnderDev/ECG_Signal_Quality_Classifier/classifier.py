@@ -6,8 +6,10 @@ import seaborn as sns
 
 ecg = pd.read_csv("data_test_ecg.csv")["ECG"]
 
+ecg.index = pd.date_range(pd.datetime.today(), periods=len(ecg), freq="ms")
+ecg = ecg.resample("5L").mean()
+sampling_rate=200
 
-ecg = nk.ecg_process(ecg)["ECG"]
-heartbeats = ecg["Cardiac_Cycles"]
-#heartbeats.index = pd.date_range(pd.datetime.today(), periods=600, freq="ms")
-#model, heartbeats = nk.ecg_classify_heartbeats(heartbeats)
+heartbeats = nk.ecg_process(ecg, sampling_rate=sampling_rate)["ECG"]["Cardiac_Cycles"]
+
+quality = ecg_signal_quality(heartbeats, 200)

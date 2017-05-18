@@ -22,7 +22,6 @@ install_requires = [
         'bioread',
         'nolds',
         "biosppy",
-        "hrv",
         "Pillow",
         "cvxopt"],
 dependency_links=[],
