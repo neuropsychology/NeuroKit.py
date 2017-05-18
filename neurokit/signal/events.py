@@ -232,7 +232,7 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def visually_check_events_in_signal(signal, events, color="red"):
+def plot_events_in_signal(signal, events, color="red"):
     """
     Plot events in signal.
 
@@ -248,7 +248,7 @@ def visually_check_events_in_signal(signal, events, color="red"):
     >>> import neurokit as nk
     >>> df = nk.bio_process(ecg=signal, sampling_rate=1000)
     >>> events = df["ECG"]["Rpeaks"]
-    >>> visually_check_events_in_signal(signal, events)
+    >>> plot_events_in_signal(signal, events)
 
     Notes
     ----------
