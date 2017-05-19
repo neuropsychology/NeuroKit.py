@@ -54,11 +54,12 @@ Main features:
   - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG and RSP features
     - *Heart Rate*
     - *Heart rate variability (HRV) - time and frequency domains*
-    - *Cardiac Cycles - R peaks, RR intervals, ...*
+    - *Cardiac Cycles - R peaks, RR intervals, P, Q, T Waves, ...*
     - *Signal quality evaluation*
     - *Respiratory rate and variability*
     - *Respiratory sinus arrhythmia (RSA)*
     - *Complexity (multiscale entropy, fractal dimensions, ...)*
+    - *Cardiac Phase (systole/diastole)*
   - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA)
     - *Phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110))*
     - *Skin Conductance Responses (SCR) onsets, peaks and amplitudes*
