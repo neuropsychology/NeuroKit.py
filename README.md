@@ -51,9 +51,19 @@ Main features:
   - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
   - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a dataframe
-  - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG and RSP features (R peaks, Heart rate, Heart rate variability (HRV), respiratory rate and variability, respiratory sinus arrhythmia (RSA), indices of complexity (multiscale entropy, fractal dimension, ...))
-  - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA) features (phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110)), Skin Conductance Response's (SCR) onsets, peaks and amplitudes)
-  - **[`emg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#emg-process)**: Extract EMG features (pulse onsets)
+  - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG and RSP features
+    - *Heart Rate*
+    - *Heart rate variability (HRV) - time and frequency domains*
+    - *Cardiac Cycles - R peaks, RR intervals, ...*
+    - *Signal quality evaluation*
+    - *Respiratory rate and variability*
+    - *Respiratory sinus arrhythmia (RSA)*
+    - *Complexity (multiscale entropy, fractal dimensions, ...)*
+  - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA)
+    - *Phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110))*
+    - *Skin Conductance Responses (SCR) onsets, peaks and amplitudes*
+  - **[`emg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#emg-process)**: Extract EMG features
+    - *Pulse onsets*
 - **Statistics**
   - **[`z_score()`](http://neurokit.readthedocs.io/en/latest/documentation.html#z-score)**: Normalize (scale and reduce) variables
 - **Miscellaneous**
