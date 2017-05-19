@@ -443,7 +443,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rri, sampling_rate, segment_length=60):
+def ecg_hrv(rri, sampling_rate, segment_length=60, LF=True, VLF=True):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
@@ -455,6 +455,10 @@ def ecg_hrv(rri, sampling_rate, segment_length=60):
         Sampling rate (samples/second).
     segment_length : int
         Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
+    LF : bool
+        Computes HRV in the Low Frequency.
+    VLF : bool
+        Computes HRV in the Very Low Frequency.
 
     Returns
     ----------
@@ -537,26 +541,29 @@ def ecg_hrv(rri, sampling_rate, segment_length=60):
     hf_indexes = np.logical_and(freq >= hf_band[0], freq < hf_band[1])
 
     hrv["HF"] = np.trapz(y=power[hf_indexes], x=freq[hf_indexes])
-    if segment_length >= 20:
-        hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
-        hrv["LF_HF"] = hrv["LF"] / hrv["HF"]
-        hrv["LFNU"] = (hrv["LF"] / (hrv["LF"] + hrv["HF"])) * 100
-        hrv["HFNU"] = (hrv["HF"] / (hrv["LF"] + hrv["HF"])) * 100
-        if segment_length >= 60:
-            hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
-            hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
+
+    if LF is True:
+        if segment_length >= 20:
+            hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
+            hrv["LF_HF"] = hrv["LF"] / hrv["HF"]
+            hrv["LFNU"] = (hrv["LF"] / (hrv["LF"] + hrv["HF"])) * 100
+            hrv["HFNU"] = (hrv["HF"] / (hrv["LF"] + hrv["HF"])) * 100
+            if VLF is True:
+                if segment_length >= 60:
+                    hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
+                    hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
+                else:
+                    print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the very low frequency (VLF) and the low frequency (LF) domain.")
+                    hrv["VLF"] = np.nan
+                    hrv["Total_Power"] = np.nan
         else:
-            print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the very low frequency (VLF) and the low frequency (LF) domain.")
+            print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the low frequency (LF) domain.")
             hrv["VLF"] = np.nan
+            hrv["LF"] = np.nan
             hrv["Total_Power"] = np.nan
-    else:
-        print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the low frequency (LF) domain.")
-        hrv["VLF"] = np.nan
-        hrv["LF"] = np.nan
-        hrv["Total_Power"] = np.nan
-        hrv["LF_HF"] = np.nan
-        hrv["LFNU"] = np.nan
-        hrv["HFNU"] = np.nan
+            hrv["LF_HF"] = np.nan
+            hrv["LFNU"] = np.nan
+            hrv["HFNU"] = np.nan
 
     return(hrv)
 

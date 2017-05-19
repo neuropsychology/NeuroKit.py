@@ -66,9 +66,6 @@ def create_epochs(data, events_onsets, duration=1000, onset=0, index=None):
     # Create epochs
     epochs = {}
     for event, event_onset in enumerate(events_onsets):
-        print(event)
-        print(event_onset)
-        print("----")
         event_onset += onset
         epoch = data[event_onset:event_onset+duration[event]]
         epoch.index  = range(onset, duration[event] + onset)
