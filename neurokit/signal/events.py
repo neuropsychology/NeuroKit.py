@@ -240,8 +240,10 @@ def plot_events_in_signal(signal, events, color="red"):
     ----------
     signal : array or DataFrame
         Signal array (can be a dataframe with many signals).
-    events : list or array
+    events : list or ndarray
         Events location.
+    color : int or list
+        Marker color.
 
     Example
     ----------
@@ -263,5 +265,20 @@ def plot_events_in_signal(signal, events, color="red"):
     """
     signal = pd.DataFrame(signal)
     signal.plot()
-    for event in events:
-        plt.axvline(x=event, color=color)
+
+    events = np.array(events)
+    try:
+        len(events[0])
+        for index, dim in enumerate(events):
+            for event in dim:
+                if isinstance(color, list):
+                    plt.axvline(x=event, color=color[index])
+                else:
+                    plt.axvline(x=event, color=color)
+    except TypeError:
+        for event in events:
+            if isinstance(color, list):
+                plt.axvline(x=event, color=color[0])
+            else:
+                plt.axvline(x=event, color=color)
+

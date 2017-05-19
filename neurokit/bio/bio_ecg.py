@@ -11,6 +11,7 @@ import scipy
 
 from .bio_rsp import *
 from ..signal import complexity
+from ..signal import plot_events_in_signal
 from ..materials import Path
 from ..statistics import z_score
 # ==============================================================================
@@ -27,9 +28,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
 
     Parameters
     ----------
-    ecg : list or array
+    ecg : list or ndarray
         ECG signal array.
-    rsp : list or array
+    rsp : list or ndarray
         Respiratory (RSP) signal array.
     sampling_rate : int
         Sampling rate (samples/second).
@@ -77,7 +78,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
        - **HFNU**: This description is waiting your contribution!
 
     - **Complexity**: Non-linear chaos/complexity measures of RR intervals. See :function:`neurokit.complexity`.
-
+    - **Systole/Diastole**: One prominent channel of body and brain communication is that conveyed by baroreceptors, pressure and stretch-sensitive receptors within the heart and surrounding arteries. Within each cardiac cycle, bursts of baroreceptor afferent activity encoding the strength and timing of each heartbeat are carried via the vagus and glossopharyngeal nerve afferents to the nucleus of the solitary tract. This is the principal route that communicates to the brain the dynamic state of the heart, enabling the representation of cardiovascular arousal within viscerosensory brain regions, and influence ascending neuromodulator systems implicated in emotional and motivational behaviour. Because arterial baroreceptors are activated by the arterial pulse pressure wave, their phasic discharge is maximal during and immediately after the cardiac systole, that is, when the blood is ejected from the heart, and minimal during cardiac diastole, that is, between heartbeats (Azevedo, 2017).
 
     *Authors*
 
@@ -99,6 +100,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     ------------
     - Zohar, A. H., Cloninger, C. R., & McCraty, R. (2013). Personality and heart rate variability: exploring pathways from personality to cardiac coherence and health. Open Journal of Social Sciences, 1(06), 32.
     - Smith, A. L., Owen, H., & Reynolds, K. J. (2013). Heart rate variability indices for very short-term (30 beat) analysis. Part 2: validation. Journal of clinical monitoring and computing, 27(5), 577-585.
+    - Azevedo, R. T., Garfinkel, S. N., Critchley, H. D., & Tsakiris, M. (2017). Cardiac afferent activity modulates the expression of racial stereotypes. Nature communications, 8.
+    - Edwards, L., Ring, C., McIntyre, D., & Carroll, D. (2001). Modulation of the human nociceptive flexion reflex across the cardiac cycle. Psychophysiology, 38(4), 712-718.
+    - Gray, M. A., Rylander, K., Harrison, N. A., Wallin, B. G., & Critchley, H. D. (2009). Following one's heart: cardiac rhythms gate central initiation of sympathetic reflexes. Journal of Neuroscience, 29(6), 1817-1825.
     """
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
@@ -152,6 +156,13 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # HRV
     hrv = ecg_hrv(rri, sampling_rate, segment_length=hrv_segment_length)
 
+    # Waves
+    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"])
+
+    # Systole
+    ecg_df["Systole"] = ecg_systole(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"], waves["T_Waves"])
+
+
     # Store results
     processed_ecg = {"df": ecg_df,
                      "ECG": {
@@ -162,6 +173,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
                      }
 
     processed_ecg["ECG"].update(quality)
+    processed_ecg["ECG"].update(waves)
 
     # RSP
     if rsp is not None:
@@ -207,7 +219,7 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 
     Parameters
     ----------
-    signal : list or array
+    signal : list or ndarray
         ECG signal (preferably filtered).
     sampling_rate : int
         Sampling rate (samples/second).
@@ -258,11 +270,11 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
 
     Parameters
     ----------
-    rpeaks : list or array
+    rpeaks : list or ndarray
         List of R peaks indices.
-    rsp_cycles : list or array
+    rsp_cycles : list or ndarray
         List of respiratory cycles onsets.
-    rsp_signal : list or array
+    rsp_signal : list or ndarray
         RSP signal.
     sampling_rate : int
         Sampling rate (samples/second).
@@ -433,11 +445,11 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 def ecg_hrv(rri, sampling_rate, segment_length=60):
     """
-    Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the great `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
+    Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
     Parameters
     ----------
-    rri : ndarray
+    rri : list or ndarray
         RR intervals.
     sampling_rate : int
         Sampling rate (samples/second).
@@ -504,13 +516,13 @@ def ecg_hrv(rri, sampling_rate, segment_length=60):
     hrv["mRR"] = np.mean(rri)
     hrv["mHR"] = np.mean(60 / (rri / 1000))
 
+
     # Frequency Domain
     # =================
     # Sanity check
     if segment_length > len(rri):
         print("NeuroKit warning: ecg_hrv(): Number of RR intervals smaller than segment size... setting segment_size to %i." %(len(rri)))
         segment_length = len(rri)
-
 
     # Parameters
     vlf_band=(0.003, 0.04)
@@ -546,7 +558,148 @@ def ecg_hrv(rri, sampling_rate, segment_length=60):
         hrv["LFNU"] = np.nan
         hrv["HFNU"] = np.nan
 
-
-
     return(hrv)
 
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_wave_detector(ecg, rpeaks, plot=False):
+    """
+    Returns the localization of the P, Q, T waves.
+
+    Parameters
+    ----------
+    ecg : list or ndarray
+        ECG signal (preferably filtered).
+    rpeaks : list or ndarray
+        R peaks localization.
+    plot : bool
+        Visually check the location.
+
+    Returns
+    ----------
+    ecg_waves : dict
+        Contains wave peaks location indices.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> ecg_waves = nk.ecg_wave_detector(signal, rpeaks)
+
+    Notes
+    ----------
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    """
+    t_waves = []
+    for index, rpeak in enumerate(rpeaks[0:-1]):
+        # T wave
+        middle = (rpeaks[index+1] - rpeak) / 2
+        quarter = middle/2
+
+        epoch = np.array(ecg)
+        epoch = epoch[int(rpeak+quarter):int(rpeak+middle)]
+
+        t_wave = int(rpeak+quarter) + np.argmax(epoch)
+        t_waves.append(t_wave)
+
+    p_waves = []
+    for index, rpeak in enumerate(rpeaks[1:]):
+        index += 1
+        # Q wave
+        middle = (rpeak - rpeaks[index-1]) / 2
+        quarter = middle/2
+
+        epoch = np.array(ecg)
+        epoch = epoch[int(rpeak-middle):int(rpeak-quarter)]
+
+        p_wave = int(rpeak-quarter) + np.argmax(epoch)
+        p_waves.append(p_wave)
+
+    q_waves = []
+    for index, p_wave in enumerate(p_waves):
+        epoch = np.array(ecg)
+        epoch = epoch[int(p_wave):int(rpeaks[rpeaks>p_wave][0])]
+
+        q_wave = p_wave + np.argmin(epoch)
+        q_waves.append(q_wave)
+
+    if plot is True:
+        plot_events_in_signal(signal, [p_waves, q_waves, list(rpeaks), t_waves], color=["green", "orange", "red", "blue"])
+
+    ecg_waves = {"T_Waves": t_waves, "P_Waves": p_waves, "Q_Waves": q_waves}
+    return(ecg_waves)
+
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_systole(ecg, rpeaks, t_waves):
+    """
+    Returns the localization of the P, Q, T waves.
+
+    Parameters
+    ----------
+    ecg : list or ndarray
+        ECG signal (preferably filtered).
+    rpeaks : list or ndarray
+        R peaks localization.
+    t_waves : list or ndarray
+        T waves localization.
+
+    Returns
+    ----------
+    systole : ndarray
+        Array indicating where systole (1) and diastole (0).
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> systole = nk.ecg_systole(ecg, rpeaks, t_waves)
+
+    Notes
+    ----------
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Details*
+
+    - **Systole/Diastole**: One prominent channel of body and brain communication is that conveyed by baroreceptors, pressure and stretch-sensitive receptors within the heart and surrounding arteries. Within each cardiac cycle, bursts of baroreceptor afferent activity encoding the strength and timing of each heartbeat are carried via the vagus and glossopharyngeal nerve afferents to the nucleus of the solitary tract. This is the principal route that communicates to the brain the dynamic state of the heart, enabling the representation of cardiovascular arousal within viscerosensory brain regions, and influence ascending neuromodulator systems implicated in emotional and motivational behaviour. Because arterial baroreceptors are activated by the arterial pulse pressure wave, their phasic discharge is maximal during and immediately after the cardiac systole, that is, when the blood is ejected from the heart, and minimal during cardiac diastole, that is, between heartbeats (Azevedo, 2017).
+
+    References
+    -----------
+    - Azevedo, R. T., Garfinkel, S. N., Critchley, H. D., & Tsakiris, M. (2017). Cardiac afferent activity modulates the expression of racial stereotypes. Nature communications, 8.
+    - Edwards, L., Ring, C., McIntyre, D., & Carroll, D. (2001). Modulation of the human nociceptive flexion reflex across the cardiac cycle. Psychophysiology, 38(4), 712-718.
+    - Gray, M. A., Rylander, K., Harrison, N. A., Wallin, B. G., & Critchley, H. D. (2009). Following one's heart: cardiac rhythms gate central initiation of sympathetic reflexes. Journal of Neuroscience, 29(6), 1817-1825.
+    """
+    waves = np.array([""]*len(ecg))
+    waves[rpeaks] = "R"
+    waves[t_waves] = "T"
+
+    systole = [0]
+    current = 0
+    for index, value in enumerate(waves[1:]):
+        if waves[index-1] == "R":
+            current = 1
+        if waves[index-1] == "T":
+            current = 0
+        systole.append(current)
+
+    return(systole)
