@@ -160,7 +160,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     waves = ecg_wave_detector(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"])
 
     # Systole
-    ecg_df["Systole"] = ecg_systole(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"], waves["T_Waves"])
+    ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"], waves["T_Waves"])
 
 
     # Store results
