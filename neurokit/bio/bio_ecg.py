@@ -624,10 +624,14 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
                 if segment_length >= 60:
                     hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
                     hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
+                    hrv["HFp"] = hrv["HF"] / hrv["Total_Power"]
+                    hrv["LFp"] = hrv["LF"] / hrv["Total_Power"]
                 else:
                     print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the very low frequency (VLF) and the low frequency (LF) domain.")
                     hrv["VLF"] = np.nan
                     hrv["Total_Power"] = np.nan
+                    hrv["HFp"] = np.nan
+                    hrv["LFp"] = np.nan
         else:
             print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the low frequency (LF) domain.")
             hrv["VLF"] = np.nan
@@ -636,8 +640,8 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
             hrv["LFHF"] = np.nan
             hrv["LFn"] = np.nan
             hrv["HFn"] = np.nan
-    hrv["HFp"] = hrv["HF"] / hrv["Total_Power"]
-    hrv["LFp"] = hrv["LF"] / hrv["Total_Power"]
+            hrv["HFp"] = np.nan
+            hrv["LFp"] = np.nan
 
 
 
