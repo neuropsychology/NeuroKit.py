@@ -8,12 +8,14 @@ import biosppy
 import datetime
 import sklearn
 import scipy
+import nolds
 
 from .bio_rsp import *
 from ..signal import complexity
 from ..signal import plot_events_in_signal
 from ..materials import Path
 from ..statistics import z_score
+from ..statistics import identify_outliers
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -22,7 +24,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default", hrv_segment_length=60):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default", hrv_segment_length=60, age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -40,6 +42,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
         Path to model used to check signal quality. "default" uses the builtin model.
     hrv_segment_length : int
         Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
+    age : float
+        Subject's age.
+    sex : str
+        Subject's gender ("m" or "f").
+    position : str
+        Recording position. To compare with data from Voss et al. (2015), use "supine".
 
     Returns
     ----------
@@ -60,24 +68,45 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     ----------
     *Details*
 
+    - **Cardiac Cycle**: A typical ECG showing a heartbeat consists of a P wave, a QRS complex and a T wave.The P wave represents the wave of depolarization that spreads from the SA-node throughout the atria. The QRS complex reflects the rapid depolarization of the right and left ventricles. Since the ventricles are the largest part of the heart, in terms of mass, the QRS complex usually has a much larger amplitude than the P-wave. The T wave represents the ventricular repolarization of the ventricles. On rare occasions, a U wave can be seen following the T wave. The U wave is believed to be related to the last remnants of ventricular repolarization.
     - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity.
-    - **HRV**: Heart-Rate Variability is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013).
+    - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods.
 
-       - **SDNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine.
-       - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
-       - **NN50**: This description is waiting your contribution!
-       - **PNN50**: This description is waiting your contribution!
+       - **sdNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine. It should be noted that total variance of HRV increases with the length of the analyzed recording.
        - **mRR** is the mean RR interval.
-       - **mHR** is the mean RR interval expressed in seconds.
+       - **cvNN**: ratio of sdNN divided by mRR.
+       - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
+       - **MADRR**: Median of the Absolute values of the successive Differences between the RR intervals.
+       - **pNN50**: The proportion derived by dividing NN50 (The number of interval differences of successive RR intervals greater than 50 ms) by the total number of RR intervals.
+       - **pNN20**: The proportion derived by dividing NN20 (The number of interval differences of successive RR intervals greater than 20 ms) by the total number of RR intervals.
+       - **Triang**: The HRV triangular index measurement is the integral of the density distribution (that is, the number of all RR intervals) divided by the maximum of the density distribution (class width of 8ms).
+       - **Shannon_h**: Shannon Entropy calculated on the basis of the class probabilities pi (i = 1,...,n with n—number of classes) of the NN interval density distribution (class width of 8 ms resulting in a smoothed histogram suitable for HRV analysis).
+
        - **VLF** is the variance (*i.e.*, power) in HRV in the Very Low Frequency (.003 to .04 Hz). Reflect an intrinsic rhythm produced by the heart which is modulated by primarily by sympathetic activity.
        - **LF**  is the variance (*i.e.*, power) in HRV in the Low Frequency (.04 to .15 Hz). Reflects a mixture of sympathetic and parasympathetic activity, but in long-term recordings like ours, it reflects sympathetic activity and can be reduced by the beta-adrenergic antagonist propanolol (McCraty & Atkinson, 1996).
        - **HF**  is the variance (*i.e.*, power) in HRV in the High Frequency (.15 to .40 Hz). Reflects fast changes in beat-to-beat variability due to parasympathetic (vagal) activity. Sometimes called the respiratory band because it corresponds to HRV changes related to the respiratory cycle and can be increased by slow, deep breathing (about 6 or 7 breaths per minute) (Kawachi et al., 1995) and decreased by anticholinergic drugs or vagal blockade (Hainsworth, 1995).
-       - **Total_Power**: no description :'(.
-       - **LF_HF**: This description is waiting your contribution!
-       - **LFNU**: This description is waiting your contribution!
-       - **HFNU**: This description is waiting your contribution!
+       - **Total_Power**: Total power of the density spectra.
+       - **LFHF**: The LF/HF ratio is sometimes used by some investigators as a quantitative mirror of the sympatho/vagal balance.
+       - **LFn**: normalized LF power LFn = LF/(LF+HF).
+       - **HFn**: normalized HF power HFn = HF/(LF+HF).
+       - **LFp**: ratio between LF and Total_Power.
+       - **HFp**: ratio between H and Total_Power.
 
-    - **Complexity**: Non-linear chaos/complexity measures of RR intervals. See :function:`neurokit.complexity`.
+       - **DFA**: Detrended fluctuation analysis (DFA) introduced by Peng et al. (1995) quantifies the fractal scaling properties of time series. DFA_1 is the short-term fractal scaling exponent calculated over n = 4–16 beats, and DFA_2 is the long-term fractal scaling exponent calculated over n = 16–64 beats.
+       - **Shannon**: Shannon Entropy over the RR intervals array.
+       - **Sample_Entropy**: Sample Entropy (SampEn) over the RR intervals array with emb_dim=2.
+       - **Correlation_Dimension**: Correlation Dimension over the RR intervals array with emb_dim=2.
+       - **Entropy_Multiscale**: Multiscale Entropy over the RR intervals array  with emb_dim=2.
+       - **Entropy_SVD**: SVD Entropy over the RR intervals array with emb_dim=2.
+       - **Entropy_Spectral_VLF**: Spectral Entropy over the RR intervals array in the very low frequency (0.003-0.04).
+       - **Entropy_Spectral_LF**: Spectral Entropy over the RR intervals array in the low frequency (0.4-0.15).
+       - **Entropy_Spectral_HF**: Spectral Entropy over the RR intervals array in the very high frequency (0.15-0.40).
+       - **Fisher_Info**: Fisher information over the RR intervals array with tau=1 and emb_dim=2.
+       - **Lyapunov**: Lyapunov Exponent over the RR intervals array with emb_dim=58 and matrix_dim=4.
+       - **FD_Petrosian**: Petrosian's Fractal Dimension over the RR intervals.
+       - **FD_Higushi**: Higushi's Fractal Dimension over the RR intervals array with k_max=16.
+
+    - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sample rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
     - **Systole/Diastole**: One prominent channel of body and brain communication is that conveyed by baroreceptors, pressure and stretch-sensitive receptors within the heart and surrounding arteries. Within each cardiac cycle, bursts of baroreceptor afferent activity encoding the strength and timing of each heartbeat are carried via the vagus and glossopharyngeal nerve afferents to the nucleus of the solitary tract. This is the principal route that communicates to the brain the dynamic state of the heart, enabling the representation of cardiovascular arousal within viscerosensory brain regions, and influence ascending neuromodulator systems implicated in emotional and motivational behaviour. Because arterial baroreceptors are activated by the arterial pulse pressure wave, their phasic discharge is maximal during and immediately after the cardiac systole, that is, when the blood is ejected from the heart, and minimal during cardiac diastole, that is, between heartbeats (Azevedo, 2017).
 
     *Authors*
@@ -95,6 +124,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
 
     - BioSPPY: https://github.com/PIA-Group/BioSPPy
     - hrv: https://github.com/rhenanbartels/hrv
+    - RHRV: http://rhrv.r-forge.r-project.org/
 
     References
     ------------
@@ -155,6 +185,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
 
     # HRV
     hrv = ecg_hrv(rri, sampling_rate, segment_length=hrv_segment_length)
+    if age is not None and sex is not None and position is not None:
+        hrv_adjusted = ecg_hrv_assessment(hrv, age, sex, position)
 
     # Waves
     waves = ecg_wave_detector(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"])
@@ -169,7 +201,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
                             "RR_Intervals": rri,
                             "Cardiac_Cycles": heartbeats,
                             "R_Peaks": biosppy_ecg["rpeaks"],
-                            "HRV": hrv}
+                            "HRV": hrv,
+                            "HRV_Adjusted": hrv_adjusted}
                      }
 
     processed_ecg["ECG"].update(quality)
@@ -194,13 +227,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
         processed_ecg["ECG"]["RSA"]["RSA_Variability"] = rsa["RSA_Variability"]
         processed_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]
 
-
-    # Complexity
-    processed_ecg["ECG"]["Complexity"] = {}
-    chaos = complexity(rri, lyap_r=False, lyap_e=False, emb_dim=2, k_max=8)
-    chaos = pd.Series(chaos)
-    chaos.index = ["ECG_Complexity_" + s for s in chaos.index]
-    processed_ecg["ECG"]["Complexity"] = chaos.to_dict()
 
     return(processed_ecg)
 
@@ -369,7 +395,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     Parameters
     ----------
     cardiac_cycles : pd.DataFrame
-        DataFrame containing heartbeats. Computed by :function:neurokit.ecg_process().
+        DataFrame containing heartbeats. Computed by :function:`neurokit.ecg_process`.
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
 
@@ -443,7 +469,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rri, sampling_rate, segment_length=60, LF=True, VLF=True):
+def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
@@ -474,39 +500,71 @@ def ecg_hrv(rri, sampling_rate, segment_length=60, LF=True, VLF=True):
     ----------
     *Details*
 
-    - **HRV**: Heart-Rate Variability is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013).
+    - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods.
 
-       - **SDNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine.
-       - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
-       - **NN50**: This description is waiting your contribution!
-       - **PNN50**: This description is waiting your contribution!
+       - **sdNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine. It should be noted that total variance of HRV increases with the length of the analyzed recording.
        - **mRR** is the mean RR interval.
-       - **mHR** is the mean RR interval expressed in seconds.
+       - **cvNN**: ratio of sdNN divided by mRR.
+       - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
+       - **MADRR**: Median of the Absolute values of the successive Differences between the RR intervals.
+       - **pNN50**: The proportion derived by dividing NN50 (The number of interval differences of successive RR intervals greater than 50 ms) by the total number of RR intervals.
+       - **pNN20**: The proportion derived by dividing NN20 (The number of interval differences of successive RR intervals greater than 20 ms) by the total number of RR intervals.
+       - **Triang**: The HRV triangular index measurement is the integral of the density distribution (that is, the number of all RR intervals) divided by the maximum of the density distribution (class width of 8ms).
+       - **Shannon_h**: Shannon Entropy calculated on the basis of the class probabilities pi (i = 1,...,n with n—number of classes) of the NN interval density distribution (class width of 8 ms resulting in a smoothed histogram suitable for HRV analysis).
+
        - **VLF** is the variance (*i.e.*, power) in HRV in the Very Low Frequency (.003 to .04 Hz). Reflect an intrinsic rhythm produced by the heart which is modulated by primarily by sympathetic activity.
        - **LF**  is the variance (*i.e.*, power) in HRV in the Low Frequency (.04 to .15 Hz). Reflects a mixture of sympathetic and parasympathetic activity, but in long-term recordings like ours, it reflects sympathetic activity and can be reduced by the beta-adrenergic antagonist propanolol (McCraty & Atkinson, 1996).
        - **HF**  is the variance (*i.e.*, power) in HRV in the High Frequency (.15 to .40 Hz). Reflects fast changes in beat-to-beat variability due to parasympathetic (vagal) activity. Sometimes called the respiratory band because it corresponds to HRV changes related to the respiratory cycle and can be increased by slow, deep breathing (about 6 or 7 breaths per minute) (Kawachi et al., 1995) and decreased by anticholinergic drugs or vagal blockade (Hainsworth, 1995).
-       - **Total_Power**: no description :'(.
-       - **LF_HF**: This description is waiting your contribution!
-       - **LFNU**: This description is waiting your contribution!
-       - **HFNU**: This description is waiting your contribution!
+       - **Total_Power**: Total power of the density spectra.
+       - **LFHF**: The LF/HF ratio is sometimes used by some investigators as a quantitative mirror of the sympatho/vagal balance.
+       - **LFn**: normalized LF power LFn = LF/(LF+HF).
+       - **HFn**: normalized HF power HFn = HF/(LF+HF).
+       - **LFp**: ratio between LF and Total_Power.
+       - **HFp**: ratio between H and Total_Power.
+
+       - **DFA**: Detrended fluctuation analysis (DFA) introduced by Peng et al. (1995) quantifies the fractal scaling properties of time series. DFA_1 is the short-term fractal scaling exponent calculated over n = 4–16 beats, and DFA_2 is the long-term fractal scaling exponent calculated over n = 16–64 beats.
+       - **Shannon**: Shannon Entropy over the RR intervals array.
+       - **Sample_Entropy**: Sample Entropy (SampEn) over the RR intervals array with emb_dim=2.
+       - **Correlation_Dimension**: Correlation Dimension over the RR intervals array with emb_dim=2.
+       - **Entropy_Multiscale**: Multiscale Entropy over the RR intervals array  with emb_dim=2.
+       - **Entropy_SVD**: SVD Entropy over the RR intervals array with emb_dim=2.
+       - **Entropy_Spectral_VLF**: Spectral Entropy over the RR intervals array in the very low frequency (0.003-0.04).
+       - **Entropy_Spectral_LF**: Spectral Entropy over the RR intervals array in the low frequency (0.4-0.15).
+       - **Entropy_Spectral_HF**: Spectral Entropy over the RR intervals array in the very high frequency (0.15-0.40).
+       - **Fisher_Info**: Fisher information over the RR intervals array with tau=1 and emb_dim=2.
+       - **Lyapunov**: Lyapunov Exponent over the RR intervals array with emb_dim=58 and matrix_dim=4.
+       - **FD_Petrosian**: Petrosian's Fractal Dimension over the RR intervals.
+       - **FD_Higushi**: Higushi's Fractal Dimension over the RR intervals array with k_max=16.
 
     *Authors*
 
-    - Rhenan Bartels (https://github.com/rhenanbartels)
     - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
 
     - scipy
     - numpy
 
+    *See Also*
+
+    - RHRV: http://rhrv.r-forge.r-project.org/
+
     References
     -----------
+    - Heart rate variability. (1996). Standards of measurement, physiological interpretation, and clinical use. Task Force of the European Society of Cardiology and the North American Society of Pacing and Electrophysiology. Eur Heart J, 17, 354-381.
     - Zohar, A. H., Cloninger, C. R., & McCraty, R. (2013). Personality and heart rate variability: exploring pathways from personality to cardiac coherence and health. Open Journal of Social Sciences, 1(06), 32.
     - Smith, A. L., Owen, H., & Reynolds, K. J. (2013). Heart rate variability indices for very short-term (30 beat) analysis. Part 2: validation. Journal of clinical monitoring and computing, 27(5), 577-585.
+    - Voss, A., Schroeder, R., Heitmann, A., Peters, A., & Perz, S. (2015). Short-term heart rate variability—influence of gender and age in healthy subjects. PloS one, 10(3), e0118308.
     """
     # Resample RRis as if the sampling rate was 1000Hz
     rri = rri*1000/sampling_rate
+    rri = rri.astype(float)
+
+    # Preprocessing
+    outliers = np.array(identify_outliers(rri, treshold=2.58))
+    rri[outliers] = np.nan
+    rri = pd.Series(rri).interpolate()
 
     # Initialize empty dict
     hrv = {}
@@ -514,11 +572,22 @@ def ecg_hrv(rri, sampling_rate, segment_length=60, LF=True, VLF=True):
     # Time Domain
     # ==================
     hrv["RMSSD"] = np.sqrt(np.mean(np.diff(rri) ** 2))
-    hrv["SDNN"] = np.std(rri, ddof=1)  # make it calculate N-1
-    hrv["NN50"] = sum(abs(np.diff(rri)) > 50)
-    hrv["PNN50"] = hrv["NN50"] / len(rri) * 100
     hrv["mRR"] = np.mean(rri)
-    hrv["mHR"] = np.mean(60 / (rri / 1000))
+    hrv["sdNN"] = np.std(rri, ddof=1)  # make it calculate N-1
+    hrv["cvNN"] = hrv["sdNN"] / hrv["mRR"]
+    hrv["MADRR"] = np.median(abs(rri))
+    nn50 = sum(abs(np.diff(rri)) > 50)
+    hrv["pNN50"] = nn50 / len(rri) * 100
+    nn20 = sum(abs(np.diff(rri)) > 20)
+    hrv["pNN20"] = nn20 / len(rri) * 100
+
+    bin_number = 32  # Initialize bin_width value
+    for bin_number_current in range(2, 50):
+        bin_width = np.diff(np.histogram(rri, bins=bin_number_current, density=True)[1])[0]
+        if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(rri, bins=bin_number, density=True)[1])[0]):
+            bin_number = bin_number_current
+    hrv["Triang"] = len(rri)/np.max(np.histogram(rri, bins=bin_number, density=True)[0])
+    hrv["Shannon_h"] = entropy_shannon(np.histogram(rri, bins=bin_number, density=True)[0])
 
 
     # Frequency Domain
@@ -533,8 +602,9 @@ def ecg_hrv(rri, sampling_rate, segment_length=60, LF=True, VLF=True):
     lf_band=(0.04, 0.15)
     hf_band=(0.15, 0.40)
 
+    #size = 300, shift = 30, sizesp = 2048
     # Computation
-    freq, power = scipy.signal.welch(x=rri, fs=1, window="triang", nperseg=segment_length, detrend="constant")
+    freq, power = scipy.signal.welch(x=rri, fs=1, window="blackmanharris", nperseg=segment_length, noverlap=segment_length/2, detrend="constant")
 
     vlf_indexes = np.logical_and(freq >= vlf_band[0], freq < vlf_band[1])
     lf_indexes = np.logical_and(freq >= lf_band[0], freq < lf_band[1])
@@ -545,7 +615,7 @@ def ecg_hrv(rri, sampling_rate, segment_length=60, LF=True, VLF=True):
     if LF is True:
         if segment_length >= 20:
             hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
-            hrv["LF_HF"] = hrv["LF"] / hrv["HF"]
+            hrv["LFHF"] = hrv["LF"] / hrv["HF"]
             hrv["LFNU"] = (hrv["LF"] / (hrv["LF"] + hrv["HF"])) * 100
             hrv["HFNU"] = (hrv["HF"] / (hrv["LF"] + hrv["HF"])) * 100
             if VLF is True:
@@ -561,11 +631,125 @@ def ecg_hrv(rri, sampling_rate, segment_length=60, LF=True, VLF=True):
             hrv["VLF"] = np.nan
             hrv["LF"] = np.nan
             hrv["Total_Power"] = np.nan
-            hrv["LF_HF"] = np.nan
-            hrv["LFNU"] = np.nan
-            hrv["HFNU"] = np.nan
+            hrv["LFHF"] = np.nan
+            hrv["LFn"] = np.nan
+            hrv["HFn"] = np.nan
+    hrv["HFp"] = hrv["HF"] / hrv["Total_Power"]
+    hrv["LFp"] = hrv["LF"] / hrv["Total_Power"]
+
+
+
+    # Non-Linear Dynamics
+    # ======================
+    hrv["DFA_1"] = nolds.dfa(rri, range(4, 17))
+    hrv["DFA_2"] = nolds.dfa(rri, range(16, 66))
+    hrv["Shannon"] = entropy_shannon(rri)
+    hrv["Sample_Entropy"] = nolds.sampen(rri, emb_dim=2)
+    hrv["Correlation_Dimension"] = nolds.corr_dim(rri, emb_dim=2)
+    hrv["Entropy_Multiscale"] = entropy_multiscale(rri, emb_dim=2)
+    hrv["Entropy_SVD"] = entropy_svd(rri, emb_dim=2)
+    hrv["Entropy_Spectral_VLF"] = entropy_spectral(rri, 1000, bands=np.arange(0.003, 0.04, 0.001))
+    hrv["Entropy_Spectral_LF"] = entropy_spectral(rri, 1000, bands=np.arange(0.04, 0.15, 0.001))
+    hrv["Entropy_Spectral_HF"] = entropy_spectral(rri, 1000, bands=np.arange(0.15, 0.40, 0.001))
+    hrv["Fisher_Info"] = fisher_info(rri, tau=1, emb_dim=2)
+    hrv["Lyapunov"] = np.max(nolds.lyap_e(rri, emb_dim=58, matrix_dim=4))
+    hrv["FD_Petrosian"] = fd_petrosian(rri)
+    hrv["FD_Higushi"] = fd_higushi(rri, k_max=16)
+
+    # TO DO:
+    # Include many others (see Voss 2015)
 
     return(hrv)
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
+    """
+    Correct HRV features based on normative data from Voss et al. (2015).
+
+    Parameters
+    ----------
+    hrv : dict
+        HRV features obtained by :function:`neurokit.ecg_hrv`.
+    age : float
+        Subject's age.
+    sex : str
+        Subject's gender ("m" or "f").
+    position : str
+        Recording position. To compare with data from Voss et al. (2015), use "supine".
+
+
+    Returns
+    ----------
+    hrv_adjusted : dict
+        Adjusted HRV features.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> hrv = nk.ecg_hrv(rri)
+    >>> ecg_hrv_assessment = nk.ecg_hrv(hrv)
+
+    Notes
+    ----------
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Details*
+
+    - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sample rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
+
+
+    References
+    -----------
+    - Voss, A., Schroeder, R., Heitmann, A., Peters, A., & Perz, S. (2015). Short-term heart rate variability—influence of gender and age in healthy subjects. PloS one, 10(3), e0118308.
+    """
+    hrv_adjusted = {}
+
+    if position == "supine":
+        if sex == "m":
+            if age <= 49:
+                hrv_adjusted["mRR_Adjusted"] = (hrv["mRR"]-930)/133
+                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-45.8)/18.8
+                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-34.0)/18.3
+
+                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-203)/262
+                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-101)/143
+                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-3.33)/3.47
+            else:
+                hrv_adjusted["mRR_Adjusted"] = (hrv["mRR"]-911)/128
+                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-33.0)/14.8
+                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-20.5)/11.0
+
+                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-84)/115
+                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-29.5)/36.6
+                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-4.29)/4.06
+        if sex == "f":
+            if age <= 49:
+                hrv_adjusted["mRR_Adjusted"] = (hrv["mRR"]-901)/117
+                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-44.9)/19.2
+                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-36.5)/20.1
+
+                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-159)/181
+                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-125)/147
+                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-2.75)/2.93
+            else:
+                hrv_adjusted["mRR_Adjusted"] = (hrv["mRR"]-880)/115
+                hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-31.6)/13.6
+                hrv_adjusted["RMSSD_Adjusted"] = (hrv["RMSSD"]-22.0)/13.2
+
+                hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-66)/83
+                hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-41.4)/72.1
+                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-2.09)/2.05
+
+    return(hrv_adjusted)
 
 
 
@@ -602,9 +786,19 @@ def ecg_wave_detector(ecg, rpeaks, plot=False):
 
     Notes
     ----------
+    *Details*
+
+    - **Cardiac Cycle**: A typical ECG showing a heartbeat consists of a P wave, a QRS complex and a T wave.The P wave represents the wave of depolarization that spreads from the SA-node throughout the atria. The QRS complex reflects the rapid depolarization of the right and left ventricles. Since the ventricles are the largest part of the heart, in terms of mass, the QRS complex usually has a much larger amplitude than the P-wave. The T wave represents the ventricular repolarization of the ventricles. On rare occasions, a U wave can be seen following the T wave. The U wave is believed to be related to the last remnants of ventricular repolarization.
+
     *Authors*
 
     - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+
+
+
+
+
     """
     t_waves = []
     for index, rpeak in enumerate(rpeaks[0:-1]):
@@ -615,8 +809,11 @@ def ecg_wave_detector(ecg, rpeaks, plot=False):
         epoch = np.array(ecg)
         epoch = epoch[int(rpeak+quarter):int(rpeak+middle)]
 
-        t_wave = int(rpeak+quarter) + np.argmax(epoch)
-        t_waves.append(t_wave)
+        try:
+            t_wave = int(rpeak+quarter) + np.argmax(epoch)
+            t_waves.append(t_wave)
+        except ValueError:
+            pass
 
     p_waves = []
     for index, rpeak in enumerate(rpeaks[1:]):
@@ -628,16 +825,22 @@ def ecg_wave_detector(ecg, rpeaks, plot=False):
         epoch = np.array(ecg)
         epoch = epoch[int(rpeak-middle):int(rpeak-quarter)]
 
-        p_wave = int(rpeak-quarter) + np.argmax(epoch)
-        p_waves.append(p_wave)
+        try:
+            p_wave = int(rpeak-quarter) + np.argmax(epoch)
+            p_waves.append(p_wave)
+        except ValueError:
+            pass
 
     q_waves = []
     for index, p_wave in enumerate(p_waves):
         epoch = np.array(ecg)
         epoch = epoch[int(p_wave):int(rpeaks[rpeaks>p_wave][0])]
 
-        q_wave = p_wave + np.argmin(epoch)
-        q_waves.append(q_wave)
+        try:
+            q_wave = p_wave + np.argmin(epoch)
+            q_waves.append(q_wave)
+        except ValueError:
+            pass
 
     if plot is True:
         plot_events_in_signal(signal, [p_waves, q_waves, list(rpeaks), t_waves], color=["green", "orange", "red", "blue"])
@@ -659,7 +862,7 @@ def ecg_wave_detector(ecg, rpeaks, plot=False):
 # ==============================================================================
 def ecg_systole(ecg, rpeaks, t_waves):
     """
-    Returns the localization of the P, Q, T waves.
+    Returns the localization of systoles and diastoles.
 
     Parameters
     ----------

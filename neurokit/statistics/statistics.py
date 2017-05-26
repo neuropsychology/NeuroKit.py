@@ -482,16 +482,16 @@ def dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def identify_outliers(serie, treshold=2.58):
+def identify_outliers(array, treshold=2.58):
     """
     Identify outliers.
 
     Parameters
     ----------
-    serie = list or array
-        data
-    treshold = float
-        maximum deviation (in terms of standart deviation). Following a gaussian distribution, 2.58 = rejecting 1%, 2.33 = rejecting 2%, 1.96 = 5% and 1.28 = rejecting 10%.
+    array : list or ndarray
+        Data array
+    treshold : float
+        Maximum deviation (in terms of standart deviation). Following a gaussian distribution, 2.58 = rejecting 1%, 2.33 = rejecting 2%, 1.96 = 5% and 1.28 = rejecting 10%.
 
     Returns
     ----------
@@ -510,13 +510,14 @@ def identify_outliers(serie, treshold=2.58):
     - scipy
     """
     outlier_list = []
-    for i in serie:
-        if abs(i - np.mean(serie))/np.std(serie) < treshold:
-            outlier_list.append(0)
+    mean = np.mean(array)
+    std = np.std(array)
+    for i in array:
+        if abs(i - mean)/std < treshold:
+            outlier_list.append(False)
         else:
-            outlier_list.append(1)
-    serie_without_outliers = serie[abs(serie - np.mean(serie)) < treshold * np.std(serie)]
-    return (outlier_list, serie_without_outliers)
+            outlier_list.append(True)
+    return (outlier_list)
 
 
 

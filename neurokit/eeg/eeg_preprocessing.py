@@ -74,7 +74,7 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method='fastica', random_state=23, n_components=0.95, plot=False, decim=3, reject=None):
+def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method='fastica', random_state=666, n_components=0.95, plot=False, decim=3, reject=None):
     """
     Applies ICA to remove eog and/or ecg artifacts.
 
@@ -130,7 +130,7 @@ def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method=
     """
     ica = mne.preprocessing.ICA(method=method,  # for comparison with EEGLAB try "extended-infomax" here
                                 random_state=random_state,  # random seed
-                                n_components=n_components
+                                n_components=30
                                 )
     # Check if MEG or EEG data
     if True in set(["MEG" in ch for ch in raw.info["ch_names"]]):
@@ -142,7 +142,15 @@ def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method=
 
     picks = mne.pick_types(raw.info, meg=meg, eeg=eeg, eog=False, ecg=False, stim=False, exclude='bads', bio=False)
 
+    eog = raw.copy().pick_types(meg=False, eeg=False, eog=True).get_data()
+    eog = mne.filter.filter_data(eog, raw.info["sfreq"], 1, 10, verbose="CRITICAL")
+    pd.DataFrame(eog)[10000:15000].plot()
+
+
+
     ica.fit(raw, picks=picks, decim=decim, reject=reject)
+
+    ica = ica.detect_artifacts(raw, ecg_channel='MEG 1531', eog_channel='EOG 061')
 
     if eog is True:
         eog_inds, scores = ica.find_bads_eog(raw, threshold=eog_treshold)

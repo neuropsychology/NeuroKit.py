@@ -142,18 +142,11 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # Sampen
     if sampen is True:
         try:
-            complexity["Entropy_Sample_Chebychev"] = nolds.sampen(signal, emb_dim, tolerance, dist="chebychev", debug_plot=False, plot_file=None)
+            complexity["Entropy_Sample"] = nolds.sampen(signal, emb_dim, tolerance, dist="chebychev", debug_plot=False, plot_file=None)
         except:
-            print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen) using chebychev distance.")
-            complexity["Entropy_Sample_Chebychev"] = np.nan
-        try:
-            complexity["Entropy_Sample_Euclidean"] = nolds.sampen(signal, emb_dim, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
-        except:
-            try:
-                complexity["Entropy_Sample_Euclidean"] = nolds.sampen(signal, emb_dim, tolerance, dist="euler", debug_plot=False, plot_file=None)
-            except:
-                print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen) using euclidean distance.")
-                complexity["Entropy_Sample_Euclidean"] = np.nan
+            print("NeuroKit warning: complexity(): Failed to compute sample entropy (sampen).")
+            complexity["Entropy_Sample"] = np.nan
+
 
     # multiscale
     if multiscale is True:
@@ -332,8 +325,6 @@ def entropy_shannon(signal):
 
 
 
-
-
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -481,7 +472,7 @@ def fd_higushi(signal, k_max):
     - Accardo, A., Affinito, M., Carrozzi, M., & Bouquet, F. (1997). Use of the fractal dimension for the analysis of electroencephalographic time series. Biological cybernetics, 77(5), 339-350.
     - Gómez, C., Mediavilla, Á., Hornero, R., Abásolo, D., & Fernández, A. (2009). Use of the Higuchi's fractal dimension for the analysis of MEG recordings from Alzheimer's disease patients. Medical engineering & physics, 31(3), 306-313.
     """
-
+    signal = np.array(signal)
     L = []
     x = []
     N = signal.size
@@ -493,7 +484,7 @@ def fd_higushi(signal, k_max):
 
     for k in range(1, k_max):
         Lk = 0
-        for m in range(0,k):
+        for m in range(0, k):
             #we pregenerate all idxs
             idxs = np.arange(1,int(np.floor((N-m)/k)))
 
@@ -501,9 +492,9 @@ def fd_higushi(signal, k_max):
             Lmk = (Lmk*(N - 1)/(((N - m)/ k)* k)) / k
             Lk += Lmk
 
-
-        L.append(np.log(Lk/(m+1)))
-        x.append([np.log(1.0/ k), 1])
+        if Lk != 0:
+            L.append(np.log(Lk/(m+1)))
+            x.append([np.log(1.0/ k), 1])
 
     (p, r1, r2, s)=np.linalg.lstsq(x, L)
     fd_higushi = p[0]
@@ -579,9 +570,10 @@ def entropy_spectral(signal, sampling_rate, bands=None):
         power_per_band = [np.sum(psd[np.bitwise_and(freqs >= low, freqs<up)])
                 for low,up in zip(freq_limits_low, freq_limits_up)]
 
-        power_per_band= power_per_band[ power_per_band > 0]
+        power_per_band= np.array(power_per_band)[np.array(power_per_band) > 0]
 
-    return(- np.sum(power_per_band * np.log2(power_per_band)))
+    spectral = - np.sum(power_per_band * np.log2(power_per_band))
+    return(spectral)
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
