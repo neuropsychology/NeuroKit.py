@@ -207,7 +207,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # HRV
     processed_ecg["ECG"]["HRV"] = ecg_hrv(rri, sampling_rate, segment_length=hrv_segment_length)
     if age is not None and sex is not None and position is not None:
-        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["HRV"], age, sex, position)
+        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["ECG"]["HRV"], age, sex, position)
 
 
     # RSP
