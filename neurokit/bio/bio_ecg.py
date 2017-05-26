@@ -183,10 +183,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # Signal quality
     quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
-    # HRV
-    hrv = ecg_hrv(rri, sampling_rate, segment_length=hrv_segment_length)
-    if age is not None and sex is not None and position is not None:
-        hrv_adjusted = ecg_hrv_assessment(hrv, age, sex, position)
+
 
     # Waves
     waves = ecg_wave_detector(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"])
@@ -200,13 +197,17 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
                      "ECG": {
                             "RR_Intervals": rri,
                             "Cardiac_Cycles": heartbeats,
-                            "R_Peaks": biosppy_ecg["rpeaks"],
-                            "HRV": hrv,
-                            "HRV_Adjusted": hrv_adjusted}
+                            "R_Peaks": biosppy_ecg["rpeaks"]}
                      }
 
     processed_ecg["ECG"].update(quality)
     processed_ecg["ECG"].update(waves)
+
+    # HRV
+    processed_ecg["HRV"] = ecg_hrv(rri, sampling_rate, segment_length=hrv_segment_length)
+    if age is not None and sex is not None and position is not None:
+        processed_ecg["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["HRV"], age, sex, position)
+
 
     # RSP
     if rsp is not None:
