@@ -11,11 +11,9 @@ import scipy
 import nolds
 
 from .bio_rsp import *
-from ..signal import complexity
-from ..signal import plot_events_in_signal
+from ..signal import *
 from ..materials import Path
-from ..statistics import z_score
-from ..statistics import identify_outliers
+from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
