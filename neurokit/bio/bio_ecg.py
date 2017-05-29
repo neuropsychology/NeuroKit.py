@@ -647,8 +647,10 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
 
     # Non-Linear Dynamics
     # ======================
-    hrv["DFA_1"] = nolds.dfa(rri, range(4, 17))
-    hrv["DFA_2"] = nolds.dfa(rri, range(16, 66))
+    if len(rri) > 17:
+        hrv["DFA_1"] = nolds.dfa(rri, range(4, 17))
+    if len(rri) > 66:
+        hrv["DFA_2"] = nolds.dfa(rri, range(16, 66))
     hrv["Shannon"] = entropy_shannon(rri)
     hrv["Sample_Entropy"] = nolds.sampen(rri, emb_dim=2)
     hrv["Correlation_Dimension"] = nolds.corr_dim(rri, emb_dim=2)
