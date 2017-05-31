@@ -74,7 +74,7 @@ def eeg_filter(raw, lowpass=1, highpass=40, notch=True, method="fir"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method='fastica', random_state=666, n_components=30, plot=False, decim=3, reject=None):
+def eeg_ica(raw, eog=True, eog_treshold=3.0, ecg=True, ecg_treshold=3.0, method='fastica', random_state=666, n_components=0.95, plot=False, decim=3, reject=None):
     """
     Applies ICA to remove eog and/or ecg artifacts.
 

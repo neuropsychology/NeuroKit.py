@@ -412,7 +412,7 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
     events, event_id = eeg_create_events(events["onsets"], conditions)
 
     # Add them
-    raw.add_events(events)
+    raw.add_events(events, verbose="WARNING")
 
     return(raw, events, event_id)
 

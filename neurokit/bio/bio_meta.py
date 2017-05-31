@@ -148,7 +148,15 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
     if ecg is not None:
         ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method, quality_model=ecg_quality_model, hrv_segment_length=hrv_segment_length, age=age, sex=sex, position=position)
         processed_bio["ECG"] = ecg["ECG"]
+        if rsp is not None:
+            processed_bio["RSP"] = ecg["RSP"]
         bio_df = pd.concat([bio_df, ecg["df"]], axis=1)
+
+    if rsp is not None and ecg is None:
+        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        processed_bio["RSP"] = rsp["RSP"]
+        bio_df = pd.concat([bio_df, rsp["df"]], axis=1)
+
 
     # EDA
     if eda is not None:
