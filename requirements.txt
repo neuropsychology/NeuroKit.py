@@ -5,7 +5,7 @@ sklearn
 matplotlib
 mne
 bioread
-nolds
+https://github.com/CSchoel/nolds/zipball/master
 biosppy
 Pillow
 cvxopt
