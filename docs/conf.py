@@ -57,7 +57,6 @@ MOCK_MODULES = [
         'bioread',
         'nolds',
         "biosppy",
-        "hrv",
         "Pillow",
         "cvxopt",
         "cvxopt.solvers",
