@@ -282,3 +282,152 @@ def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10.
 
     return(phasic)
 
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eda_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+    """
+    Extract event-related EDA and Skin Conductance Response (SCR).
+
+    Parameters
+    ----------
+    epoch : pandas.DataFrame
+        An epoch contains in the epochs dict returned by :function:`nk.create_epochs()` on dataframe returned by :function:`nk.bio_process()`. Index must range from -4s to +4s (relatively to event onset and end).
+    event_length : int
+        In seconds.
+    sampling_rate : int
+        Sampling rate (samples/second).
+    window_post : float
+        Post-stimulus window size (in seconds) to include eventual responses (usually 3 or 4).
+
+    Returns
+    ----------
+    EDA_Response : dict
+        Event-related EDA response features.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> bio = nk.bio_process(eda=df["EDA"], add=df["Photosensor"])
+    >>> df = bio["df"]
+    >>> events = nk.find_events(df["Photosensor"], cut="lower")
+    >>> epochs = nk.create_epochs(df, events["onsets"], duration=events["durations"]+8000, onset=-4000)
+    >>> for epoch in epochs:
+    >>>     EDA_Response = nk.eda_ERP(epoch, event_length=4000)
+
+    Notes
+    ----------
+    *Details*
+
+    - **Looking for help**: *Experimental*: respiration artifacts correction needs to be implemented.
+    - **EDA_Peak**: Max of EDA (in a window starting 1s after the stim onset) minus baseline.
+    - **SCR_Amplitude**: Peak of SCR. If no SCR, returns NA.
+    - **SCR_Magnitude**: Peak of SCR. If no SCR, returns 0.
+    - **SCR_Amplitude_Log**: log of 1+amplitude.
+    - **SCR_Magnitude_Log**: log of 1+magnitude.
+    - **SCR_PeakTime**: Time of peak.
+    - **SCR_Latency**: Time between stim onset and SCR onset.
+    - **SCR_RiseTime**: Time between SCR onset and peak.
+    - **SCR_Strength**: *Experimental*: peak divided by latency.
+
+
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - numpy
+    - pandas
+
+    *See Also*
+
+    - https://www.biopac.com/wp-content/uploads/EDA-SCR-Analysis.pdf
+
+    References
+    -----------
+    - Schneider, R., Schmidt, S., Binder, M., Schäfer, F., & Walach, H. (2003). Respiration-related artifacts in EDA recordings: introducing a standardized method to overcome multiple interpretations. Psychological reports, 93(3), 907-920.
+    """
+    # Initialization
+    event_length = event_length/sampling_rate*1000
+    EDA_Response = {}
+
+    # Sanity check
+    if epoch.index[-1]/sampling_rate*1000-event_length < 1000:
+        print("NeuroKit Warning: eda_ERP(): your epoch only lasts for about %.2f s post stimulus. You might lose some SCRs." %((epoch.index[-1]/sampling_rate*1000-event_length)/1000))
+
+    if epoch.index[0]/sampling_rate*1000 > -3000:
+        print("NeuroKit Warning: eda_ERP(): your epoch only starts %.2f s before the stimulus. Might induce some errors in artifacts correction." %((epoch.index[0]/sampling_rate*1000)/1000))
+
+
+
+    # EDA Based
+    # =================
+    baseline = epoch["EDA_Filtered"].ix[0]
+    eda_peak = epoch["EDA_Filtered"].ix[sampling_rate:event_length+window_post*sampling_rate].max()
+    EDA_Response["EDA_Peak"] = eda_peak - baseline
+
+    # SCR Based
+    # =================
+    # Very Basic Model
+#    EDA_Response["SCR_Amplitude_Basic"] = epoch["SCR_Peaks"].ix[100:event_length+4*sampling_rate].max()
+#    if np.isnan(EDA_Response["SCR_Amplitude_Basic"]):
+#        EDA_Response["SCR_Magnitude_Basic"] = 0
+#    else:
+#        EDA_Response["SCR_Magnitude_Basic"] = EDA_Response["SCR_Amplitude_Basic"]
+
+    # Model
+    peak_onset = epoch["SCR_Onsets"].ix[0:event_length].idxmax()
+    if pd.isnull(peak_onset) is False:
+        EDA_Response["SCR_Amplitude"] = epoch["SCR_Peaks"].ix[peak_onset:event_length+window_post*sampling_rate].max()
+        peak_loc = epoch["SCR_Peaks"].ix[peak_onset:event_length+window_post*sampling_rate].idxmax()
+        EDA_Response["SCR_Magnitude"] = EDA_Response["SCR_Amplitude"]
+        if pd.isnull(EDA_Response["SCR_Amplitude"]):
+            EDA_Response["SCR_Magnitude"] = 0
+    else:
+        EDA_Response["SCR_Amplitude"] = np.nan
+        EDA_Response["SCR_Magnitude"] = 0
+
+    # Log
+    EDA_Response["SCR_Amplitude_Log"] = np.log(1+EDA_Response["SCR_Amplitude"])
+    EDA_Response["SCR_Magnitude_Log"] = np.log(1+EDA_Response["SCR_Magnitude"])
+
+
+    # Latency and Rise time
+    if np.isfinite(EDA_Response["SCR_Amplitude"]):
+        peak_onset = epoch["SCR_Onsets"].ix[0:peak_loc].idxmax()
+
+        EDA_Response["SCR_PeakTime"] = peak_loc/sampling_rate*1000
+        EDA_Response["SCR_Latency"] = peak_onset/sampling_rate*1000
+        EDA_Response["SCR_RiseTime"] = (peak_loc - peak_onset)/sampling_rate*1000
+    else:
+        EDA_Response["SCR_PeakTime"] = np.nan
+        EDA_Response["SCR_Latency"] = np.nan
+        EDA_Response["SCR_RiseTime"] = np.nan
+
+
+    EDA_Response["SCR_Strength"] = EDA_Response["SCR_Magnitude"]/(EDA_Response["SCR_Latency"]/1000)
+#     RSP Corrected
+    # This needs to be done!!
+    if "RSP_Filtered" in epoch.columns:
+#        granger = statsmodels.tsa.stattools.grangercausalitytests(epoch[["EDA_Filtered", "RSP_Filtered"]], 10)
+        RSP_z = z_score(epoch["RSP_Filtered"])
+        RSP_peak = RSP_z.ix[:0].max()
+        if np.isnan(RSP_peak[0]) and RSP_peak[0] > 1.96:
+            EDA_Response["SCR_Amplitude_RSP_Corrected"] = EDA_Response["SCR_Amplitude"]/(RSP_peak-0.96)
+            EDA_Response["SCR_Magnitude_RSP_Corrected"] = EDA_Response["SCR_Magnitude"]/(RSP_peak-0.96)
+        else:
+            EDA_Response["SCR_Amplitude_RSP_Corrected"] = EDA_Response["SCR_Amplitude"]
+            EDA_Response["SCR_Magnitude_RSP_Corrected"] = EDA_Response["SCR_Magnitude"]
+
+    return(EDA_Response)
+

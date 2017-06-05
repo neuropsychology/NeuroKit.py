@@ -921,3 +921,128 @@ def ecg_systole(ecg, rpeaks, t_waves):
         systole.append(current)
 
     return(systole)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+    """
+    Extract event-related ECG changes.
+
+    Parameters
+    ----------
+    epoch : pandas.DataFrame
+        An epoch contains in the epochs dict returned by :function:`nk.create_epochs()` on dataframe returned by :function:`nk.bio_process()`. Index should range from -4s to +4s (relatively to event onset and end).
+    event_length : int
+        In seconds.
+    sampling_rate : int
+        Sampling rate (samples/second).
+    window_post : float
+        Post-stimulus window size (in seconds) to include eventual responses (usually 3 or 4).
+
+    Returns
+    ----------
+    ECG_Response : dict
+        Event-related ECG response features.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> bio = nk.bio_process(ecg=df["ECG"], add=df["Photosensor"])
+    >>> df = bio["df"]
+    >>> events = nk.find_events(df["Photosensor"], cut="lower")
+    >>> epochs = nk.create_epochs(df, events["onsets"], duration=events["durations"]+8000, onset=-4000)
+    >>> for epoch in epochs:
+    >>>     ECG_Response = nk.ecg_ERP(epoch, event_length=4000)
+
+    Notes
+    ----------
+    *Details*
+
+    - **Heart_Rate_Baseline**: mean HR before stimulus onset.
+    - **Heart_Rate_Min**: Min HR after stimulus onset.
+    - **Heart_Rate_MinDiff**: HR mininum - baseline.
+    - **Heart_Rate_MinTime**: Time of minimum.
+    - **Heart_Rate_Max**: Max HR after stimulus onset.
+    - **Heart_Rate_MaxDiff**: Max HR - baseline.
+    - **Heart_Rate_MaxTime**: Time of maximum.
+    - **Heart_Rate_Mean**: Mean HR after stimulus onset.
+    - **Heart_Rate_MeanDiff**: Mean HR - baseline.
+    - **Cardiac_Systole**: Cardiac phase on stimulus onset (1 = systole, 0 = diastole).
+    - **Cardiac_Systole_Completion**: Percentage of cardiac phase completion on simulus onset.
+    - **HRV**: Returns HRV features. See :func:`neurokit.ecg_hrv()`.
+    - **HRV_Diff**: HRV post-stimulus - HRV pre-stimulus.
+
+
+
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    *Dependencies*
+
+    - numpy
+    - pandas
+
+    *See Also*
+
+    References
+    -----------
+    """
+    # Initialization
+    event_length = event_length/sampling_rate*1000
+    ECG_Response = {}
+
+    # Heart Rate
+    ECG_Response["Heart_Rate_Baseline"] = epoch["Heart_Rate"].ix[:0].mean()
+    ECG_Response["Heart_Rate_Min"] = epoch["Heart_Rate"].ix[0:event_length].min()
+    ECG_Response["Heart_Rate_MinDiff"] = ECG_Response["Heart_Rate_Min"] - ECG_Response["Heart_Rate_Baseline"]
+    ECG_Response["Heart_Rate_MinTime"] = epoch["Heart_Rate"].ix[0:event_length].idxmin()/sampling_rate*1000
+    ECG_Response["Heart_Rate_Max"] = epoch["Heart_Rate"].ix[0:event_length].max()
+    ECG_Response["Heart_Rate_MaxDiff"] = ECG_Response["Heart_Rate_Max"] - ECG_Response["Heart_Rate_Baseline"]
+    ECG_Response["Heart_Rate_MaxTime"] = epoch["Heart_Rate"].ix[0:event_length].idxmax()/sampling_rate*1000
+    ECG_Response["Heart_Rate_Mean"] = epoch["Heart_Rate"].ix[0:event_length].mean()
+    ECG_Response["Heart_Rate_MeanDiff"] = ECG_Response["Heart_Rate_Mean"] - ECG_Response["Heart_Rate_Baseline"]
+
+
+    # Cardiac Phase
+    ECG_Response["Cardiac_Systole"] = epoch["ECG_Systole"].ix[0]
+
+    for i in range(0, int(event_length)-1):
+        if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
+            systole_end = i
+            break
+
+    for i in range(0, epoch.index[0]+1, -1):
+        if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
+            systole_beg = i
+            break
+
+    try:
+        ECG_Response["Cardiac_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
+    except ZeroDivisionError:
+        ECG_Response["Cardiac_Systole_Completion"] = np.nan
+
+    # HRV
+    rpeaks_before = epoch[epoch["ECG_Rpeaks"]==1].ix[:0].index/sampling_rate*1000
+    rri_before = np.diff(rpeaks_before)
+    rpeaks = epoch[epoch["ECG_Rpeaks"]==1].ix[0:event_length].index/sampling_rate*1000
+    rri = np.diff(rpeaks)
+
+    try:
+        hrv_baseline = ecg_hrv(rri_before, sampling_rate, segment_length=len(rri_before))
+        hrv = ecg_hrv(rri, sampling_rate, segment_length=len(rri))
+
+        for key in hrv:
+            ECG_Response["HRV_" + key] = hrv[key]
+            ECG_Response["HRV_Diff_" + key] = hrv[key] - hrv_baseline[key]
+    except IndexError:
+        print("NeuroKit Warning: ecg_ERP(): Not enough R peaks to compute HRV.")
+
+    return(ECG_Response)

@@ -2,7 +2,6 @@ import neurokit as nk
 import pandas as pd
 import numpy as np
 import scipy
-import statsmodels.tsa.stattools
 
 df = pd.read_csv("EDA_RSP_Artifacts.csv")  # Sampled at 100Hz
 conditions = pd.Series.from_csv("events.csv")
@@ -19,9 +18,9 @@ epochs = nk.create_epochs(df, events["onsets"], duration=events["durations"]+800
 #==============================================================================
 #
 #==============================================================================
-def eda_eventlocked_response(epoch, event_length, sampling_rate=1000, window_post=4):
+def eda_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
     """
-    Extract event-locked Skin Conductance Response (SCR).
+    Extract event-related EDA and Skin Conductance Response (SCR).
 
     Parameters
     ----------
@@ -53,7 +52,17 @@ def eda_eventlocked_response(epoch, event_length, sampling_rate=1000, window_pos
     ----------
     *Details*
 
-    - **Looking for help**: respiration artifacts correction needs to be implemented.
+    - **Looking for help**: *Experimental*: respiration artifacts correction needs to be implemented.
+    - **EDA_Peak**: Max of EDA (in a window starting 1s after the stim onset) minus baseline.
+    - **SCR_Amplitude**: Peak of SCR. If no SCR, returns NA.
+    - **SCR_Magnitude**: Peak of SCR. If no SCR, returns 0.
+    - **SCR_Amplitude_Log**: log of 1+amplitude.
+    - **SCR_Magnitude_Log**: log of 1+magnitude.
+    - **SCR_PeakTime**: Time of peak.
+    - **SCR_Latency**: Time between stim onset and SCR onset.
+    - **SCR_RiseTime**: Time between SCR onset and peak.
+    - **SCR_Strength**: *Experimental*: peak divided by latency.
+
 
     *Authors*
 
@@ -88,12 +97,12 @@ def eda_eventlocked_response(epoch, event_length, sampling_rate=1000, window_pos
     # EDA Based
     # =================
     baseline = epoch["EDA_Filtered"].ix[0]
-    eda_peak = epoch["EDA_Filtered"].ix[100:event_length+window_post*sampling_rate].max()
+    eda_peak = epoch["EDA_Filtered"].ix[sampling_rate:event_length+window_post*sampling_rate].max()
     SCR["EDA_Peak"] = eda_peak - baseline
 
     # SCR Based
     # =================
-    # Basic Model
+    # Very Basic Model
 #    SCR["SCR_Amplitude_Basic"] = epoch["SCR_Peaks"].ix[100:event_length+4*sampling_rate].max()
 #    if np.isnan(SCR["SCR_Amplitude_Basic"]):
 #        SCR["SCR_Magnitude_Basic"] = 0
@@ -134,18 +143,15 @@ def eda_eventlocked_response(epoch, event_length, sampling_rate=1000, window_pos
 #     RSP Corrected
     # This needs to be done!!
     if "RSP_Filtered" in epoch.columns:
-        pass
 #        granger = statsmodels.tsa.stattools.grangercausalitytests(epoch[["EDA_Filtered", "RSP_Filtered"]], 10)
-#        RSP_z = nk.z_score(epoch["RSP_Filtered"])
-#        RSP_peak = epoch["RSP_Filtered"].ix[:0].max()
-#        if RSP_peak > 1:
-#            pass
-#            SCR = SCR/RSP_peak
-#            SCR["SCR_Amplitude_RSP_Corrected"] = np.nan
-#            SCR["SCR_Magnitude_RSP_Corrected"] = 0
-#        else:
-#            SCR["SCR_Amplitude_RSP_Corrected"] = SCR["SCR_Amplitude"]
-#            SCR["SCR_Magnitude_RSP_Corrected"] = SCR["SCR_Magnitude"]
+        RSP_z = nk.z_score(epoch["RSP_Filtered"])
+        RSP_peak = RSP_z.ix[:0].max()
+        if np.isnan(RSP_peak[0]) and RSP_peak[0] > 1.96:
+            SCR["SCR_Amplitude_RSP_Corrected"] = SCR["SCR_Amplitude"]/(RSP_peak-0.96)
+            SCR["SCR_Magnitude_RSP_Corrected"] = SCR["SCR_Magnitude"]/(RSP_peak-0.96)
+        else:
+            SCR["SCR_Amplitude_RSP_Corrected"] = SCR["SCR_Amplitude"]
+            SCR["SCR_Magnitude_RSP_Corrected"] = SCR["SCR_Magnitude"]
 
     return(SCR)
 #==============================================================================
@@ -181,7 +187,7 @@ evoked = {"Negative": {
 
 for index, condition in enumerate(conditions):
     epoch = epochs[index]
-    SCR = eda_eventlocked_response(epoch, event_length=300, sampling_rate=100)
+    SCR = eda_ERP(epoch, event_length=300, sampling_rate=100)
 #    if SCR["SCR_Magnitude_Basic"] != 0:
 #        print(["SCR_Magnitude_Basic"])
 #        break
@@ -191,8 +197,8 @@ for index, condition in enumerate(conditions):
     evoked[condition]["SCR_Magnitude"].append(SCR["SCR_Magnitude"])
     evoked[condition]["SCR_Amplitude_Log"].append(SCR["SCR_Amplitude_Log"])
     evoked[condition]["SCR_Magnitude_Log"].append(SCR["SCR_Magnitude_Log"])
-#    evoked[condition]["SCR_Amplitude_RSP_Corrected"].append(SCR["SCR_Amplitude_RSP_Corrected"])
-#    evoked[condition]["SCR_Magnitude_RSP_Corrected"].append(SCR["SCR_Magnitude_RSP_Corrected"])
+    evoked[condition]["SCR_Amplitude_RSP_Corrected"].append(SCR["SCR_Amplitude_RSP_Corrected"])
+    evoked[condition]["SCR_Magnitude_RSP_Corrected"].append(SCR["SCR_Magnitude_RSP_Corrected"])
     evoked[condition]["SCR_PeakTime"].append(SCR["SCR_PeakTime"])
     evoked[condition]["SCR_Latency"].append(SCR["SCR_Latency"])
     evoked[condition]["SCR_RiseTime"].append(SCR["SCR_RiseTime"])
@@ -210,9 +216,9 @@ print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(evoked["Negative"]["SCR_Magn
 print("-------Log------")
 print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(pd.Series(evoked["Negative"]["SCR_Amplitude_Log"]).dropna(), pd.Series(evoked["Neutral"]["SCR_Amplitude_Log"]).dropna()))
 print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(evoked["Negative"]["SCR_Magnitude_Log"], evoked["Neutral"]["SCR_Magnitude_Log"]))
-#print("-------RSP------")
-#print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(pd.Series(evoked["Negative"]["SCR_Amplitude_RSP_Corrected"]).dropna(), pd.Series(evoked["Neutral"]["SCR_Amplitude_RSP_Corrected"]).dropna()))
-#print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(evoked["Negative"]["SCR_Magnitude_RSP_Corrected"], evoked["Neutral"]["SCR_Magnitude_RSP_Corrected"]))
+print("-------RSP------")
+print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(pd.Series(evoked["Negative"]["SCR_Amplitude_RSP_Corrected"]).dropna(), pd.Series(evoked["Neutral"]["SCR_Amplitude_RSP_Corrected"]).dropna()))
+print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(evoked["Negative"]["SCR_Magnitude_RSP_Corrected"], evoked["Neutral"]["SCR_Magnitude_RSP_Corrected"]))
 print("-------Other------")
 print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(pd.Series(evoked["Negative"]["SCR_PeakTime"]).dropna(), pd.Series(evoked["Neutral"]["SCR_PeakTime"]).dropna()))
 print("f = %0.2f, p = %0.2f" %scipy.stats.ttest_ind(pd.Series(evoked["Negative"]["SCR_Latency"]).dropna(), pd.Series(evoked["Neutral"]["SCR_Latency"]).dropna()))
