@@ -331,9 +331,13 @@ def rsp_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
     RSP_Response["RSP_Inspiration"] = epoch["RSP_Inspiration"].ix[0]
 
     for i in range(0, int(event_length)-1):
-        if epoch["RSP_Inspiration"].ix[i] != RSP_Response["RSP_Inspiration"]:
-            phase_end = i
-            break
+        try:
+            if epoch["RSP_Inspiration"].ix[i] != RSP_Response["RSP_Inspiration"]:
+                phase_end = i
+                break
+        except KeyError as error:
+            print("NeuroKit Warning: rsp_ERP(): Didn't find any phase end. Error: " + str(error))
+            phase_end = np.nan
 
     for i in range(0, epoch.index[0]+1, -1):
         try:
