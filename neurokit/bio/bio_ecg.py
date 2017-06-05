@@ -659,7 +659,8 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
     hrv["Sample_Entropy"] = nolds.sampen(rri, emb_dim=2)
     try:
         hrv["Correlation_Dimension"] = nolds.corr_dim(rri, emb_dim=2)
-    except AssertionError:
+    except AssertionError as error:
+        print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
         hrv["Correlation_Dimension"] = np.nan
     hrv["Entropy_Multiscale"] = entropy_multiscale(rri, emb_dim=2)
     hrv["Entropy_SVD"] = entropy_svd(rri, emb_dim=2)

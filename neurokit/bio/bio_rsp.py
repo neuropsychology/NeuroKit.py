@@ -342,7 +342,11 @@ def rsp_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
 
     try:
         RSP_Response["RSP_Inspiration_Completion"] = -1*phase_beg/(phase_end - phase_beg)*100
-    except ZeroDivisionError:
+    except ZeroDivisionError as error:
+        print("NeuroKit Warning: rsp_ERP(): RSP_Inspiration_Completion. Error: " + str(error))
+        RSP_Response["RSP_Inspiration_Completion"] = np.nan
+    except UnboundLocalError as error:
+        print("NeuroKit Warning: rsp_ERP(): RSP_Inspiration_Completion. Error: " + str(error))
         RSP_Response["RSP_Inspiration_Completion"] = np.nan
 
     try:
