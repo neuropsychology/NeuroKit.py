@@ -301,7 +301,7 @@ def eda_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
     Parameters
     ----------
     epoch : pandas.DataFrame
-        An epoch contains in the epochs dict returned by :function:`nk.create_epochs()` on dataframe returned by :function:`nk.bio_process()`. Index must range from -4s to +4s (relatively to event onset and end).
+        An epoch contains in the epochs dict returned by :function:`neurokit.create_epochs()` on dataframe returned by :function:`neurokit.bio_process()`. Index must range from -4s to +4s (relatively to event onset and end).
     event_length : int
         In seconds.
     sampling_rate : int

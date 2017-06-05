@@ -34,11 +34,21 @@ emg_process
 .. autofunction:: neurokit.emg_process
 
 
+bio_ERP
+-----------------
+
+.. autofunction:: neurokit.bio_ERP
+
 ecg_find_peaks
 -----------------
 
 .. autofunction:: neurokit.ecg_find_peaks
 
+
+rsp_find_cycles
+-----------------
+
+.. autofunction:: neurokit.rsp_find_cycles
 
 read_acqknowledge
 --------------------

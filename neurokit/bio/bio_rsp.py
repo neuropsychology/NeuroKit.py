@@ -127,7 +127,7 @@ def rsp_process(rsp, sampling_rate=1000, resampling_method="bfill"):
 # ==============================================================================
 def rsp_find_cycles(signal):
     """
-    Find R peaks indices on the ECG channel.
+    Find Respiratory cycles onsets, durations and phases.
 
     Parameters
     ----------
@@ -239,7 +239,7 @@ def rsp_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
     Parameters
     ----------
     epoch : pandas.DataFrame
-        An epoch contains in the epochs dict returned by :function:`nk.create_epochs()` on dataframe returned by :function:`nk.bio_process()`.
+        An epoch contains in the epochs dict returned by :function:`neurokit.create_epochs()` on dataframe returned by :function:`neurokit.bio_process()`.
     event_length : int
         In seconds.
     sampling_rate : int

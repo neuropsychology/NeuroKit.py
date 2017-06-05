@@ -51,18 +51,21 @@ Main features:
   - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
   - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a dataframe
-  - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG and RSP features
+  - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG features
     - *Heart Rate*
-    - *Heart rate variability (HRV) - time and frequency domains*
+    - *Heart rate variability (HRV) - time, frequency and nonlinear domains*
     - *Cardiac Cycles - R peaks, RR intervals, P, Q, T Waves, ...*
     - *Cardiac Phase (systole/diastole)*
     - *Signal quality evaluation*
-    - *Respiratory rate and variability*
     - *Respiratory sinus arrhythmia (RSA)*
     - *Complexity (multiscale entropy, fractal dimensions, ...)*
+  - **[`rsp_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract Respiratory features
+    - *Respiratory rate and variability*
+    - *Respiratory phase (inspiration/expiration)*
+    - *Respiratory cycles characteristics (onsets, length, ...)*
   - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA)
     - *Phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110))*
-    - *Skin Conductance Responses (SCR) onsets, peaks and amplitudes*
+    - *Skin Conductance Responses (SCR) onsets, peaks, amplitudes, latency, rise time, ...*
   - **[`emg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#emg-process)**: Extract EMG features
     - *Pulse onsets*
 - **Statistics**
