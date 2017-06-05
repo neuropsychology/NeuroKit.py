@@ -657,7 +657,10 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
         hrv["DFA_2"] = nolds.dfa(rri, range(16, 66))
     hrv["Shannon"] = entropy_shannon(rri)
     hrv["Sample_Entropy"] = nolds.sampen(rri, emb_dim=2)
-    hrv["Correlation_Dimension"] = nolds.corr_dim(rri, emb_dim=2)
+    try:
+        hrv["Correlation_Dimension"] = nolds.corr_dim(rri, emb_dim=2)
+    except AssertionError:
+        hrv["Correlation_Dimension"] = np.nan
     hrv["Entropy_Multiscale"] = entropy_multiscale(rri, emb_dim=2)
     hrv["Entropy_SVD"] = entropy_svd(rri, emb_dim=2)
     hrv["Entropy_Spectral_VLF"] = entropy_spectral(rri, 1000, bands=np.arange(0.003, 0.04, 0.001))
