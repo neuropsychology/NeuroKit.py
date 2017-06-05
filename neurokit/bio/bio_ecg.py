@@ -583,13 +583,17 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
     nn20 = sum(abs(np.diff(rri)) > 20)
     hrv["pNN20"] = nn20 / len(rri) * 100
 
-    bin_number = 32  # Initialize bin_width value
-    for bin_number_current in range(2, 50):
-        bin_width = np.diff(np.histogram(rri, bins=bin_number_current, density=True)[1])[0]
-        if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(rri, bins=bin_number, density=True)[1])[0]):
-            bin_number = bin_number_current
-    hrv["Triang"] = len(rri)/np.max(np.histogram(rri, bins=bin_number, density=True)[0])
-    hrv["Shannon_h"] = entropy_shannon(np.histogram(rri, bins=bin_number, density=True)[0])
+    try:
+        bin_number = 32  # Initialize bin_width value
+        for bin_number_current in range(2, 50):
+            bin_width = np.diff(np.histogram(rri, bins=bin_number_current, density=True)[1])[0]
+            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(rri, bins=bin_number, density=True)[1])[0]):
+                bin_number = bin_number_current
+        hrv["Triang"] = len(rri)/np.max(np.histogram(rri, bins=bin_number, density=True)[0])
+        hrv["Shannon_h"] = entropy_shannon(np.histogram(rri, bins=bin_number, density=True)[0])
+    except ValueError:
+        hrv["Triang"] = np.nan
+        hrv["Shannon_h"] = np.nan
 
 
     # Frequency Domain
