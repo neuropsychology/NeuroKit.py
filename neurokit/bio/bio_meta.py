@@ -222,6 +222,7 @@ def bio_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
         - **RSP_Cycle_Length_Baseline**: Mean duration of RSP cycles (inspiration and expiration) before stimulus onset.
         - **RSP_Cycle_LengthDiff**: mean cycle length after - mean cycle length before stimulus onset.
     - **EDA Features**
+
         - **Looking for help**: *Experimental*: respiration artifacts correction needs to be implemented.
         - **EDA_Peak**: Max of EDA (in a window starting 1s after the stim onset) minus baseline.
         - **SCR_Amplitude**: Peak of SCR. If no SCR, returns NA.

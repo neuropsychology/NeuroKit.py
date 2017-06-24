@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default", hrv_segment_length=60, age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default", hrv_artifacts_treatment="interpolation", hrv_segment_length=60, age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -38,6 +38,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
         "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
+    hrv_artifacts_treatment : str
+        RR intervals artifacts treatment method. "interpolation" for 3rd order spline or "deletion" for simple removal.
     hrv_segment_length : int
         Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
     age : float
@@ -184,14 +186,11 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # Signal quality
     quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
-
-
     # Waves
     waves = ecg_wave_detector(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"])
 
     # Systole
     ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"], waves["T_Waves"])
-
 
     # Store results
     processed_ecg = {"df": ecg_df,
@@ -205,7 +204,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     processed_ecg["ECG"].update(waves)
 
     # HRV
-    processed_ecg["ECG"]["HRV"] = ecg_hrv(rri, sampling_rate, segment_length=hrv_segment_length)
+    processed_ecg["ECG"]["HRV"] = ecg_hrv(rri, sampling_rate, artifacts_treatment=hrv_artifacts_treatment, segment_length=hrv_segment_length)
     if age is not None and sex is not None and position is not None:
         processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["ECG"]["HRV"], age, sex, position)
 
@@ -471,7 +470,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
+def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segment_length=60, LF=True, VLF=True):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
@@ -481,6 +480,8 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
         RR intervals.
     sampling_rate : int
         Sampling rate (samples/second).
+    artifacts_treatment : str
+        Artifacts treatment method. "interpolation" for 3rd order spline or "deletion" for simple removal.
     segment_length : int
         Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
     LF : bool
@@ -491,7 +492,7 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
     Returns
     ----------
     hrv : dict
-        Contains hrv features.
+        Contains hrv features and percentage of detected artifacts.
 
     Example
     ----------
@@ -558,18 +559,39 @@ def ecg_hrv(rri, sampling_rate=1000, segment_length=60, LF=True, VLF=True):
     - Voss, A., Schroeder, R., Heitmann, A., Peters, A., & Perz, S. (2015). Short-term heart rate variability—influence of gender and age in healthy subjects. PloS one, 10(3), e0118308.
     - Zohar, A. H., Cloninger, C. R., & McCraty, R. (2013). Personality and heart rate variability: exploring pathways from personality to cardiac coherence and health. Open Journal of Social Sciences, 1(06), 32.
     - Smith, A. L., Owen, H., & Reynolds, K. J. (2013). Heart rate variability indices for very short-term (30 beat) analysis. Part 2: validation. Journal of clinical monitoring and computing, 27(5), 577-585.
+    - Lippman, N. E. A. L., Stein, K. M., & Lerman, B. B. (1994). Comparison of methods for removal of ectopy in measurement of heart rate variability. American Journal of Physiology-Heart and Circulatory Physiology, 267(1), H411-H418.
+    - Peltola, M. A. (2012). Role of editing of R–R intervals in the analysis of heart rate variability. Frontiers in physiology, 3.
     """
-    # Resample RRis as if the sampling rate was 1000Hz
+    # Initialize empty dict
+    hrv = {}
+
+    # Preprocessing
+    # ==================
+    # Basic resampling to 1000Hz to standardize the scale
     rri = rri*1000/sampling_rate
     rri = rri.astype(float)
 
-    # Preprocessing
-    outliers = np.array(identify_outliers(rri, treshold=2.58))
-    rri[outliers] = np.nan
-    rri = pd.Series(rri).interpolate()
 
-    # Initialize empty dict
-    hrv = {}
+    # Artifact detection - Statistical
+    for index, rr in enumerate(rri):
+        # Remove RR intervals that differ more than 25% from the previous one
+        if rri[index] < rri[index-1]*0.75:
+            rri[index] = np.nan
+        if rri[index] > rri[index-1]*1.25:
+            rri[index] = np.nan
+
+    # Artifact detection - Physiological (http://emedicine.medscape.com/article/2172196-overview)
+    rri = pd.Series(rri)
+    rri[rri < 600] = np.nan
+    rri[rri > 1300] = np.nan
+
+    # Artifact treatment
+    hrv["n_Artifacts"] = pd.isnull(rri).sum()/len(rri)
+    if artifacts_treatment == "deletion":
+        rri = rri.dropna()
+    if artifacts_treatment == "interpolation":
+        rri = pd.Series(rri).interpolate(method="cubic")  # Interpolate using a 3rd order spline
+        rri = rri.dropna()  # Remove first and lasts NaNs that cannot be interpolated
 
     # Time Domain
     # ==================

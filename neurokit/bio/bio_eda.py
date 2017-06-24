@@ -337,7 +337,7 @@ def eda_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
     - **SCR_PeakTime**: Time of peak.
     - **SCR_Latency**: Time between stim onset and SCR onset.
     - **SCR_RiseTime**: Time between SCR onset and peak.
-    - **SCR_Strength**: *Experimental*: peak divided by latency.
+    - **SCR_Strength**: *Experimental*: peak divided by latency. Angle of the line between peak and onset.
 
 
     *Authors*
