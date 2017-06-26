@@ -11,8 +11,9 @@ class Test(unittest.TestCase):
 #==============================================================================
     def test_read_acqknowledge(self):
 
-        data_path = os.getcwd() + r"/tests/test_bio_data.acq"  # If running from travis
-#        data_path = "test_bio_data.acq"  # If running in local
+        data_path = os.getcwd() + r"/tests/data/test_bio_data.acq"  # If running from travis
+#        data_path = "data/test_bio_data.acq"  # If running in local
+
         # Read data
         df = nk.read_acqknowledge(data_path)
         # Resample to 100Hz
@@ -23,13 +24,22 @@ class Test(unittest.TestCase):
         return(df)
 
     def test_bio_process(self):
-        df = self.test_read_acqknowledge()
-#        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], ecg_quality_model=os.getcwd() + r"/neurokit/materials/heartbeat_classification.model")
-#        self.assertEqual(len(bio), 3)
-#        self.assertEqual(len(bio["ECG"]["R_Peaks"]), 499)
-#        self.assertEqual(len(bio["EDA"]["SCR_Onsets"]), 5)
-        return(df)
 
+        df = self.test_read_acqknowledge()
+        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], ecg_quality_model=os.getcwd() + r"/neurokit/materials/heartbeat_classification.model")  # If travis
+
+#        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"])  # If local
+
+        self.assertEqual(len(bio), 4)
+        return(bio)
+
+
+    def test_hrv(self):
+
+        bio = self.test_bio_process()
+
+        self.assertEqual(len(bio["ECG"]["R_Peaks"]), 499)
+        self.assertEqual(len(bio["EDA"]["SCR_Onsets"]), 5)
 
 #==============================================================================
 # SIGNAL

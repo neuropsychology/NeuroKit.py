@@ -41,7 +41,6 @@ artifacts_treatment="interpolation"
 # Initialize empty dict
 hrv = {}
 
-
 # Preprocessing
 # ==================
 # Basic resampling to 1000Hz to standardize the scale
