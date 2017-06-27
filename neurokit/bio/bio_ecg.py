@@ -657,7 +657,7 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
     hrv["Fisher_Info"] = fisher_info(rri, tau=1, emb_dim=2)
     try:
         hrv["Lyapunov"] = np.max(nolds.lyap_e(rri, emb_dim=58, matrix_dim=4))
-    except Exception('Data must be 1-dimensional'):
+    except Exception:
         hrv["Lyapunov"] = np.nan
     hrv["FD_Petrosian"] = fd_petrosian(rri)
     hrv["FD_Higushi"] = fd_higushi(rri, k_max=16)
