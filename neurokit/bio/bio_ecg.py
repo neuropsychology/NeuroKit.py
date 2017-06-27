@@ -655,7 +655,10 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
     hrv["Entropy_Spectral_LF"] = entropy_spectral(rri, 1000, bands=np.arange(0.04, 0.15, 0.001))
     hrv["Entropy_Spectral_HF"] = entropy_spectral(rri, 1000, bands=np.arange(0.15, 0.40, 0.001))
     hrv["Fisher_Info"] = fisher_info(rri, tau=1, emb_dim=2)
-    hrv["Lyapunov"] = np.max(nolds.lyap_e(rri, emb_dim=58, matrix_dim=4))
+    try:
+        hrv["Lyapunov"] = np.max(nolds.lyap_e(rri, emb_dim=58, matrix_dim=4))
+    except Exception('Data must be 1-dimensional'):
+        hrv["Lyapunov"] = np.nan
     hrv["FD_Petrosian"] = fd_petrosian(rri)
     hrv["FD_Higushi"] = fd_higushi(rri, k_max=16)
 
