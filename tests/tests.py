@@ -3,7 +3,7 @@ import os
 import numpy as np
 import neurokit as nk
 
-
+run_tests_in_local = False
 
 class Test(unittest.TestCase):
 #==============================================================================
@@ -11,8 +11,10 @@ class Test(unittest.TestCase):
 #==============================================================================
     def test_read_acqknowledge(self):
 
-        data_path = os.getcwd() + r"/tests/data/test_bio_data.acq"  # If running from travis
-#        data_path = "data/test_bio_data.acq"  # If running in local
+        if run_tests_in_local is False:
+            data_path = os.getcwd() + r"/tests/data/test_bio_data.acq"  # If running from travis
+        else:
+            data_path = "data/test_bio_data.acq"  # If running in local
 
         # Read data
         df = nk.read_acqknowledge(data_path)
@@ -26,9 +28,11 @@ class Test(unittest.TestCase):
     def test_bio_process(self):
 
         df = self.test_read_acqknowledge()
-        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], ecg_quality_model=os.getcwd() + r"/neurokit/materials/heartbeat_classification.model")  # If travis
 
-#        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"])  # If local
+        if run_tests_in_local is False:
+            bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], ecg_quality_model=os.getcwd() + r"/neurokit/materials/heartbeat_classification.model")  # If travis
+        else:
+            bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"])  # If local
 
         self.assertEqual(len(bio), 4)
         return(bio)

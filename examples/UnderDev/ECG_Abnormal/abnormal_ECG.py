@@ -1,6 +1,7 @@
 import neurokit as nk
 import numpy as np
 import pandas as pd
+import scipy
 #df = nk.read_acqknowledge("abnormal_ECG.acq")
 #df['ECG, X, RSPEC-R'].plot()
 
@@ -31,11 +32,15 @@ df["df"]["ECG_Filtered"].plot()
 
 
 rri = df["ECG"]['RR_Intervals']
+rpeaks = df["ECG"]['R_Peaks']
+
+ecg=df["df"]["ECG_Filtered"]
+
+
+artifacts_treatment="interopolation"
 
 
 
-artifacts_treatment="deletion"
-artifacts_treatment="interpolation"
 
 
 # Initialize empty dict
@@ -43,8 +48,8 @@ hrv = {}
 
 # Preprocessing
 # ==================
-# Basic resampling to 1000Hz to standardize the scale
-rri = rri*1000/sampling_rate
+# Basic resampling to 1Hz to standardize the scale
+rri = rri/sampling_rate
 rri = rri.astype(float)
 
 
@@ -58,20 +63,72 @@ for index, rr in enumerate(rri):
 
 # Artifact detection - Physiological (http://emedicine.medscape.com/article/2172196-overview)
 rri = pd.Series(rri)
-rri[rri < 600] = np.nan
-rri[rri > 1300] = np.nan
+rri[rri < 0.6] = np.nan
+rri[rri > 1.3] = np.nan
 
 # Artifact treatment
 hrv["n_Artifacts"] = pd.isnull(rri).sum()/len(rri)
-if artifacts_treatment == "deletion":
-    rri = rri.dropna()
-if artifacts_treatment == "interpolation":
-    rri = pd.Series(rri).interpolate(method="cubic")  # Interpolate using a 3rd order spline
-    rri = rri.dropna()  # Remove first and lasts NaNs that cannot be interpolated
+#if artifacts_treatment == "deletion":
+#    rri = rri.dropna()
+#if artifacts_treatment == "interpolation":
+#    rri = pd.Series(rri).interpolate(method="cubic")  # Interpolate using a 3rd order spline
+#    rri = rri.dropna()  # Remove firsts and lasts NaNs that cannot be interpolated
+#
+
+  # dealing with outliers, resampling and converting RR intervals to a function of time (not a function of beats)
 
 
 
-# Preprocessing
-outliers = np.array(identify_outliers(rri, treshold=2.58))
-rri[outliers] = np.nan
-rri = pd.Series(rri).interpolate()
+
+
+
+#rri_original = rri.copy()
+rri = rri_original.copy()
+
+# NEW
+artifacts_indices = rri.index[rri.isnull()]  # get the indices of the outliers
+rri = rri.drop(artifacts_indices)  # remove the artifacts
+
+  # resampling RRIbeat signal in order to make it a function of time (not a function of beat)
+
+  beat_time = rpeaks[1:] # the time (in samples) at which each beat occured (and thus the RR intervals occured) starting from the 2nd beat
+  beat_time = np.delete(beat_time, artifacts_indices) #delete also the outlier beat moments
+  beat_time = beat_time/sampling_rate  # the time (in sec) at which each beat occured, starting from the 2nd beat
+  beat_time = beat_time-beat_time[0] #offseting in order to start from 0 sec
+
+
+
+  # fit a 3rd degree spline in the RRIbeat data. s=0 guarantees that it will pass through ALL the given points
+  spline = scipy.interpolate.splrep(x=beat_time, y=rri, k=3, s=0)
+
+  # RR intervals indexed per time
+  rri_new = scipy.interpolate.splev(x=np.arange(0, beat_time[-1], 1/sampling_rate), tck=spline, der=0)
+
+
+
+  # plotting
+  plt.figure(figsize=(20, 3), dpi=100)
+  plt.scatter(np.arange(rri_new.shape[0]), rri_new,s=1)
+  plt.grid(True)
+  plt.title('RRI indexed per beat')
+  plt.ylabel('RR interval duration (sec)')
+  plt.xlabel('#beat')
+  plt.tight_layout()
+  plt.show()
+
+  plt.figure(figsize=(20, 3), dpi=100)
+  plt.plot(rri,'b-',linewidth=0.5)
+  plt.grid(True)
+  plt.title('Resampled RRI indexed per time')
+  plt.ylabel('RR interval duration (sec)')
+  plt.xlabel('Time (sec)')
+  plt.tight_layout()
+  plt.show()
+
+
+df=df["df"][["ECG_Filtered", "Heart_Rate"]]
+
+df["ECG_HRV"] = np.nan
+df["ECG_HRV"].ix[rpeaks[0]+1:rpeaks[0]+len(rri_new)] = rri_new
+
+nk.z_score(df).plot()

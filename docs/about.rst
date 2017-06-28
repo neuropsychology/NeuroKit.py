@@ -10,8 +10,9 @@ Team
 Contributors
 ============
 
-- `Nate Vack <https://github.com/njvack>`_ (USA).
-- `Rhenan Bartels Ferreira <https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil).
+- `Rhenan Bartels Ferreira <https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil): HRV, Testing, RSP, RSA.
+- `Nate Vack <https://github.com/njvack>`_ (USA): `read_acqknowledge()`.
+- `Vassilios Vonikakis <https://github.com/bbonik>`_ (USA): HRV preprocessing.
 
 Support
 =======
