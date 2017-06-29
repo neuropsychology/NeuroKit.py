@@ -76,20 +76,20 @@ plt.xlabel('#beat')
 plt.tight_layout()
 plt.show()
 
-plt.figure(figsize=(20, 3), dpi=100)
-plt.plot(rri,'b-',linewidth=0.5)
-plt.grid(True)
-plt.title('Resampled RRI indexed per time')
-plt.ylabel('RR interval duration (sec)')
-plt.xlabel('Time (sec)')
-plt.tight_layout()
-plt.show()
+#plt.figure(figsize=(20, 3), dpi=100)
+#plt.plot(rri,'b-',linewidth=0.5)
+#plt.grid(True)
+#plt.title('Resampled RRI indexed per time')
+#plt.ylabel('RR interval duration (sec)')
+#plt.xlabel('Time (sec)')
+#plt.tight_layout()
+#plt.show()
 
 
 
 data = df["df"][["ECG_Filtered"]].copy()
 data["ECG_HRV"] = np.nan
-data["ECG_HRV"].ix[rpeaks[0]+1:rpeaks[0]+len(rri_new)] = rri_new
+data["ECG_HRV"].ix[rpeaks[1]+1:rpeaks[1]+len(rri_new)] = rri_new
 
 #  nk.z_score(data).plot()
 nk.plot_events_in_signal(data, rpeaks)

@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import pandas as pd
 import numpy as np
+import scipy
 
 # ==============================================================================
 # ==============================================================================
@@ -147,16 +148,16 @@ def create_evoked(epochs, events, average=True):
 
     Parameters
     ----------
-    epochs = dataframe
+    epochs : dataframe
         epoched data.
-    events = list
+    events : list
         list of events types.
-    average = bool
+    average : bool
         Set True for collapsing the epoched.
 
     Returns
     ----------
-    dic
+    evoked : dic
         A dictionary containing one dataframe for each event.
 
     Example
@@ -190,3 +191,51 @@ def create_evoked(epochs, events, average=True):
             evoked[event] = evoked[event].mean(axis=1)
     return(evoked)
 
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def discrete_to_continuous(values, value_times, sampling_rate=1000):
+    """
+    3rd order spline interpolation.
+
+    Parameters
+    ----------
+    values : dataframe
+        Values.
+    value_times : list
+        Time indices of values.
+    sampling_rate : int
+        Sampling rate (samples/second).
+
+    Returns
+    ----------
+    signal : pd.Series
+        An array containing the values indexed by time.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> signal = discrete_to_continuous([4, 5, 1, 2], [1, 2, 3, 4], sampling_rate=1000)
+    >>> signal.plot()
+
+    Authors
+    ----------
+    Dominique Makowski
+
+    Dependencies
+    ----------
+    - scipy
+    - pandas
+    """
+    # fit a 3rd degree spline on the data.
+    spline = scipy.interpolate.splrep(x=value_times, y=values, k=3, s=0)  # s=0 guarantees that it will pass through ALL the given points
+    # Get the values indexed per time
+    signal = scipy.interpolate.splev(x=np.arange(0, value_times[-1], 1/sampling_rate), tck=spline, der=0)
+    # Transform to series
+    signal = pd.Series(signal)
+    return(signal)

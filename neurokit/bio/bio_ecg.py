@@ -99,6 +99,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     - Edwards, L., Ring, C., McIntyre, D., & Carroll, D. (2001). Modulation of the human nociceptive flexion reflex across the cardiac cycle. Psychophysiology, 38(4), 712-718.
     - Gray, M. A., Rylander, K., Harrison, N. A., Wallin, B. G., & Critchley, H. D. (2009). Following one's heart: cardiac rhythms gate central initiation of sympathetic reflexes. Journal of Neuroscience, 29(6), 1817-1825.
     """
+    # Convert to DataFrame
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
     # Compute several features using biosppy
@@ -108,35 +109,21 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     ecg_df["ECG_Filtered"] = biosppy_ecg["filtered"]
 
     # Store R peaks indexes
-    r_peaks = np.array([np.nan]*len(ecg))
-    r_peaks[biosppy_ecg['rpeaks']] = 1
-    ecg_df["ECG_Rpeaks"] = r_peaks
+    rpeaks = biosppy_ecg['rpeaks']
+
+    # Transform to markers to add to the main dataframe
+    rpeaks_signal = np.array([np.nan]*len(ecg))
+    rpeaks_signal[rpeaks] = 1
+    ecg_df["ECG_Rpeaks"] = rpeaks_signal
 
 
-    # Heart rate index creation
-    time_now = datetime.datetime.now()
-    # Convert seconds to datetime deltas
-    time_index = [datetime.timedelta(seconds=x) for x in biosppy_ecg["heart_rate_ts"]]
-    time_index = np.array(time_index) + time_now
-    heart_rate = pd.Series(biosppy_ecg["heart_rate"], index=time_index)
+    # Heart Rate
+    heart_rate = biosppy_ecg["heart_rate"]  # Get heart rate values
+    beats_times = rpeaks[1:]/sampling_rate  # the time (in sec) at which each beat occured starting from the 2nd beat
+    heart_rate = discrete_to_continuous(heart_rate, beats_times, sampling_rate)  # Interpolation using 3rd order spline
+    ecg_df["Heart_Rate"] = np.nan
+    ecg_df["Heart_Rate"].ix[rpeaks[1]+1:rpeaks[1]+len(heart_rate)] = heart_rate
 
-    # Create resampling factor
-    resampling_rate = str(int(1000/sampling_rate)) + "L"
-
-    # Resample
-    if resampling_method == "mean":
-        heart_rate = heart_rate.resample(resampling_rate).mean()
-    if resampling_method == "pad":
-        heart_rate = heart_rate.resample(resampling_rate).pad()
-    if resampling_method == "bfill":
-        heart_rate = heart_rate.resample(resampling_rate).bfill()
-
-    # Store Heart Rate
-    if len(heart_rate) >= len(ecg):
-        ecg_df["Heart_Rate"] = np.array(heart_rate[0:len(ecg)])
-    else:
-        ecg_df["Heart_Rate"] = np.array([heart_rate[-1]]*(len(ecg)-len(heart_rate)) + list(heart_rate))
-#        ecg_features["Heart_Rate"] = scipy.signal.resample(heart_rate, len(ecg))  # Looks more badly when resampling with scipy
 
     # RR intervals (RRis)
     rri = np.diff(biosppy_ecg["rpeaks"])
