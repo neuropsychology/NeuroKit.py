@@ -3,7 +3,7 @@ from setuptools import setup, find_packages
 setup(
 name = "neurokit",
 description = ("A Python Toolbox for Statistics and Signal Processing (EEG, EDA, ECG, EMG...)."),
-version = "0.1.4",
+version = "0.1.5",
 license = "MIT",
 author = "Dominique Makowski",
 author_email = "dom.makowski@gmail.com",

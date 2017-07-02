@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default", hrv_artifacts_treatment="interpolation", hrv_segment_length=60, age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", hrv_artifacts_treatment="interpolation", hrv_segment_length=60, age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -34,8 +34,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
         Respiratory (RSP) signal array.
     sampling_rate : int
         Sampling rate (samples/second).
-    resampling_method : str
-        "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
     hrv_artifacts_treatment : str
@@ -74,7 +72,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -114,19 +112,18 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # Transform to markers to add to the main dataframe
     rpeaks_signal = np.array([np.nan]*len(ecg))
     rpeaks_signal[rpeaks] = 1
-    ecg_df["ECG_Rpeaks"] = rpeaks_signal
-
+    ecg_df["ECG_R_peaks"] = rpeaks_signal
 
     # Heart Rate
     heart_rate = biosppy_ecg["heart_rate"]  # Get heart rate values
-    beats_times = rpeaks[1:]/sampling_rate  # the time (in sec) at which each beat occured starting from the 2nd beat
-    heart_rate = discrete_to_continuous(heart_rate, beats_times, sampling_rate)  # Interpolation using 3rd order spline
-    ecg_df["Heart_Rate"] = np.nan
-    ecg_df["Heart_Rate"].ix[rpeaks[1]+1:rpeaks[1]+len(heart_rate)] = heart_rate
-
-
-    # RR intervals (RRis)
-    rri = np.diff(biosppy_ecg["rpeaks"])
+    heart_rate_times = biosppy_ecg["heart_rate_ts"]  # the time (in sec) at which each beat occured starting from the 2nd beat
+    try:
+        heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
+        ecg_df["Heart_Rate"] = np.nan
+        ecg_df["Heart_Rate"].ix[rpeaks[0]:rpeaks[0]+len(heart_rate)] = heart_rate
+    except TypeError:
+        print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
+        ecg_df["Heart_Rate"] = np.nan
 
     # Heartbeats
     heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
@@ -144,7 +141,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # Store results
     processed_ecg = {"df": ecg_df,
                      "ECG": {
-                            "RR_Intervals": rri,
                             "Cardiac_Cycles": heartbeats,
                             "R_Peaks": biosppy_ecg["rpeaks"]
                             }
@@ -154,14 +150,14 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     processed_ecg["ECG"].update(waves)
 
     # HRV
-    processed_ecg["ECG"]["HRV"] = ecg_hrv(rri, sampling_rate, artifacts_treatment=hrv_artifacts_treatment, segment_length=hrv_segment_length)
+    processed_ecg["ECG"]["HRV"] = ecg_hrv(biosppy_ecg["rpeaks"], sampling_rate, artifacts_treatment=hrv_artifacts_treatment, segment_length=hrv_segment_length)
     if age is not None and sex is not None and position is not None:
         processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["ECG"]["HRV"], age, sex, position)
 
 
     # RSP
     if rsp is not None:
-        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate)
         processed_ecg["RSP"] = rsp["RSP"]
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
 
@@ -275,7 +271,7 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -368,7 +364,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Dependencies*
 
@@ -420,14 +416,14 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segment_length=60, LF=True, VLF=True):
+def ecg_hrv(rpeaks, sampling_rate=1000, artifacts_treatment="interpolation", segment_length=256, LF=True, VLF=True):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
     Parameters
     ----------
-    rri : list or ndarray
-        RR intervals.
+    rpeaks : list or ndarray
+        R-peak location indices.
     sampling_rate : int
         Sampling rate (samples/second).
     artifacts_treatment : str
@@ -491,7 +487,7 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -517,55 +513,72 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
 
     # Preprocessing
     # ==================
-    # Basic resampling to 1000Hz to standardize the scale
-    rri = rri*1000/sampling_rate
-    rri = rri.astype(float)
+    # Extract RR intervals (RRis)
+    RRis = np.diff(rpeaks)
+    # Basic resampling to 1Hz to standardize the scale
+    RRis = RRis/sampling_rate
+    RRis = RRis.astype(float)
 
 
     # Artifact detection - Statistical
-    for index, rr in enumerate(rri):
+    for index, rr in enumerate(RRis):
         # Remove RR intervals that differ more than 25% from the previous one
-        if rri[index] < rri[index-1]*0.75:
-            rri[index] = np.nan
-        if rri[index] > rri[index-1]*1.25:
-            rri[index] = np.nan
+        if RRis[index] < RRis[index-1]*0.75:
+            RRis[index] = np.nan
+        if RRis[index] > RRis[index-1]*1.25:
+            RRis[index] = np.nan
 
     # Artifact detection - Physiological (http://emedicine.medscape.com/article/2172196-overview)
-    rri = pd.Series(rri)
-    rri[rri < 600] = np.nan
-    rri[rri > 1300] = np.nan
+    RRis = pd.Series(RRis)
+    RRis[RRis < 0.6] = np.nan
+    RRis[RRis > 1.3] = np.nan
 
-    # Artifact treatment
-    hrv["n_Artifacts"] = pd.isnull(rri).sum()/len(rri)
-    if artifacts_treatment == "deletion":
-        rri = rri.dropna()
-    if artifacts_treatment == "interpolation":
-        rri = pd.Series(rri).interpolate(method="cubic")  # Interpolate using a 3rd order spline
-        rri = rri.dropna()  # Remove firsts and lasts NaNs that cannot be interpolated
+    # Artifacts treatment
+    hrv["n_Artifacts"] = pd.isnull(RRis).sum()/len(RRis)
+    artifacts_indices = RRis.index[RRis.isnull()]  # get the artifacts indices
+    RRis = RRis.drop(artifacts_indices)  # remove the artifacts
+
+    # Convert to continuous RR interval (RRi)
+    beats_times = rpeaks[1:]/sampling_rate  # the time (in sec) at which each beat occured starting from the 2nd beat
+    beats_times -= beats_times[0]
+    beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
+    try:
+        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
+    except TypeError:
+        print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
+        return(hrv)
+
+    # Rescale to 1000Hz
+    RRis = RRis*1000
+    RRi = RRi*1000
+    hrv["RR_Intervals"] = RRis  # Values of RRis
+    hrv["RR_Interval"] = RRi  # Continuous (interpolated) signal of RRi
 
     # Time Domain
     # ==================
-    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(rri) ** 2))
-    hrv["meanNN"] = np.mean(rri)
-    hrv["sdNN"] = np.std(rri, ddof=1)  # make it calculate N-1
+    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
+    hrv["meanNN"] = np.mean(RRis)
+    hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
     hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
-    hrv["medianNN"] = np.median(abs(rri))
-    hrv["madNN"] = mad(rri, constant=1)
+    hrv["medianNN"] = np.median(abs(RRis))
+    hrv["madNN"] = mad(RRis, constant=1)
     hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
-    nn50 = sum(abs(np.diff(rri)) > 50)
-    hrv["pNN50"] = nn50 / len(rri) * 100
-    nn20 = sum(abs(np.diff(rri)) > 20)
-    hrv["pNN20"] = nn20 / len(rri) * 100
+    nn50 = sum(abs(np.diff(RRis)) > 50)
+    hrv["pNN50"] = nn50 / len(RRis) * 100
+    nn20 = sum(abs(np.diff(RRis)) > 20)
+    hrv["pNN20"] = nn20 / len(RRis) * 100
 
+
+    # To Do: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
     try:
         bin_number = 32  # Initialize bin_width value
         # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
         for bin_number_current in range(2, 50):
-            bin_width = np.diff(np.histogram(rri, bins=bin_number_current, density=True)[1])[0]
-            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(rri, bins=bin_number, density=True)[1])[0]):
+            bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
+            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
                 bin_number = bin_number_current
-        hrv["Triang"] = len(rri)/np.max(np.histogram(rri, bins=bin_number, density=True)[0])
-        hrv["Shannon_h"] = entropy_shannon(np.histogram(rri, bins=bin_number, density=True)[0])
+        hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
+        hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
     except ValueError:
         hrv["Triang"] = np.nan
         hrv["Shannon_h"] = np.nan
@@ -574,18 +587,45 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
     # Frequency Domain
     # =================
     # Sanity check
-    if segment_length > len(rri):
-        print("NeuroKit warning: ecg_hrv(): Number of RR intervals smaller than segment size... setting segment_size to %i." %(len(rri)))
-        segment_length = len(rri)
+    if segment_length > len(RRi):
+        print("NeuroKit warning: ecg_hrv(): Number of RR intervals too short for frequency domain.")
+        return(hrv)
 
-    # Parameters
+    # Frequency Band Parameters
     vlf_band=(0.003, 0.04)
     lf_band=(0.04, 0.15)
     hf_band=(0.15, 0.40)
 
-    #size = 300, shift = 30, sizesp = 2048
-    # Computation
-    freq, power = scipy.signal.welch(x=rri, fs=1, window="blackmanharris", nperseg=segment_length, noverlap=segment_length/2, detrend="constant")
+
+    # PSD estimation
+    freq, power = scipy.signal.welch(x=RRi, fs=1000, window="blackmanharris", nperseg=segment_length, noverlap=segment_length/2, detrend="linear")
+
+
+#plt.ylim([1e0, 1e5])
+    plt.xlim([0.0, 0.4])
+    plt.plot(freq, power)
+    plt.xlabel("Frequency (Hz)")
+    plt.ylabel(r"PSD $(ms^ 2$/Hz)")
+    plt.title("PSD")
+
+
+    tx = np.arange(0, len(RRi), 1.0 / 1000)
+    #95% probability
+    probability = 0.95
+    #Number os estimations
+    P = int((len(tx) - 256 / 128)) + 1
+
+    alfa = 1 - probability
+    v = 2 * P
+    c = scipy.stats.chi2.ppf([1 - alfa / 2, alfa / 2], v)
+    c = v / c
+
+    Pxx_lower = power * c[0]
+    Pxx_upper = power * c[1]
+
+    plt.plot(freq, power)
+    plt.plot(freq, Pxx_lower, 'k--')
+    plt.plot(freq, Pxx_upper, 'k--')
 
     vlf_indexes = np.logical_and(freq >= vlf_band[0], freq < vlf_band[1])
     lf_indexes = np.logical_and(freq >= lf_band[0], freq < lf_band[1])
@@ -694,7 +734,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Details*
 
@@ -786,7 +826,7 @@ def ecg_wave_detector(ecg, rpeaks, plot=False):
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
 
 
@@ -881,7 +921,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Details*
 
@@ -969,7 +1009,7 @@ def ecg_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Dependencies*
 
