@@ -11,7 +11,7 @@ df = df.loc[10000:50000].reset_index(drop=True)  # Select 10s of signal
 sampling_rate=1000
 
 
-df = nk.rsp_process(rsp=df["RSP"], sampling_rate=sampling_rate)
+df = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], sampling_rate=sampling_rate)
 #df = nk.bio_process(ecg=df["ECG"], sampling_rate=sampling_rate)
 
 

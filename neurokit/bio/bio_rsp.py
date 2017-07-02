@@ -62,8 +62,8 @@ def rsp_process(rsp, sampling_rate=1000):
     processed_rsp["df"]["RSP_Filtered"] = biosppy_rsp["filtered"]
 
 
-    # RSP Rate
-    #============
+#   RSP Rate
+#   ============
     rsp_times = biosppy_rsp["resp_rate_ts"]   # the time (in sec) of each rsp rate value
     rsp_rate = biosppy_rsp["resp_rate"]*60  # Get RSP rate value (in cycles per minute)
     try:
@@ -73,12 +73,10 @@ def rsp_process(rsp, sampling_rate=1000):
     except TypeError:
         print("NeuroKit Warning: rsp_process(): Sequence too short to compute respiratory rate.")
         processed_rsp["df"]["RSP_Rate"] = np.nan
-processed_rsp["df"].plot()
 
 
-
-    # RSP Cycles
-    # ===========================
+#   RSP Cycles
+#   ===========================
     rsp_cycles = rsp_find_cycles(biosppy_rsp["filtered"])
     processed_rsp["df"]["RSP_Inspiration"] = rsp_cycles["RSP_Inspiration"]
 
@@ -87,8 +85,8 @@ processed_rsp["df"].plot()
     processed_rsp["RSP"]["Expiration_Onsets"] = rsp_cycles["RSP_Expiration_Onsets"]
     processed_rsp["RSP"]["Cycles_Length"] = rsp_cycles["RSP_Cycles_Length"]/sampling_rate
 
-    # RSP Variability
-    # ===========================
+#   RSP Variability
+#   ===========================
     rsp_diff = processed_rsp["RSP"]["Cycles_Length"]
 
     processed_rsp["RSP"]["Respiratory_Variability"] = {}
