@@ -133,10 +133,10 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", hrv_
     quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
     # Waves
-    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"])
+    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], rpeaks)
 
     # Systole
-    ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"], waves["T_Waves"])
+    ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
 
     # Store results
     processed_ecg = {"df": ecg_df,
@@ -150,7 +150,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", hrv_
     processed_ecg["ECG"].update(waves)
 
     # HRV
-    processed_ecg["ECG"]["HRV"] = ecg_hrv(biosppy_ecg["rpeaks"], sampling_rate, artifacts_treatment=hrv_artifacts_treatment, segment_length=hrv_segment_length)
+    processed_ecg["ECG"]["HRV"] = ecg_hrv(rpeaks, sampling_rate, artifacts_treatment=hrv_artifacts_treatment, segment_length=hrv_segment_length)
     if age is not None and sex is not None and position is not None:
         processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["ECG"]["HRV"], age, sex, position)
 
@@ -162,7 +162,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", hrv_
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
 
         # RSA
-        rpeaks = biosppy_ecg["rpeaks"]
         rsp_cycles = rsp["RSP"]["Cycles_Onsets"]
         rsp_signal = rsp["df"]["RSP_Filtered"]
         rsa = respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
@@ -543,7 +542,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, artifacts_treatment="interpolation", seg
     beats_times -= beats_times[0]
     beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
     try:
-        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
+        RRi = discrete_to_continuous(RRis, beats_times, 1000)  # Interpolation using 3rd order spline
     except TypeError:
         print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
         return(hrv)
@@ -586,109 +585,53 @@ def ecg_hrv(rpeaks, sampling_rate=1000, artifacts_treatment="interpolation", seg
 
     # Frequency Domain
     # =================
-    # Sanity check
-    if segment_length > len(RRi):
-        print("NeuroKit warning: ecg_hrv(): Number of RR intervals too short for frequency domain.")
-        return(hrv)
+    # Compute Power Spectral Density (PSD) using multitaper method
+    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=10, fmin=0, fmax=0.5,  adaptive=False, normalization='full')
 
-    # Frequency Band Parameters
-    vlf_band=(0.003, 0.04)
-    lf_band=(0.04, 0.15)
-    hf_band=(0.15, 0.40)
+    def power_in_band(power, freq, low, high):
+        power =  np.trapz(y=power[(freq >= low) & (freq < high)], x=freq[(freq >= low) & (freq < high)])
+        return(power)
 
+    # Extract Power according to frequency bands
+    hrv["ULF"] = power_in_band(power, freq, 0, 0.0033)
+    hrv["VLF"] = power_in_band(power, freq, 0.0033, 0.04)
+    hrv["LF"] = power_in_band(power, freq, 0.04, 0.15)
+    hrv["HF"] = power_in_band(power, freq, 0.15, 0.4)
+    hrv["VHF"] = power_in_band(power, freq, 0.4, 0.5)
+    hrv["Total_Power"] = power_in_band(power, freq, 0, 0.5)
 
-    # PSD estimation
-    freq, power = scipy.signal.welch(x=RRi, fs=1000, window="blackmanharris", nperseg=segment_length, noverlap=segment_length/2, detrend="linear")
-
-
-#plt.ylim([1e0, 1e5])
-    plt.xlim([0.0, 0.4])
-    plt.plot(freq, power)
-    plt.xlabel("Frequency (Hz)")
-    plt.ylabel(r"PSD $(ms^ 2$/Hz)")
-    plt.title("PSD")
-
-
-    tx = np.arange(0, len(RRi), 1.0 / 1000)
-    #95% probability
-    probability = 0.95
-    #Number os estimations
-    P = int((len(tx) - 256 / 128)) + 1
-
-    alfa = 1 - probability
-    v = 2 * P
-    c = scipy.stats.chi2.ppf([1 - alfa / 2, alfa / 2], v)
-    c = v / c
-
-    Pxx_lower = power * c[0]
-    Pxx_upper = power * c[1]
-
-    plt.plot(freq, power)
-    plt.plot(freq, Pxx_lower, 'k--')
-    plt.plot(freq, Pxx_upper, 'k--')
-
-    vlf_indexes = np.logical_and(freq >= vlf_band[0], freq < vlf_band[1])
-    lf_indexes = np.logical_and(freq >= lf_band[0], freq < lf_band[1])
-    hf_indexes = np.logical_and(freq >= hf_band[0], freq < hf_band[1])
-
-    hrv["HF"] = np.trapz(y=power[hf_indexes], x=freq[hf_indexes])
-
-    if LF is True:
-        if segment_length >= 20:
-            hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
-            hrv["LFHF"] = hrv["LF"] / hrv["HF"]
-            hrv["LFNU"] = (hrv["LF"] / (hrv["LF"] + hrv["HF"])) * 100
-            hrv["HFNU"] = (hrv["HF"] / (hrv["LF"] + hrv["HF"])) * 100
-            if VLF is True:
-                if segment_length >= 60:
-                    hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
-                    hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
-                    hrv["HFp"] = hrv["HF"] / hrv["Total_Power"]
-                    hrv["LFp"] = hrv["LF"] / hrv["Total_Power"]
-                else:
-                    print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the very low frequency (VLF) and the low frequency (LF) domain.")
-                    hrv["VLF"] = np.nan
-                    hrv["Total_Power"] = np.nan
-                    hrv["HFp"] = np.nan
-                    hrv["LFp"] = np.nan
-        else:
-            print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the low frequency (LF) domain.")
-            hrv["VLF"] = np.nan
-            hrv["LF"] = np.nan
-            hrv["Total_Power"] = np.nan
-            hrv["LFHF"] = np.nan
-            hrv["LFn"] = np.nan
-            hrv["HFn"] = np.nan
-            hrv["HFp"] = np.nan
-            hrv["LFp"] = np.nan
+    hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
+    hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
+    hrv["LF/HF"] = hrv["LF"]/hrv["HF"]
+    hrv["LF/P"] = hrv["LF"]/hrv["Total_Power"]
+    hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
 
 
-
-    # Non-Linear Dynamics
+    # Non-Linear Dynamics - This also must be checked by an expert
     # ======================
-    if len(rri) > 17:
-        hrv["DFA_1"] = nolds.dfa(rri, range(4, 17))
-    if len(rri) > 66:
-        hrv["DFA_2"] = nolds.dfa(rri, range(16, 66))
-    hrv["Shannon"] = entropy_shannon(rri)
-    hrv["Sample_Entropy"] = nolds.sampen(rri, emb_dim=2)
+    if len(RRis) > 17:
+        hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
+    if len(RRis) > 66:
+        hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
+    hrv["Shannon"] = entropy_shannon(RRis)
+    hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
     try:
-        hrv["Correlation_Dimension"] = nolds.corr_dim(rri, emb_dim=2)
+        hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
     except AssertionError as error:
         print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
         hrv["Correlation_Dimension"] = np.nan
-    hrv["Entropy_Multiscale"] = entropy_multiscale(rri, emb_dim=2)
-    hrv["Entropy_SVD"] = entropy_svd(rri, emb_dim=2)
-    hrv["Entropy_Spectral_VLF"] = entropy_spectral(rri, 1000, bands=np.arange(0.003, 0.04, 0.001))
-    hrv["Entropy_Spectral_LF"] = entropy_spectral(rri, 1000, bands=np.arange(0.04, 0.15, 0.001))
-    hrv["Entropy_Spectral_HF"] = entropy_spectral(rri, 1000, bands=np.arange(0.15, 0.40, 0.001))
-    hrv["Fisher_Info"] = fisher_info(rri, tau=1, emb_dim=2)
+    hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
+    hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
+    hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.0033, 0.04, 0.001))
+    hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.04, 0.15, 0.001))
+    hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.15, 0.40, 0.001))
+    hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
     try:  # Otherwise travis errors for some reasons :(
-        hrv["Lyapunov"] = np.max(nolds.lyap_e(rri, emb_dim=58, matrix_dim=4))
+        hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
     except Exception:
         hrv["Lyapunov"] = np.nan
-    hrv["FD_Petrosian"] = fd_petrosian(rri)
-    hrv["FD_Higushi"] = fd_higushi(rri, k_max=16)
+    hrv["FD_Petrosian"] = fd_petrosian(RRis)
+    hrv["FD_Higushi"] = fd_higushi(RRis, k_max=16)
 
     # TO DO:
     # Include many others (see Voss 2015)

@@ -4,32 +4,77 @@ import neurokit as nk
 import matplotlib.pyplot as plt
 import scipy
 import biosppy
-
-df = pd.read_csv('normal_ECG.csv')
-df = df.loc[10000:50000].reset_index(drop=True)  # Select 10s of signal
-
-sampling_rate=1000
+import mne
 
 
-df = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], sampling_rate=sampling_rate)
-#df = nk.bio_process(ecg=df["ECG"], sampling_rate=sampling_rate)
+
+for i in [50000, 100000, 150000, 200000, 250000]:
+    df = pd.read_csv('normal_ECG.csv')
+    df = df.loc[10000:i].reset_index(drop=True)  # Select 10s of signal
+
+    sampling_rate=1000
+    ecg=df["ECG"]
+    rpeaks = dict(biosppy.ecg.ecg(ecg, 1000, show=False))["rpeaks"]
+    RRis = np.diff(rpeaks)
+    beats_times = rpeaks[1:]/sampling_rate
+    beats_times -= beats_times[0]
+    RRi = nk.discrete_to_continuous(RRis, beats_times, 10)
+
+    # Compute Power Spectral Density (PSD) using multitaper method
+    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=10, fmin=0, fmax=0.5,  adaptive=False, normalization='full')
+    plt.plot(freq, power)
+
+ulf = np.trapz(y=power[(freq >= 0) & (freq < 0.0033)], x=freq[(freq >= 0) & (freq < 0.0033)])
+vlf = np.trapz(y=power[(freq >= 0.0033) & (freq < 0.04)], x=freq[(freq >= 0.0033) & (freq < 0.04)])
+lf = np.trapz(y=power[(freq >= 0.04) & (freq < 0.15)], x=freq[(freq >= 0.04) & (freq < 0.15)])
+hf = np.trapz(y=power[(freq >= 0.15) & (freq < 0.4)], x=freq[(freq >= 0.15) & (freq < 0.4)])
+vhf = np.trapz(y=power[(freq >= 0.4) & (freq < 0.5)], x=freq[(freq >= 0.4) & (freq < 0.5)])
+total = np.trapz(y=power[(freq >= 0) & (freq < 0.5)], x=freq[(freq >= 0) & (freq < 0.5)])
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 #
 #
-#rpeaks = biosppy.ecg.ecg(df["ECG"], sampling_rate, False)['rpeaks']
-#
-#
-#from numpy import arange, cumsum, logical_and
-#from scipy.signal import welch
-#from scipy.interpolate import splrep, splev
 #
 #
 #
+#
+#
+#
+#
+#freq, times, power = scipy.signal.stft(RRi, fs=100, window='blackmanharris', nperseg=1000, noverlap=500, nfft=None, detrend="linear", return_onesided=True, boundary='zeros', padded=True)
+#
+#plt.pcolormesh(times, freq, abs(power))
+#plt.ylim([0, 0.4])
+#plt.colorbar()
+#plt.show()
+#
+#
+#pd.Series(freq).plot()
+#
+#
+#scipy.fftpack.fft()
+##
+###
+##
 #rri = np.diff(rpeaks)
-#
-##Create time array
-#t = cumsum(rri) / 1000.0
+##
+###Create time array
+#t = np.cumsum(rri) / 1000.0
 #t -= t[0]
 #
 ##Evenly spaced time array (4Hz)
@@ -37,20 +82,21 @@ df = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], sampling_rate=sampling_rate)
 #
 ##Interpolate RRi serie
 #tck = scipy.interpolate.splrep(t, rri, s=0)
-#rrix = scipy.interpolate.splev(tx, tck, der=0)
+#RRi = scipy.interpolate.splev(tx, tck, der=0)
 #
-##pd.Series(rrix).plot()
-##RRi.plot()
-#
-#
-##len(RRi)/len(rrix)
-##Number os estimations
-#P = int((len(tx) - 256 / 128)) + 1
+###pd.Series(rrix).plot()
+#pd.Series(RRi).plot()
+#RRi_1.plot()
 ##
-###PSD with Welch's Method
-#Fxx, Pxx = scipy.signal.welch(rrix, fs=4, window="hanning", nperseg=256, noverlap=128, detrend="linear")
-#
-##Plot the PSD
+##
+###len(RRi)/len(rrix)
+###Number os estimations
+##P = int((len(tx) - 256 / 128)) + 1
+###
+####PSD with Welch's Method
+#Fxx, Pxx = scipy.signal.welch(RRi, fs=4, window="hanning", nperseg=256, noverlap=128, detrend="linear")
+##
+###Plot the PSD
 #plt.plot(Fxx, Pxx)
 #plt.xlabel("Frequency (Hz)")
 #plt.ylabel(r"PSD $(ms^ 2$/Hz)")
