@@ -216,7 +216,7 @@ def rsp_find_cycles(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def rsp_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+def rsp_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     """
     Extract event-related respiratory (RSP) changes.
 

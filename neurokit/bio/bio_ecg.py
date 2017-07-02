@@ -957,7 +957,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+def ecg_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     """
     Extract event-related ECG changes.
 
