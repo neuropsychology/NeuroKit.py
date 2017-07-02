@@ -69,7 +69,7 @@ def rsp_process(rsp, sampling_rate=1000):
     try:
         rsp_rate = discrete_to_continuous(rsp_rate, rsp_times, sampling_rate)  # Interpolation using 3rd order spline
         processed_rsp["df"]["RSP_Rate"] = np.nan
-        processed_rsp["df"]["RSP_Rate"].ix[rsp_times[0]*1000:rsp_times[0]*1000+len(rsp_rate)] = rsp_rate
+        processed_rsp["df"]["RSP_Rate"].ix[rsp_times[0]:rsp_times[0]+len(rsp_rate)] = rsp_rate
     except TypeError:
         print("NeuroKit Warning: rsp_process(): Sequence too short to compute respiratory rate.")
         processed_rsp["df"]["RSP_Rate"] = np.nan
