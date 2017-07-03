@@ -155,10 +155,11 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
     # HRV
     # =============
-    processed_ecg["ECG"]["HRV"] = ecg_hrv(rpeaks, sampling_rate)
+    hrv = ecg_hrv(rpeaks, sampling_rate)
+    processed_ecg["ECG"]["HRV"] = hrv
     processed_ecg["df"]["ECG_HRV"] = hrv["RR_Interval"]
     if age is not None and sex is not None and position is not None:
-        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["ECG"]["HRV"], age, sex, position)
+        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
 
 
     # RSP
