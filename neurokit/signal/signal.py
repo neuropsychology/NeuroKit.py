@@ -108,8 +108,8 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     - scipy
     - pandas
     """
-#    values=heart_rate.copy()
-#    value_times=heart_rate_times.copy()
+#    values=RRis.copy()
+#    value_times=beats_times.copy()
     # Preprocessing
     initial_index = value_times[0]
     value_times = np.array(value_times) - initial_index

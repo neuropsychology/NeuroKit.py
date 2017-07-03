@@ -156,8 +156,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     # HRV
     # =============
     processed_ecg["ECG"]["HRV"] = ecg_hrv(rpeaks, sampling_rate)
-    processed_ecg["df"]["ECG_HRV"] = np.nan
-    processed_ecg["df"]["ECG_HRV"].ix[rpeaks[1]:rpeaks[1]+len(processed_ecg["ECG"]["HRV"]["RR_Interval"])] = processed_ecg["ECG"]["HRV"]["RR_Interval"]
+    processed_ecg["df"]["ECG_HRV"] = hrv["RR_Interval"]
     if age is not None and sex is not None and position is not None:
         processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["ECG"]["HRV"], age, sex, position)
 
@@ -561,7 +560,7 @@ Dellen et al., 1985), the RMSSD divided by meanNN.
     RRis = RRis.drop(artifacts_indices)  # remove the artifacts
 
     # Convert to continuous RR interval (RRi)
-    beats_times = rpeaks[1:]/sampling_rate  # the time (in sec) at which each beat occured starting from the 2nd beat
+    beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
     beats_times -= beats_times[0]
     beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
     try:
