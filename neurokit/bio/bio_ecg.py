@@ -302,6 +302,8 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
     rsa["RSA_P2T_Variability"] = pd.Series(rsa["RSA_P2T_Values"]).std()
 
     # Continuous RSA - Interpolation using a 3rd order spline
+    if len(rsa["RSA_P2T_Values"]) - len(rsp_cycle_center) == 1:
+        rsp_cycle_center = rsp_cycle_center[:-1]
     rsa["RSA_P2T"] = discrete_to_continuous(values=np.array(rsa["RSA_P2T_Values"]), value_times=(np.array(rsp_cycle_center)-rsp_cycle_center[0])/1000, sampling_rate=sampling_rate)
 
 
