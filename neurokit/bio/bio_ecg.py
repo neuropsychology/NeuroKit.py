@@ -37,9 +37,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
     age : float
-        Subject's age.
+        Subject's age for adjusted HRV.
     sex : str
-        Subject's gender ("m" or "f").
+        Subject's gender ("m" or "f") for adjusted HRV.
     position : str
         Recording position. To compare with data from Voss et al. (2015), use "supine".
 
@@ -160,17 +160,11 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
 
         # RSA
-        rsp_cycles = rsp["RSP"]["Cycles_Onsets"]
-        rsp_signal = rsp["df"]["RSP_Filtered"]
-        rsa = ecg_RSA(rpeaks, rsp_cycles, rsp_signal)
+        rsa = ecg_RSA(rpeaks, rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
+        processed_ecg["ECG"]["RSA"] = rsa
 
-        processed_ecg["df"]["RSA"] = rsa["RSA"]
-
-        processed_ecg["ECG"]["RSA"] = {}
-        processed_ecg["ECG"]["RSA"]["RSA_Mean"] = rsa["RSA_Mean"]
-        processed_ecg["ECG"]["RSA"]["RSA_Variability"] = rsa["RSA_Variability"]
-        processed_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]
-
+        processed_ecg["df"]["RSA"] = np.nan
+        processed_ecg["df"]["RSA"].ix[rsp["RSP"]["RSP_Expiration_Onsets"][0]:rsp["RSP"]["RSP_Expiration_Onsets"][0]+len(rsa["RSA_P2T"])] = rsa["RSA_P2T"]
 
     return(processed_ecg)
 
@@ -281,7 +275,7 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
     """
     # Preprocessing
     # =================
-    rsp_cycles = nk.rsp_find_cycles(rsp)
+    rsp_cycles = rsp_find_cycles(rsp)
     rsp_onsets = rsp_cycles["RSP_Cycles_Onsets"]
     rsp_cycle_center = rsp_cycles["RSP_Expiration_Onsets"]
     rsa = {}
@@ -297,46 +291,25 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
                                                 rpeaks < cycle_end)])
 
     # Iterate over all cycles
-    rsa["RSA_P2T"] = []
+    rsa["RSA_P2T_Values"] = []
     for cycle in cycles_rri:
         RRis = np.diff(cycle)/sampling_rate
         if len(RRis) > 1:
-            rsa["RSA_P2T"].append(np.max(RRis) - np.min(RRis))
+            rsa["RSA_P2T_Values"].append(np.max(RRis) - np.min(RRis))
         else:
-            rsa["RSA_P2T"].append(np.nan)
+            rsa["RSA_P2T_Values"].append(np.nan)
+    rsa["RSA_P2T_Mean"] = pd.Series(rsa["RSA_P2T_Values"]).mean()
+    rsa["RSA_P2T_Variability"] = pd.Series(rsa["RSA_P2T_Values"]).std()
 
+    # Continuous RSA - Interpolation using a 3rd order spline
+    rsa["RSA_P2T"] = discrete_to_continuous(values=np.array(rsa["RSA_P2T_Values"]), value_times=(np.array(rsp_cycle_center)-rsp_cycle_center[0])/1000, sampling_rate=sampling_rate)
 
-    # Continuous RSA
-    rsa_continuous = nk.discrete_to_continuous(np.array(rsa["RSA_P2T"]), np.array(rsp_cycle_center), sampling_rate)
-    df["RSA"] = np.nan
-    df["RSA"].ix[rsp_cycle_center[0]:rsp_cycle_center[0]+len(rsa_continuous)] = rsa_continuous
-
-    nk.z_score(df).plot()
-    current_rsa = np.nan
-
-    continuous_rsa = []
-    phase_counter = 0
-    for i in range(len(rsp_signal)):
-        if i == rsp_cycles[phase_counter]:
-            current_rsa = RSA[phase_counter]
-            if phase_counter < len(rsp_cycles)-2:
-                phase_counter += 1
-        continuous_rsa.append(current_rsa)
-
-    # Find last phase
-    continuous_rsa = np.array(continuous_rsa)
-    continuous_rsa[max(rsp_cycles):] = np.nan
-
-    RSA = {"RSA": continuous_rsa,
-           "RSA_Values": RSA,
-           "RSA_Mean": pd.Series(RSA).mean(),
-           "RSA_Variability": pd.Series(RSA).std()}
 
     # Porges–Bohrer method (RSAP–B)
     # ==============================
+    # Need help to implement this method (Lewis, 2012)
 
-
-    return(RSA)
+    return(rsa)
 
 
 # ==============================================================================
@@ -689,7 +662,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 
     *Details*
 
-    - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sample rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
+    - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sampling rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
 
 
     References
