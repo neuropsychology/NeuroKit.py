@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_quality_model="default", hrv_artifacts_treatment="interpolation", hrv_segment_length=60, use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_quality_model="default", use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 
@@ -40,8 +40,6 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
         Recording position. To compare with data from Voss et al. (2015), use "supine".
     ecg_quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
-    hrv_segment_length : int
-        Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
     use_cvxEDA : bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
     add : pandas.DataFrame
@@ -107,7 +105,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
 
     # ECG & RSP
     if ecg is not None:
-        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, quality_model=ecg_quality_model, hrv_artifacts_treatment=hrv_artifacts_treatment, hrv_segment_length=hrv_segment_length, age=age, sex=sex, position=position)
+        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, quality_model=ecg_quality_model, age=age, sex=sex, position=position)
         processed_bio["ECG"] = ecg["ECG"]
         if rsp is not None:
             processed_bio["RSP"] = ecg["RSP"]

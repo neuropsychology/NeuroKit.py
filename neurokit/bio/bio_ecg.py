@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", hrv_artifacts_treatment="interpolation", hrv_segment_length=60, age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -36,10 +36,6 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", hrv_
         Sampling rate (samples/second).
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
-    hrv_artifacts_treatment : str
-        RR intervals artifacts treatment method. "interpolation" for 3rd order spline or "deletion" for simple removal.
-    hrv_segment_length : int
-        Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
     age : float
         Subject's age.
     sex : str
@@ -150,7 +146,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", hrv_
     processed_ecg["ECG"].update(waves)
 
     # HRV
-    processed_ecg["ECG"]["HRV"] = ecg_hrv(rpeaks, sampling_rate, artifacts_treatment=hrv_artifacts_treatment, segment_length=hrv_segment_length)
+    processed_ecg["ECG"]["HRV"] = ecg_hrv(rpeaks, sampling_rate)
     processed_ecg["df"]["ECG_HRV"] = np.nan
     processed_ecg["df"]["ECG_HRV"].ix[rpeaks[1]:rpeaks[1]+len(processed_ecg["ECG"]["HRV"]["RR_Interval"])] = processed_ecg["ECG"]["HRV"]["RR_Interval"]
     if age is not None and sex is not None and position is not None:
