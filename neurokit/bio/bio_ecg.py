@@ -93,6 +93,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     - Edwards, L., Ring, C., McIntyre, D., & Carroll, D. (2001). Modulation of the human nociceptive flexion reflex across the cardiac cycle. Psychophysiology, 38(4), 712-718.
     - Gray, M. A., Rylander, K., Harrison, N. A., Wallin, B. G., & Critchley, H. D. (2009). Following one's heart: cardiac rhythms gate central initiation of sympathetic reflexes. Journal of Neuroscience, 29(6), 1817-1825.
     """
+    # Preprocessing
+    # =============
     # Convert to DataFrame
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
@@ -111,30 +113,36 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     ecg_df["ECG_R_peaks"] = rpeaks_signal
 
     # Heart Rate
+    # =============
     heart_rate = biosppy_ecg["heart_rate"]  # Get heart rate values
-    heart_rate_times = biosppy_ecg["heart_rate_ts"]  # the time (in sec) at which each beat occured starting from the 2nd beat
+    heart_rate_times = biosppy_ecg["heart_rate_ts"]  # the time (in sec)
+    heart_rate_times = np.round(heart_rate_times*sampling_rate).astype(int)  # Convert to timepoints
     try:
         heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
-        ecg_df["Heart_Rate"] = np.nan
-        ecg_df["Heart_Rate"].ix[rpeaks[0]:rpeaks[0]+len(heart_rate)] = heart_rate
+        ecg_df["Heart_Rate"] = heart_rate
     except TypeError:
         print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
         ecg_df["Heart_Rate"] = np.nan
 
     # Heartbeats
+    # =============
     heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
     heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
 
     # Signal quality
+    # =============
     quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
     # Waves
+    # =============
     waves = ecg_wave_detector(ecg_df["ECG_Filtered"], rpeaks)
 
     # Systole
+    # =============
     ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
 
     # Store results
+    # =============
     processed_ecg = {"df": ecg_df,
                      "ECG": {
                             "Cardiac_Cycles": heartbeats,
@@ -146,6 +154,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     processed_ecg["ECG"].update(waves)
 
     # HRV
+    # =============
     processed_ecg["ECG"]["HRV"] = ecg_hrv(rpeaks, sampling_rate)
     processed_ecg["df"]["ECG_HRV"] = np.nan
     processed_ecg["df"]["ECG_HRV"].ix[rpeaks[1]:rpeaks[1]+len(processed_ecg["ECG"]["HRV"]["RR_Interval"])] = processed_ecg["ECG"]["HRV"]["RR_Interval"]
@@ -154,12 +163,14 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
 
     # RSP
+    # =============
     if rsp is not None:
         rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate)
         processed_ecg["RSP"] = rsp["RSP"]
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
 
         # RSA
+        # =============
         rsa = ecg_RSA(rpeaks, rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
         processed_ecg["ECG"]["RSA"] = rsa
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsa.pop("df")], axis=1)

@@ -108,11 +108,19 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     - scipy
     - pandas
     """
+#    values=heart_rate.copy()
+#    value_times=heart_rate_times.copy()
+    # Preprocessing
+    initial_index = value_times[0]
+    value_times = np.array(value_times) - initial_index
+
     # fit a 3rd degree spline on the data.
     spline = scipy.interpolate.splrep(x=value_times, y=values, k=3, s=0)  # s=0 guarantees that it will pass through ALL the given points
-    x = np.arange(0, value_times[-1], 1/sampling_rate)
+    x = np.arange(0, value_times[-1], 1)
     # Get the values indexed per time
     signal = scipy.interpolate.splev(x=x, tck=spline, der=0)
     # Transform to series
-    signal = np.array(signal)
+    signal = pd.Series(signal)
+    signal.index = np.array(np.arange(initial_index, initial_index+len(signal), 1))
+
     return(signal)
