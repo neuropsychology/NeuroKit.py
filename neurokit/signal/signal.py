@@ -97,7 +97,7 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     ----------
     >>> import neurokit as nk
     >>> signal = discrete_to_continuous([4, 5, 1, 2], [1, 2, 3, 4], sampling_rate=1000)
-    >>> signal.plot()
+    >>> pd.Series(signal).plot()
 
     Authors
     ----------
@@ -110,8 +110,9 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     """
     # fit a 3rd degree spline on the data.
     spline = scipy.interpolate.splrep(x=value_times, y=values, k=3, s=0)  # s=0 guarantees that it will pass through ALL the given points
+    x = np.arange(0, value_times[-1], 1/sampling_rate)
     # Get the values indexed per time
-    signal = scipy.interpolate.splev(x=np.arange(0, value_times[-1], 1/sampling_rate), tck=spline, der=0)
+    signal = scipy.interpolate.splev(x=x, tck=spline, der=0)
     # Transform to series
-    signal = pd.Series(signal)
+    signal = np.array(signal)
     return(signal)

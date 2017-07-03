@@ -162,9 +162,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
         # RSA
         rsa = ecg_RSA(rpeaks, rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
         processed_ecg["ECG"]["RSA"] = rsa
-
-        processed_ecg["df"]["RSA"] = np.nan
-        processed_ecg["df"]["RSA"].ix[rsp["RSP"]["RSP_Expiration_Onsets"][0]:rsp["RSP"]["RSP_Expiration_Onsets"][0]+len(rsa["RSA_P2T"])] = rsa["RSA_P2T"]
+        processed_ecg["df"] = pd.concat([processed_ecg["df"], rsa.pop("df")], axis=1)
 
     return(processed_ecg)
 
@@ -278,7 +276,14 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
     rsp_cycles = rsp_find_cycles(rsp)
     rsp_onsets = rsp_cycles["RSP_Cycles_Onsets"]
     rsp_cycle_center = rsp_cycles["RSP_Expiration_Onsets"]
+    rsp_cycle_center = np.array(rsp_cycle_center)[rsp_cycle_center > rsp_onsets[0]]
+    if len(rsp_cycle_center) - len(rsp_onsets) == 0:
+        rsp_cycle_center = rsp_cycle_center[:-1]
+    if len(rsp_cycle_center) - len(rsp_onsets) != -1:
+        print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
+        return()
     rsa = {}
+
 
     # Peak-to-trough algorithm (P2T)
     # ===============================
@@ -302,9 +307,34 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
     rsa["RSA_P2T_Variability"] = pd.Series(rsa["RSA_P2T_Values"]).std()
 
     # Continuous RSA - Interpolation using a 3rd order spline
-    if len(rsa["RSA_P2T_Values"]) - len(rsp_cycle_center) == 1:
-        rsp_cycle_center = rsp_cycle_center[:-1]
-    rsa["RSA_P2T"] = discrete_to_continuous(values=np.array(rsa["RSA_P2T_Values"]), value_times=(np.array(rsp_cycle_center)-rsp_cycle_center[0])/1000, sampling_rate=sampling_rate)
+    if len(rsp_cycle_center) - len(rsa["RSA_P2T_Values"]) != 0:
+        print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
+        return()
+    value_times=(np.array(rsp_cycle_center)-rsp_cycle_center[0])/sampling_rate
+    rsa_interpolated = nk.discrete_to_continuous(values=np.array(rsa["RSA_P2T_Values"]), value_times=value_times, sampling_rate=sampling_rate)
+
+
+    # Continuous RSA - Steps
+    current_rsa = np.nan
+
+    continuous_rsa = []
+    phase_counter = 0
+    for i in range(len(rsp)):
+        if i == rsp_onsets[phase_counter]:
+            current_rsa = rsa["RSA_P2T_Values"][phase_counter]
+            if phase_counter < len(rsp_onsets)-2:
+                phase_counter += 1
+        continuous_rsa.append(current_rsa)
+
+    # Find last phase
+    continuous_rsa = np.array(continuous_rsa)
+    continuous_rsa[max(rsp_onsets):] = np.nan
+
+    df = pd.DataFrame({"RSP":rsp})
+    df["RSA_Values"] = continuous_rsa
+    df["RSA"] = np.nan
+    df["RSA"].ix[rsp_cycle_center[0]:rsp_cycle_center[0]+len(rsa_interpolated)-1] = rsa_interpolated.values
+    rsa["df"] = df
 
 
     # Porges–Bohrer method (RSAP–B)
