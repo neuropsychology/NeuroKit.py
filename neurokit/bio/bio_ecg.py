@@ -321,8 +321,8 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
     if len(rsp_cycle_center) - len(rsa["RSA_P2T_Values"]) != 0:
         print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
         return()
-    value_times=(np.array(rsp_cycle_center)-rsp_cycle_center[0])/sampling_rate
-    rsa_interpolated = nk.discrete_to_continuous(values=np.array(rsa["RSA_P2T_Values"]), value_times=value_times, sampling_rate=sampling_rate)
+    value_times=(np.array(rsp_cycle_center))
+    rsa_interpolated = discrete_to_continuous(values=np.array(rsa["RSA_P2T_Values"]), value_times=value_times, sampling_rate=sampling_rate)
 
 
     # Continuous RSA - Steps
@@ -343,14 +343,13 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
 
     df = pd.DataFrame({"RSP":rsp})
     df["RSA_Values"] = continuous_rsa
-    df["RSA"] = np.nan
-    df["RSA"].ix[rsp_cycle_center[0]:rsp_cycle_center[0]+len(rsa_interpolated)-1] = rsa_interpolated.values
+    df["RSA"] = rsa_interpolated
     rsa["df"] = df
 
 
     # Porges–Bohrer method (RSAP–B)
     # ==============================
-    # Need help to implement this method (Lewis, 2012)
+    # Need help to implement this method (See Lewis, 2012)
 
     return(rsa)
 
