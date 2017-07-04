@@ -324,8 +324,13 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
     if len(rsp_cycle_center) - len(rsa["RSA_P2T_Values"]) != 0:
         print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
         return()
+    values=pd.Series(rsa["RSA_P2T_Values"])
+    NaNs_indices = values.index[values.isnull()]  # get eventual artifacts indices
+    values = values.drop(NaNs_indices)  # remove the artifacts
     value_times=(np.array(rsp_cycle_center))
-    rsa_interpolated = discrete_to_continuous(values=np.array(rsa["RSA_P2T_Values"]), value_times=value_times, sampling_rate=sampling_rate)
+    value_times = np.delete(value_times, NaNs_indices)  # delete also the artifacts from times indices
+
+    rsa_interpolated = discrete_to_continuous(values=values, value_times=value_times, sampling_rate=sampling_rate)
 
 
     # Continuous RSA - Steps
