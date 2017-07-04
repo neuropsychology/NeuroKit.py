@@ -14,8 +14,10 @@ ecg=df["ECG"]
 rsp=dict(biosppy.resp.resp(df["RSP"], sampling_rate, show=False))["filtered"]
 rpeaks = dict(biosppy.ecg.ecg(ecg, sampling_rate, show=False))["rpeaks"]
 
-#rsp = pd.Series(dict(biosppy.resp.resp(rsp, 100, show=False))["filtered"])
 
+bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], sampling_rate=1000)
+#rsp = pd.Series(dict(biosppy.resp.resp(rsp, 100, show=False))["filtered"])
+bio["df"]["RSA"].plot()
 
 #nk.plot_events_in_signal(rsp, rsp_onsets)
 #nk.z_score(df).plot()

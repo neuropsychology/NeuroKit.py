@@ -60,11 +60,11 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     *Details*
 
     - **Cardiac Cycle**: A typical ECG showing a heartbeat consists of a P wave, a QRS complex and a T wave.The P wave represents the wave of depolarization that spreads from the SA-node throughout the atria. The QRS complex reflects the rapid depolarization of the right and left ventricles. Since the ventricles are the largest part of the heart, in terms of mass, the QRS complex usually has a much larger amplitude than the P-wave. The T wave represents the ventricular repolarization of the ventricles. On rare occasions, a U wave can be seen following the T wave. The U wave is believed to be related to the last remnants of ventricular repolarization.
-    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity.
-    - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods. See :func:`neurokit.hrv()` for a description of indices.
+    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity. See :func:`neurokit.ecg_rsa()` for details.
+    - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods. See :func:`neurokit.ecg_hrv()` for a description of indices.
     - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sample rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
     - **Systole/Diastole**: One prominent channel of body and brain communication is that conveyed by baroreceptors, pressure and stretch-sensitive receptors within the heart and surrounding arteries. Within each cardiac cycle, bursts of baroreceptor afferent activity encoding the strength and timing of each heartbeat are carried via the vagus and glossopharyngeal nerve afferents to the nucleus of the solitary tract. This is the principal route that communicates to the brain the dynamic state of the heart, enabling the representation of cardiovascular arousal within viscerosensory brain regions, and influence ascending neuromodulator systems implicated in emotional and motivational behaviour. Because arterial baroreceptors are activated by the arterial pulse pressure wave, their phasic discharge is maximal during and immediately after the cardiac systole, that is, when the blood is ejected from the heart, and minimal during cardiac diastole, that is, between heartbeats (Azevedo, 2017).
-    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECGs signal from the healthy participants. For each ECG, the 15 leads were available. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
+    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
 
     *Authors*
 
@@ -171,7 +171,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
         # RSA
         # =============
-        rsa = ecg_RSA(rpeaks, rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
+        rsa = ecg_rsa(rpeaks, rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
         processed_ecg["ECG"]["RSA"] = rsa
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsa.pop("df")], axis=1)
 
@@ -237,9 +237,9 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
+def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
     """
-    Returns Respiratory Sinus Arrhythmia (RSA) features.
+    Returns Respiratory Sinus Arrhythmia (RSA) features. Only the Peak-to-trough (P2T) algorithm is currently implemented (see details).
 
     Parameters
     ----------
@@ -259,13 +259,15 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
     Example
     ----------
     >>> import neurokit as nk
-    >>> rsa = nk.respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
+    >>> rsa = nk.ecg_rsa(rpeaks, rsp)
 
     Notes
     ----------
     *Details*
 
-    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity.
+    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity. Neurophysiology informs us that the functional output of the myelinated vagus originating from the nucleus ambiguus has a respiratory rhythm. Thus, there would a temporal relation between the respiratory rhythm being expressed in the firing of these efferent pathways and the functional effect on the heart rate rhythm manifested as RSA. Several methods exist to quantify RSA:
+
+        - **P2T**: The peak to trough (P2T) method measures the statistical range in ms of the heart period oscillation associated with synchronous respiration. Operationally, subtracting the shortest heart period during inspiration from the longest heart period during a breath cycle produces an estimate of RSA during each breath. The peak-to-trough method makes no statistical assumption or correction (e.g., adaptive filtering) regarding other sources of variance in the heart period time series that may confound, distort, or interact with the metric such as slower periodicities and baseline trend. Although it has been proposed that the P2T method “acts as a time-domain filter dynamically centered at the exact ongoing respiratory frequency” (Grossman, 1992), the method does not transform the time series in any way, as a filtering process would. Instead the method uses knowledge of the ongoing respiratory cycle to associate segments of the heart period time series with either inhalation or exhalation (Lewis, 2012).
 
     *Authors*
 
@@ -315,6 +317,7 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
         else:
             rsa["RSA_P2T_Values"].append(np.nan)
     rsa["RSA_P2T_Mean"] = pd.Series(rsa["RSA_P2T_Values"]).mean()
+    rsa["RSA_P2T_Mean_log"] = np.log(rsa["RSA_P2T_Mean"])
     rsa["RSA_P2T_Variability"] = pd.Series(rsa["RSA_P2T_Values"]).std()
 
     # Continuous RSA - Interpolation using a 3rd order spline
@@ -345,7 +348,6 @@ def ecg_RSA(rpeaks, rsp, sampling_rate=1000):
     df["RSA_Values"] = continuous_rsa
     df["RSA"] = rsa_interpolated
     rsa["df"] = df
-
 
     # Porges–Bohrer method (RSAP–B)
     # ==============================
@@ -387,7 +389,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     ----------
     *Details*
 
-    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECGs signal from the healthy participants. For each ECG, the 15 leads were available. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
+    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
 
     *Authors*
 
