@@ -294,7 +294,7 @@ def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10.
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+def eda_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     """
     Extract event-related EDA and Skin Conductance Response (SCR).
 

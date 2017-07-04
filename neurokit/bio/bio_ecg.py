@@ -5,10 +5,10 @@ Subsubmodule for ecg processing.
 import numpy as np
 import pandas as pd
 import biosppy
-import datetime
 import sklearn
 import scipy
 import nolds
+import mne
 
 from .bio_rsp import *
 from ..signal import *
@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", quality_model="default", hrv_artifacts_treatment="interpolation", hrv_segment_length=60, age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -34,18 +34,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
         Respiratory (RSP) signal array.
     sampling_rate : int
         Sampling rate (samples/second).
-    resampling_method : str
-        "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
-    hrv_artifacts_treatment : str
-        RR intervals artifacts treatment method. "interpolation" for 3rd order spline or "deletion" for simple removal.
-    hrv_segment_length : int
-        Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
     age : float
-        Subject's age.
+        Subject's age for adjusted HRV.
     sex : str
-        Subject's gender ("m" or "f").
+        Subject's gender ("m" or "f") for adjusted HRV.
     position : str
         Recording position. To compare with data from Voss et al. (2015), use "supine".
 
@@ -66,15 +60,15 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     *Details*
 
     - **Cardiac Cycle**: A typical ECG showing a heartbeat consists of a P wave, a QRS complex and a T wave.The P wave represents the wave of depolarization that spreads from the SA-node throughout the atria. The QRS complex reflects the rapid depolarization of the right and left ventricles. Since the ventricles are the largest part of the heart, in terms of mass, the QRS complex usually has a much larger amplitude than the P-wave. The T wave represents the ventricular repolarization of the ventricles. On rare occasions, a U wave can be seen following the T wave. The U wave is believed to be related to the last remnants of ventricular repolarization.
-    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity.
-    - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods. See :func:`neurokit.hrv()` for a description of indices.
+    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity. See :func:`neurokit.ecg_rsa()` for details.
+    - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods. See :func:`neurokit.ecg_hrv()` for a description of indices.
     - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sample rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
     - **Systole/Diastole**: One prominent channel of body and brain communication is that conveyed by baroreceptors, pressure and stretch-sensitive receptors within the heart and surrounding arteries. Within each cardiac cycle, bursts of baroreceptor afferent activity encoding the strength and timing of each heartbeat are carried via the vagus and glossopharyngeal nerve afferents to the nucleus of the solitary tract. This is the principal route that communicates to the brain the dynamic state of the heart, enabling the representation of cardiovascular arousal within viscerosensory brain regions, and influence ascending neuromodulator systems implicated in emotional and motivational behaviour. Because arterial baroreceptors are activated by the arterial pulse pressure wave, their phasic discharge is maximal during and immediately after the cardiac systole, that is, when the blood is ejected from the heart, and minimal during cardiac diastole, that is, between heartbeats (Azevedo, 2017).
-    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECGs signal from the healthy participants. For each ECG, the 15 leads were available. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
+    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -99,6 +93,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     - Edwards, L., Ring, C., McIntyre, D., & Carroll, D. (2001). Modulation of the human nociceptive flexion reflex across the cardiac cycle. Psychophysiology, 38(4), 712-718.
     - Gray, M. A., Rylander, K., Harrison, N. A., Wallin, B. G., & Critchley, H. D. (2009). Following one's heart: cardiac rhythms gate central initiation of sympathetic reflexes. Journal of Neuroscience, 29(6), 1817-1825.
     """
+    # Preprocessing
+    # =============
     # Convert to DataFrame
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
@@ -114,37 +110,41 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     # Transform to markers to add to the main dataframe
     rpeaks_signal = np.array([np.nan]*len(ecg))
     rpeaks_signal[rpeaks] = 1
-    ecg_df["ECG_Rpeaks"] = rpeaks_signal
-
+    ecg_df["ECG_R_peaks"] = rpeaks_signal
 
     # Heart Rate
+    # =============
     heart_rate = biosppy_ecg["heart_rate"]  # Get heart rate values
-    beats_times = rpeaks[1:]/sampling_rate  # the time (in sec) at which each beat occured starting from the 2nd beat
-    heart_rate = discrete_to_continuous(heart_rate, beats_times, sampling_rate)  # Interpolation using 3rd order spline
-    ecg_df["Heart_Rate"] = np.nan
-    ecg_df["Heart_Rate"].ix[rpeaks[1]+1:rpeaks[1]+len(heart_rate)] = heart_rate
-
-
-    # RR intervals (RRis)
-    rri = np.diff(biosppy_ecg["rpeaks"])
+    heart_rate_times = biosppy_ecg["heart_rate_ts"]  # the time (in sec)
+    heart_rate_times = np.round(heart_rate_times*sampling_rate).astype(int)  # Convert to timepoints
+    try:
+        heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
+        ecg_df["Heart_Rate"] = heart_rate
+    except TypeError:
+        print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
+        ecg_df["Heart_Rate"] = np.nan
 
     # Heartbeats
+    # =============
     heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
     heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
 
     # Signal quality
+    # =============
     quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
 
     # Waves
-    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"])
+    # =============
+    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], rpeaks)
 
     # Systole
-    ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], biosppy_ecg["rpeaks"], waves["T_Waves"])
+    # =============
+    ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
 
     # Store results
+    # =============
     processed_ecg = {"df": ecg_df,
                      "ECG": {
-                            "RR_Intervals": rri,
                             "Cardiac_Cycles": heartbeats,
                             "R_Peaks": biosppy_ecg["rpeaks"]
                             }
@@ -154,30 +154,26 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, resampling_method="bfill", qu
     processed_ecg["ECG"].update(waves)
 
     # HRV
-    processed_ecg["ECG"]["HRV"] = ecg_hrv(rri, sampling_rate, artifacts_treatment=hrv_artifacts_treatment, segment_length=hrv_segment_length)
+    # =============
+    hrv = ecg_hrv(rpeaks, sampling_rate)
+    processed_ecg["ECG"]["HRV"] = hrv
+    processed_ecg["df"]["ECG_HRV"] = hrv["RR_Interval"]
     if age is not None and sex is not None and position is not None:
-        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(processed_ecg["ECG"]["HRV"], age, sex, position)
+        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
 
 
     # RSP
+    # =============
     if rsp is not None:
-        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate)
         processed_ecg["RSP"] = rsp["RSP"]
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsp["df"]], axis=1)
 
         # RSA
-        rpeaks = biosppy_ecg["rpeaks"]
-        rsp_cycles = rsp["RSP"]["Cycles_Onsets"]
-        rsp_signal = rsp["df"]["RSP_Filtered"]
-        rsa = respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
-
-        processed_ecg["df"]["RSA"] = rsa["RSA"]
-
-        processed_ecg["ECG"]["RSA"] = {}
-        processed_ecg["ECG"]["RSA"]["RSA_Mean"] = rsa["RSA_Mean"]
-        processed_ecg["ECG"]["RSA"]["RSA_Variability"] = rsa["RSA_Variability"]
-        processed_ecg["ECG"]["RSA"]["RSA_Values"] = rsa["RSA_Values"]
-
+        # =============
+        rsa = ecg_rsa(rpeaks, rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
+        processed_ecg["ECG"]["RSA"] = rsa
+        processed_ecg["df"] = pd.concat([processed_ecg["df"], rsa.pop("df")], axis=1)
 
     return(processed_ecg)
 
@@ -241,18 +237,16 @@ def ecg_find_peaks(signal, sampling_rate=1000):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1000):
+def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
     """
-    Returns Respiratory Sinus Arrhythmia (RSA) features.
+    Returns Respiratory Sinus Arrhythmia (RSA) features. Only the Peak-to-trough (P2T) algorithm is currently implemented (see details).
 
     Parameters
     ----------
     rpeaks : list or ndarray
         List of R peaks indices.
-    rsp_cycles : list or ndarray
-        List of respiratory cycles onsets.
-    rsp_signal : list or ndarray
-        RSP signal.
+    rsp : list or ndarray
+        Filtered RSP signal.
     sampling_rate : int
         Sampling rate (samples/second).
 
@@ -265,70 +259,106 @@ def respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal, sampling_rate=1
     Example
     ----------
     >>> import neurokit as nk
-    >>> rsa = nk.respiratory_sinus_arrhythmia(rpeaks, rsp_cycles, rsp_signal)
+    >>> rsa = nk.ecg_rsa(rpeaks, rsp)
 
     Notes
     ----------
     *Details*
 
-    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity.
+    - **RSA**: Respiratory sinus arrhythmia (RSA) is a naturally occurring variation in heart rate that occurs during the breathing cycle, serving as a measure of parasympathetic nervous system activity. Neurophysiology informs us that the functional output of the myelinated vagus originating from the nucleus ambiguus has a respiratory rhythm. Thus, there would a temporal relation between the respiratory rhythm being expressed in the firing of these efferent pathways and the functional effect on the heart rate rhythm manifested as RSA. Several methods exist to quantify RSA:
+
+        - **P2T**: The peak to trough (P2T) method measures the statistical range in ms of the heart period oscillation associated with synchronous respiration. Operationally, subtracting the shortest heart period during inspiration from the longest heart period during a breath cycle produces an estimate of RSA during each breath. The peak-to-trough method makes no statistical assumption or correction (e.g., adaptive filtering) regarding other sources of variance in the heart period time series that may confound, distort, or interact with the metric such as slower periodicities and baseline trend. Although it has been proposed that the P2T method “acts as a time-domain filter dynamically centered at the exact ongoing respiratory frequency” (Grossman, 1992), the method does not transform the time series in any way, as a filtering process would. Instead the method uses knowledge of the ongoing respiratory cycle to associate segments of the heart period time series with either inhalation or exhalation (Lewis, 2012).
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
 
-    - biosppy
     - numpy
     - pandas
 
-    *See Also*
 
-    - BioSPPY: https://github.com/PIA-Group/BioSPPy
-
+    References
+    ------------
+    - Lewis, G. F., Furman, S. A., McCool, M. F., & Porges, S. W. (2012). Statistical strategies to quantify respiratory sinus arrhythmia: Are commonly used metrics equivalent?. Biological psychology, 89(2), 349-364.
     """
+    # Preprocessing
+    # =================
+    rsp_cycles = rsp_find_cycles(rsp)
+    rsp_onsets = rsp_cycles["RSP_Cycles_Onsets"]
+    rsp_cycle_center = rsp_cycles["RSP_Expiration_Onsets"]
+    rsp_cycle_center = np.array(rsp_cycle_center)[rsp_cycle_center > rsp_onsets[0]]
+    if len(rsp_cycle_center) - len(rsp_onsets) == 0:
+        rsp_cycle_center = rsp_cycle_center[:-1]
+    if len(rsp_cycle_center) - len(rsp_onsets) != -1:
+        print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
+        return()
+    rsa = {}
+
+
+    # Peak-to-trough algorithm (P2T)
+    # ===============================
     # Find all RSP cycles and the Rpeaks within
     cycles_rri = []
-    for idx in range(len(rsp_cycles) - 1):
-        cycle_init = rsp_cycles[idx]
-        cycle_end = rsp_cycles[idx + 1]
+    for idx in range(len(rsp_onsets) - 1):
+        cycle_init = rsp_onsets[idx]
+        cycle_end = rsp_onsets[idx + 1]
         cycles_rri.append(rpeaks[np.logical_and(rpeaks >= cycle_init,
                                                 rpeaks < cycle_end)])
 
     # Iterate over all cycles
-    RSA = []
+    rsa["RSA_P2T_Values"] = []
     for cycle in cycles_rri:
         RRis = np.diff(cycle)/sampling_rate
         if len(RRis) > 1:
-            RSA.append(np.max(RRis) - np.min(RRis))
+            rsa["RSA_P2T_Values"].append(np.max(RRis) - np.min(RRis))
         else:
-            RSA.append(np.nan)
+            rsa["RSA_P2T_Values"].append(np.nan)
+    rsa["RSA_P2T_Mean"] = pd.Series(rsa["RSA_P2T_Values"]).mean()
+    rsa["RSA_P2T_Mean_log"] = np.log(rsa["RSA_P2T_Mean"])
+    rsa["RSA_P2T_Variability"] = pd.Series(rsa["RSA_P2T_Values"]).std()
+
+    # Continuous RSA - Interpolation using a 3rd order spline
+    if len(rsp_cycle_center) - len(rsa["RSA_P2T_Values"]) != 0:
+        print("NeuroKit Error: ecg_rsp(): Couldn't find clean rsp cycles onsets and centers. Check your RSP signal.")
+        return()
+    values=pd.Series(rsa["RSA_P2T_Values"])
+    NaNs_indices = values.index[values.isnull()]  # get eventual artifacts indices
+    values = values.drop(NaNs_indices)  # remove the artifacts
+    value_times=(np.array(rsp_cycle_center))
+    value_times = np.delete(value_times, NaNs_indices)  # delete also the artifacts from times indices
+
+    rsa_interpolated = discrete_to_continuous(values=values, value_times=value_times, sampling_rate=sampling_rate)
 
 
-    # Continuous RSA
+    # Continuous RSA - Steps
     current_rsa = np.nan
 
     continuous_rsa = []
     phase_counter = 0
-    for i in range(len(rsp_signal)):
-        if i == rsp_cycles[phase_counter]:
-            current_rsa = RSA[phase_counter]
-            if phase_counter < len(rsp_cycles)-2:
+    for i in range(len(rsp)):
+        if i == rsp_onsets[phase_counter]:
+            current_rsa = rsa["RSA_P2T_Values"][phase_counter]
+            if phase_counter < len(rsp_onsets)-2:
                 phase_counter += 1
         continuous_rsa.append(current_rsa)
 
     # Find last phase
     continuous_rsa = np.array(continuous_rsa)
-    continuous_rsa[max(rsp_cycles):] = np.nan
+    continuous_rsa[max(rsp_onsets):] = np.nan
 
-    RSA = {"RSA": continuous_rsa,
-           "RSA_Values": RSA,
-           "RSA_Mean": pd.Series(RSA).mean(),
-           "RSA_Variability": pd.Series(RSA).std()}
+    df = pd.DataFrame({"RSP":rsp})
+    df["RSA_Values"] = continuous_rsa
+    df["RSA"] = rsa_interpolated
+    rsa["df"] = df
 
-    return(RSA)
+    # Porges–Bohrer method (RSAP–B)
+    # ==============================
+    # Need help to implement this method (See Lewis, 2012)
+
+    return(rsa)
 
 
 # ==============================================================================
@@ -364,11 +394,11 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     ----------
     *Details*
 
-    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECGs signal from the healthy participants. For each ECG, the 15 leads were available. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
+    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Dependencies*
 
@@ -420,24 +450,16 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segment_length=60, LF=True, VLF=True):
+def ecg_hrv(rpeaks, sampling_rate=1000):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
     Parameters
     ----------
-    rri : list or ndarray
-        RR intervals.
+    rpeaks : list or ndarray
+        R-peak location indices.
     sampling_rate : int
         Sampling rate (samples/second).
-    artifacts_treatment : str
-        Artifacts treatment method. "interpolation" for 3rd order spline or "deletion" for simple removal.
-    segment_length : int
-        Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
-    LF : bool
-        Computes HRV in the Low Frequency.
-    VLF : bool
-        Computes HRV in the Very Low Frequency.
 
     Returns
     ----------
@@ -455,8 +477,10 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
 
     - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods.
 
-       - **sdNN** is the standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine. It should be noted that total variance of HRV increases with the length of the analyzed recording.
-       - **meanNN** is the mean RR interval.
+       - **sdNN**: The standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine. It should be noted that total variance of HRV increases with the length of the analyzed recording.
+       - **meanNN**: The the mean RR interval.
+       - **CVSD**: The coefficient of variation of successive differences (van
+Dellen et al., 1985), the RMSSD divided by meanNN.
        - **cvNN**: The Coefficient of Variation, *i.e.* the ratio of sdNN divided by meanNN.
        - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
        - **medianNN**: Median of the Absolute values of the successive Differences between the RR intervals.
@@ -491,7 +515,7 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -517,55 +541,73 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
 
     # Preprocessing
     # ==================
-    # Basic resampling to 1000Hz to standardize the scale
-    rri = rri*1000/sampling_rate
-    rri = rri.astype(float)
+    # Extract RR intervals (RRis)
+    RRis = np.diff(rpeaks)
+    # Basic resampling to 1Hz to standardize the scale
+    RRis = RRis/sampling_rate
+    RRis = RRis.astype(float)
 
 
     # Artifact detection - Statistical
-    for index, rr in enumerate(rri):
+    for index, rr in enumerate(RRis):
         # Remove RR intervals that differ more than 25% from the previous one
-        if rri[index] < rri[index-1]*0.75:
-            rri[index] = np.nan
-        if rri[index] > rri[index-1]*1.25:
-            rri[index] = np.nan
+        if RRis[index] < RRis[index-1]*0.75:
+            RRis[index] = np.nan
+        if RRis[index] > RRis[index-1]*1.25:
+            RRis[index] = np.nan
 
     # Artifact detection - Physiological (http://emedicine.medscape.com/article/2172196-overview)
-    rri = pd.Series(rri)
-    rri[rri < 600] = np.nan
-    rri[rri > 1300] = np.nan
+    RRis = pd.Series(RRis)
+    RRis[RRis < 0.6] = np.nan
+    RRis[RRis > 1.3] = np.nan
 
-    # Artifact treatment
-    hrv["n_Artifacts"] = pd.isnull(rri).sum()/len(rri)
-    if artifacts_treatment == "deletion":
-        rri = rri.dropna()
-    if artifacts_treatment == "interpolation":
-        rri = pd.Series(rri).interpolate(method="cubic")  # Interpolate using a 3rd order spline
-        rri = rri.dropna()  # Remove firsts and lasts NaNs that cannot be interpolated
+    # Artifacts treatment
+    hrv["n_Artifacts"] = pd.isnull(RRis).sum()/len(RRis)
+    artifacts_indices = RRis.index[RRis.isnull()]  # get the artifacts indices
+    RRis = RRis.drop(artifacts_indices)  # remove the artifacts
+
+    # Convert to continuous RR interval (RRi)
+    beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
+    beats_times -= beats_times[0]
+    beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
+    try:
+        RRi = discrete_to_continuous(RRis, beats_times, 1000)  # Interpolation using 3rd order spline
+    except TypeError:
+        print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
+        return(hrv)
+
+    # Rescale to 1000Hz
+    RRis = RRis*1000
+    RRi = RRi*1000
+    hrv["RR_Intervals"] = RRis  # Values of RRis
+    hrv["RR_Interval"] = RRi  # Continuous (interpolated) signal of RRi
 
     # Time Domain
     # ==================
-    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(rri) ** 2))
-    hrv["meanNN"] = np.mean(rri)
-    hrv["sdNN"] = np.std(rri, ddof=1)  # make it calculate N-1
+    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
+    hrv["meanNN"] = np.mean(RRis)
+    hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
     hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
-    hrv["medianNN"] = np.median(abs(rri))
-    hrv["madNN"] = mad(rri, constant=1)
+    hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"] * 100
+    hrv["medianNN"] = np.median(abs(RRis))
+    hrv["madNN"] = mad(RRis, constant=1)
     hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
-    nn50 = sum(abs(np.diff(rri)) > 50)
-    hrv["pNN50"] = nn50 / len(rri) * 100
-    nn20 = sum(abs(np.diff(rri)) > 20)
-    hrv["pNN20"] = nn20 / len(rri) * 100
+    nn50 = sum(abs(np.diff(RRis)) > 50)
+    hrv["pNN50"] = nn50 / len(RRis) * 100
+    nn20 = sum(abs(np.diff(RRis)) > 20)
+    hrv["pNN20"] = nn20 / len(RRis) * 100
 
+
+    # To Do: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
     try:
         bin_number = 32  # Initialize bin_width value
         # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
         for bin_number_current in range(2, 50):
-            bin_width = np.diff(np.histogram(rri, bins=bin_number_current, density=True)[1])[0]
-            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(rri, bins=bin_number, density=True)[1])[0]):
+            bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
+            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
                 bin_number = bin_number_current
-        hrv["Triang"] = len(rri)/np.max(np.histogram(rri, bins=bin_number, density=True)[0])
-        hrv["Shannon_h"] = entropy_shannon(np.histogram(rri, bins=bin_number, density=True)[0])
+        hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
+        hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
     except ValueError:
         hrv["Triang"] = np.nan
         hrv["Shannon_h"] = np.nan
@@ -573,82 +615,53 @@ def ecg_hrv(rri, sampling_rate=1000, artifacts_treatment="interpolation", segmen
 
     # Frequency Domain
     # =================
-    # Sanity check
-    if segment_length > len(rri):
-        print("NeuroKit warning: ecg_hrv(): Number of RR intervals smaller than segment size... setting segment_size to %i." %(len(rri)))
-        segment_length = len(rri)
+    # Compute Power Spectral Density (PSD) using multitaper method
+    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=10, fmin=0, fmax=0.5,  adaptive=False, normalization='full')
 
-    # Parameters
-    vlf_band=(0.003, 0.04)
-    lf_band=(0.04, 0.15)
-    hf_band=(0.15, 0.40)
+    def power_in_band(power, freq, low, high):
+        power =  np.trapz(y=power[(freq >= low) & (freq < high)], x=freq[(freq >= low) & (freq < high)])
+        return(power)
 
-    #size = 300, shift = 30, sizesp = 2048
-    # Computation
-    freq, power = scipy.signal.welch(x=rri, fs=1, window="blackmanharris", nperseg=segment_length, noverlap=segment_length/2, detrend="constant")
+    # Extract Power according to frequency bands
+    hrv["ULF"] = power_in_band(power, freq, 0, 0.0033)
+    hrv["VLF"] = power_in_band(power, freq, 0.0033, 0.04)
+    hrv["LF"] = power_in_band(power, freq, 0.04, 0.15)
+    hrv["HF"] = power_in_band(power, freq, 0.15, 0.4)
+    hrv["VHF"] = power_in_band(power, freq, 0.4, 0.5)
+    hrv["Total_Power"] = power_in_band(power, freq, 0, 0.5)
 
-    vlf_indexes = np.logical_and(freq >= vlf_band[0], freq < vlf_band[1])
-    lf_indexes = np.logical_and(freq >= lf_band[0], freq < lf_band[1])
-    hf_indexes = np.logical_and(freq >= hf_band[0], freq < hf_band[1])
-
-    hrv["HF"] = np.trapz(y=power[hf_indexes], x=freq[hf_indexes])
-
-    if LF is True:
-        if segment_length >= 20:
-            hrv["LF"] = np.trapz(y=power[lf_indexes], x=freq[lf_indexes])
-            hrv["LFHF"] = hrv["LF"] / hrv["HF"]
-            hrv["LFNU"] = (hrv["LF"] / (hrv["LF"] + hrv["HF"])) * 100
-            hrv["HFNU"] = (hrv["HF"] / (hrv["LF"] + hrv["HF"])) * 100
-            if VLF is True:
-                if segment_length >= 60:
-                    hrv["VLF"] = np.trapz(y=power[vlf_indexes], x=freq[vlf_indexes])
-                    hrv["Total_Power"] = hrv["VLF"] + hrv["LF"] + hrv["HF"]
-                    hrv["HFp"] = hrv["HF"] / hrv["Total_Power"]
-                    hrv["LFp"] = hrv["LF"] / hrv["Total_Power"]
-                else:
-                    print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the very low frequency (VLF) and the low frequency (LF) domain.")
-                    hrv["VLF"] = np.nan
-                    hrv["Total_Power"] = np.nan
-                    hrv["HFp"] = np.nan
-                    hrv["LFp"] = np.nan
-        else:
-            print("NeuroKit warning: ecg_hrv(): Segment size too small to compute HRV in the low frequency (LF) domain.")
-            hrv["VLF"] = np.nan
-            hrv["LF"] = np.nan
-            hrv["Total_Power"] = np.nan
-            hrv["LFHF"] = np.nan
-            hrv["LFn"] = np.nan
-            hrv["HFn"] = np.nan
-            hrv["HFp"] = np.nan
-            hrv["LFp"] = np.nan
+    hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
+    hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
+    hrv["LF/HF"] = hrv["LF"]/hrv["HF"]
+    hrv["LF/P"] = hrv["LF"]/hrv["Total_Power"]
+    hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
 
 
-
-    # Non-Linear Dynamics
+    # Non-Linear Dynamics - This also must be checked by an expert - Should it be applied on the interpolated on raw RRis?
     # ======================
-    if len(rri) > 17:
-        hrv["DFA_1"] = nolds.dfa(rri, range(4, 17))
-    if len(rri) > 66:
-        hrv["DFA_2"] = nolds.dfa(rri, range(16, 66))
-    hrv["Shannon"] = entropy_shannon(rri)
-    hrv["Sample_Entropy"] = nolds.sampen(rri, emb_dim=2)
+    if len(RRis) > 17:
+        hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
+    if len(RRis) > 66:
+        hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
+    hrv["Shannon"] = entropy_shannon(RRis)
+    hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
     try:
-        hrv["Correlation_Dimension"] = nolds.corr_dim(rri, emb_dim=2)
+        hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
     except AssertionError as error:
         print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
         hrv["Correlation_Dimension"] = np.nan
-    hrv["Entropy_Multiscale"] = entropy_multiscale(rri, emb_dim=2)
-    hrv["Entropy_SVD"] = entropy_svd(rri, emb_dim=2)
-    hrv["Entropy_Spectral_VLF"] = entropy_spectral(rri, 1000, bands=np.arange(0.003, 0.04, 0.001))
-    hrv["Entropy_Spectral_LF"] = entropy_spectral(rri, 1000, bands=np.arange(0.04, 0.15, 0.001))
-    hrv["Entropy_Spectral_HF"] = entropy_spectral(rri, 1000, bands=np.arange(0.15, 0.40, 0.001))
-    hrv["Fisher_Info"] = fisher_info(rri, tau=1, emb_dim=2)
+    hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
+    hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
+    hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.0033, 0.04, 0.001))
+    hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.04, 0.15, 0.001))
+    hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.15, 0.40, 0.001))
+    hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
     try:  # Otherwise travis errors for some reasons :(
-        hrv["Lyapunov"] = np.max(nolds.lyap_e(rri, emb_dim=58, matrix_dim=4))
+        hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
     except Exception:
         hrv["Lyapunov"] = np.nan
-    hrv["FD_Petrosian"] = fd_petrosian(rri)
-    hrv["FD_Higushi"] = fd_higushi(rri, k_max=16)
+    hrv["FD_Petrosian"] = fd_petrosian(RRis)
+    hrv["FD_Higushi"] = fd_higushi(RRis, k_max=16)
 
     # TO DO:
     # Include many others (see Voss 2015)
@@ -694,11 +707,11 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Details*
 
-    - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sample rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
+    - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sampling rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
 
 
     References
@@ -786,7 +799,7 @@ def ecg_wave_detector(ecg, rpeaks, plot=False):
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
 
 
@@ -881,7 +894,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Details*
 
@@ -917,7 +930,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+def ecg_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     """
     Extract event-related ECG changes.
 
@@ -969,7 +982,7 @@ def ecg_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
 
     *Dependencies*
 

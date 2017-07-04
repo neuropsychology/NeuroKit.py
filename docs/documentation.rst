@@ -33,7 +33,15 @@ emg_process
 
 .. autofunction:: neurokit.emg_process
 
+ecg_hrv
+-----------------
 
+.. autofunction:: neurokit.ecg_hrv
+
+ecg_rsa
+-----------------
+
+.. autofunction:: neurokit.ecg_rsa
 bio_ERP
 -----------------
 

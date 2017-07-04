@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, resampling_method="bfill", ecg_quality_model="default", hrv_artifacts_treatment="interpolation", hrv_segment_length=60, use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_quality_model="default", use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 
@@ -38,12 +38,8 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
         Subject's gender ("m" or "f").
     position : str
         Recording position. To compare with data from Voss et al. (2015), use "supine".
-    resampling_method : str
-        "mean", "pad" or "bfill", the resampling method used for ECG and RSP heart rate.
     ecg_quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
-    hrv_segment_length : int
-        Number of RR intervals within each sliding window on which to compute frequency-domains power. Particularly important for VLF. Adjust with caution.
     use_cvxEDA : bool
         Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
     add : pandas.DataFrame
@@ -109,14 +105,14 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
 
     # ECG & RSP
     if ecg is not None:
-        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method, quality_model=ecg_quality_model, hrv_artifacts_treatment=hrv_artifacts_treatment, hrv_segment_length=hrv_segment_length, age=age, sex=sex, position=position)
+        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, quality_model=ecg_quality_model, age=age, sex=sex, position=position)
         processed_bio["ECG"] = ecg["ECG"]
         if rsp is not None:
             processed_bio["RSP"] = ecg["RSP"]
         bio_df = pd.concat([bio_df, ecg["df"]], axis=1)
 
     if rsp is not None and ecg is None:
-        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate, resampling_method=resampling_method)
+        rsp = rsp_process(rsp=rsp, sampling_rate=sampling_rate)
         processed_bio["RSP"] = rsp["RSP"]
         bio_df = pd.concat([bio_df, rsp["df"]], axis=1)
 
@@ -152,7 +148,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+def bio_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     """
     Extract event-related bio (EDA, ECG and RSP) changes.
 
@@ -253,13 +249,13 @@ def bio_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
     """
     bio_response = {}
     if "ECG_Filtered" in epoch.columns:
-        ECG_Response = ecg_ERP(epoch, event_length, sampling_rate, window_post)
+        ECG_Response = ecg_EventRelated(epoch, event_length, sampling_rate, window_post)
         bio_response.update(ECG_Response)
     if "RSP_Filtered" in epoch.columns:
-        RSP_Response = rsp_ERP(epoch, event_length, sampling_rate, window_post)
+        RSP_Response = rsp_EventRelated(epoch, event_length, sampling_rate, window_post)
         bio_response.update(RSP_Response)
     if "EDA_Filtered" in epoch.columns:
-        EDA_Response = eda_ERP(epoch, event_length, sampling_rate, window_post)
+        EDA_Response = eda_EventRelated(epoch, event_length, sampling_rate, window_post)
         bio_response.update(EDA_Response)
 
     return(bio_response)

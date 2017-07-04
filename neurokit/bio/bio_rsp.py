@@ -5,8 +5,8 @@ Subsubmodule for ecg processing.
 import numpy as np
 import pandas as pd
 import biosppy
-import datetime
 
+from ..signal import *
 
 # ==============================================================================
 # ==============================================================================
@@ -16,7 +16,7 @@ import datetime
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def rsp_process(rsp, sampling_rate=1000, resampling_method="bfill"):
+def rsp_process(rsp, sampling_rate=1000):
     """
     Automated processing of RSP signals.
 
@@ -26,8 +26,6 @@ def rsp_process(rsp, sampling_rate=1000, resampling_method="bfill"):
         Respiratory (RSP) signal array.
     sampling_rate : int
         Sampling rate (samples/second).
-    resampling_method : str
-        "mean", "pad" or "bfill", the resampling method used for RSP heart rate.
 
     Returns
     ----------
@@ -64,35 +62,21 @@ def rsp_process(rsp, sampling_rate=1000, resampling_method="bfill"):
     processed_rsp["df"]["RSP_Filtered"] = biosppy_rsp["filtered"]
 
 
-    # RSP Rate resampling
-    # ===========================
-    # Create resampling factor
-    resampling_rate = str(int(1000/sampling_rate)) + "L"
-
-    # RSP rate index creation
-    time_now = datetime.datetime.now()
-    # Convert seconds to datetime deltas
-    time_index = [datetime.timedelta(seconds=x) for x in biosppy_rsp["resp_rate_ts"]]
-    time_index = np.array(time_index) + time_now
-    rsp_rate = pd.Series(biosppy_rsp["resp_rate"], index=time_index)
-
-    if resampling_method == "mean":
-        rsp_rate = rsp_rate.resample(resampling_rate).mean()
-    if resampling_method == "pad":
-        rsp_rate = rsp_rate.resample(resampling_rate).pad()
-    if resampling_method == "bfill":
-        rsp_rate = rsp_rate.resample(resampling_rate).bfill()
-
-    if len(rsp_rate) >= len(rsp):
-        rsp_rate = rsp_rate[0:len(rsp)]
-    else:
-        rsp_rate = [rsp_rate[-1]]*(len(rsp)-len(rsp_rate)) + list(rsp_rate)
-    processed_rsp["df"]["RSP_Rate"] = np.array(rsp_rate)*60  # From Hz to respiration per seconds
+#   RSP Rate
+#   ============
+    rsp_rate = biosppy_rsp["resp_rate"]*60  # Get RSP rate value (in cycles per minute)
+    rsp_times = biosppy_rsp["resp_rate_ts"]   # the time (in sec) of each rsp rate value
+    rsp_times = np.round(rsp_times*sampling_rate).astype(int)  # Convert to timepoints
+    try:
+        rsp_rate = discrete_to_continuous(rsp_rate, rsp_times, sampling_rate)  # Interpolation using 3rd order spline
+        processed_rsp["df"]["RSP_Rate"] = rsp_rate
+    except TypeError:
+        print("NeuroKit Warning: rsp_process(): Sequence too short to compute respiratory rate.")
+        processed_rsp["df"]["RSP_Rate"] = np.nan
 
 
-
-    # RSP Cycles
-    # ===========================
+#   RSP Cycles
+#   ===========================
     rsp_cycles = rsp_find_cycles(biosppy_rsp["filtered"])
     processed_rsp["df"]["RSP_Inspiration"] = rsp_cycles["RSP_Inspiration"]
 
@@ -101,8 +85,8 @@ def rsp_process(rsp, sampling_rate=1000, resampling_method="bfill"):
     processed_rsp["RSP"]["Expiration_Onsets"] = rsp_cycles["RSP_Expiration_Onsets"]
     processed_rsp["RSP"]["Cycles_Length"] = rsp_cycles["RSP_Cycles_Length"]/sampling_rate
 
-    # RSP Variability
-    # ===========================
+#   RSP Variability
+#   ===========================
     rsp_diff = processed_rsp["RSP"]["Cycles_Length"]
 
     processed_rsp["RSP"]["Respiratory_Variability"] = {}
@@ -232,7 +216,7 @@ def rsp_find_cycles(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def rsp_ERP(epoch, event_length, sampling_rate=1000, window_post=4):
+def rsp_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     """
     Extract event-related respiratory (RSP) changes.
 
