@@ -479,8 +479,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
 
        - **sdNN**: The standard deviation of the time interval between successive normal heart beats (*i.e.*, the RR intervals). Reflects all influences on HRV including slow influences across the day, circadian variations, the effect of hormonal influences such as cortisol and epinephrine. It should be noted that total variance of HRV increases with the length of the analyzed recording.
        - **meanNN**: The the mean RR interval.
-       - **CVSD**: The coefficient of variation of successive differences (van
-Dellen et al., 1985), the RMSSD divided by meanNN.
+       - **CVSD**: The coefficient of variation of successive differences (van Dellen et al., 1985), the RMSSD divided by meanNN.
        - **cvNN**: The Coefficient of Variation, *i.e.* the ratio of sdNN divided by meanNN.
        - **RMSSD** is the root mean square of the RR intervals (*i.e.*, square root of the mean of the squared differences in time between successive normal heart beats). Reflects high frequency (fast or parasympathetic) influences on HRV (*i.e.*, those influencing larger changes from one beat to the next).
        - **medianNN**: Median of the Absolute values of the successive Differences between the RR intervals.

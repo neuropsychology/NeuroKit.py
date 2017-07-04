@@ -42,21 +42,12 @@ ecg_rsa
 -----------------
 
 .. autofunction:: neurokit.ecg_rsa
-bio_ERP
+
+bio_EventRelated
 -----------------
 
-.. autofunction:: neurokit.bio_ERP
+.. autofunction:: neurokit.bio_EventRelated
 
-ecg_find_peaks
------------------
-
-.. autofunction:: neurokit.ecg_find_peaks
-
-
-rsp_find_cycles
------------------
-
-.. autofunction:: neurokit.rsp_find_cycles
 
 read_acqknowledge
 --------------------
