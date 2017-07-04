@@ -570,7 +570,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
     beats_times -= beats_times[0]
     beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
     try:
-        RRi = discrete_to_continuous(RRis, beats_times, 1000)  # Interpolation using 3rd order spline
+        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
     except TypeError:
         print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
         return(hrv)
