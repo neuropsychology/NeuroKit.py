@@ -4,6 +4,7 @@ Python and stuff
 Installation
 =============
 
+This part focuses on how to get a working, portable distribution of python.
 
 Windows
 -----------------------
