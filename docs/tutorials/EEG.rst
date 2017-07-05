@@ -53,7 +53,7 @@ We can then watch the plot and identify the bad channels by clicking on them (or
 	raw.info['bads'] = []
 	raw.interpolate_bads(reset_bads=False)
 
-.. figure:: img/Tuto_EEG_1.png
+.. figure:: EEG_img/Tuto_EEG_1.png
    :alt: eeg preprocessing channels see plot
    
 We can then mark events for further epoching.
@@ -137,7 +137,7 @@ Then, average those epochs by emotion condition into evoked data objects. Finall
 	nk.eeg_topo_erp([neutral, negative], line_colors=("grey", "red"))
 
 
-.. figure:: img/Tuto_EEG_2.png
+.. figure:: EEG_img/Tuto_EEG_2.png
    :alt: eeg butterfly plot erp
    
 .. code-block:: python
