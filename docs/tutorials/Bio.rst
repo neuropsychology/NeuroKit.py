@@ -26,7 +26,7 @@ Preparation
 
 .. code:: python
 
-    # Download resting-state data
+    # Download data
     df = pd.read_csv("https://raw.githubusercontent.com/neuropsychology/NeuroKit.py/master/examples/Bio/bio_100Hz.csv")
     # Plot it
     df.plot()
@@ -118,7 +118,7 @@ Heart Rate Variability (HRV)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A large number of HRV indices can be found by checking out
-**``bio["ECG"]["HRV"]``**.
+``bio["ECG"]["HRV"]``.
 
 Respiratory Sinus Arrythmia (RSA)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
