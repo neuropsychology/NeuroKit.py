@@ -7,7 +7,11 @@ python. You'll find the necessary files to run this example in the
 `**examples** <https://github.com/neuropsychology/NeuroKit.py/tree/master/examples/Bio>`__
 section.
 
-Import Necessary Packages
+
+Preprocessing
+---------------
+
+Preparation
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
@@ -18,11 +22,7 @@ Import Necessary Packages
     import numpy as np
     import seaborn as sns
 
-Block Paradigms
----------------
 
-Preprocessing
-~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -47,7 +47,7 @@ events, corresponding to emotionally negative and neutral pictures
 presented for 3 seconds.
 
 Processing
-~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 Biosignals processing can be done quite easily using ``NeuroKit`` with
 the ``bio_process()`` function. Simply provide the appropriate biosignal
@@ -76,10 +76,10 @@ containing other features that cannot be simply added in a dataframe.
 Let's see what we can do with that.
 
 Bio Features Extraction
-~~~~~~~~~~~~~~~~~~~~~~~
+------------------------
 
 ECG Signal quality
-^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 .. code:: python
 
@@ -98,7 +98,7 @@ As you can see, the average quality of the ECG signal is 99%. See this
 *TO BE DONE* tutorial for how to record a good signal.
 
 Heart Beats / Cardiac Cycles
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 Let's take a look at each individual heart beat, synchronized by their R
 peak. You can plot all of them by doing the following:
@@ -115,13 +115,13 @@ peak. You can plot all of them by doing the following:
 
 
 Heart Rate Variability (HRV)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 A large number of HRV indices can be found by checking out
 **``bio["ECG"]["HRV"]``**.
 
 Respiratory Sinus Arrythmia (RSA)
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 One of the most popular RSA algorithm (P2T) implementation can be found
 in the main data frame.
@@ -145,7 +145,7 @@ we have only one event, we're gonna select the ``0``\ th element of that
 list.
 
 Event-Related Analysis
-----------------------
+------------------------
 
 This experiment consisted of 4 events (when the photosensor signal goes
 down), which were 2 types of images that were shown to the participant:
@@ -182,7 +182,7 @@ durations for each event. Here, each event lasts for approximately 300
 data points (= 3 seconds sampled at 100Hz).
 
 Create Epochs
-~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 
 Then, we have to split our dataframe in epochs, *i.e.* segments of data
 around the event. We set our epochs to start one second before the event
