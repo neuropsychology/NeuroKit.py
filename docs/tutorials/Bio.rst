@@ -42,7 +42,7 @@ Preparation
 
 ``df`` contains 2.5 minutes of data recorded at 100Hz (2.5 x 60 x 100 =
 15000 data points). There are 4 channels, EDA, ECG, RSP and the
-Photosensor used to localize events. In the present case, there is four
+Photosensor used to localize events. In the present case, there are four
 events, corresponding to emotionally negative and neutral pictures
 presented for 3 seconds.
 
@@ -141,7 +141,7 @@ in the main data frame.
 event. Here, it correctly detected only one event. Then, we're gonna
 crop our data according to that event. The ``create_epochs`` function
 returns a list containing epochs of data corresponding to each event. As
-we have only one event, we're gonna select the ``0``\ th element of that
+we have only one event, we're gonna select the ``0th``  element of that
 list.
 
 Event-Related Analysis
@@ -311,7 +311,7 @@ higher in the negative than in the neutral condition.
 .. image:: bio_img/output_43_1.png
 
 
-In the same line, the skin condustance response magnitude is higher in
+In the same line, the skin conductance response (SCR) magnitude is higher in
 the negative condition compared to the neutral one. Overall, these
 results suggest that the acquired biosignals are sensitive to the
 cognitive processing of emotional stimuli.
