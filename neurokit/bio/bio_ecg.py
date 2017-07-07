@@ -101,6 +101,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     # Compute several features using biosppy
     biosppy_ecg = dict(biosppy.signals.ecg.ecg(ecg, sampling_rate=sampling_rate, show=False))
 
+    # !!!!!!!!!!!
+    # Deconstruction needed here
+    # !!!!!!!!!!!!
+
+
+
     # Filtered signal
     ecg_df["ECG_Filtered"] = biosppy_ecg["filtered"]
 
