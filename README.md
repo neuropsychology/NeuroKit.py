@@ -57,7 +57,7 @@ Main features:
     - *Cardiac Cycles - R peaks, RR intervals, P, Q, T Waves, ...*
     - *Cardiac Phase (systole/diastole)*
     - *Signal quality evaluation*
-    - *Respiratory sinus arrhythmia (RSA)*
+    - *Respiratory sinus arrhythmia (RSA) - P2T method*
     - *Complexity (multiscale entropy, fractal dimensions, ...)*
   - **[`rsp_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract Respiratory features
     - *Respiratory rate and variability*
