@@ -98,16 +98,19 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     # Convert to DataFrame
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
-    # Compute several features using biosppy
-    biosppy_ecg = ecg_preprocess(ecg, sampling_rate=sampling_rate, show=False)
+    # Ecg preprocessing
+    ecg_preprocessed = ecg_preprocess(ecg,
+                                 sampling_rate=sampling_rate,
+                                 filter_type="FIR",
+                                 filter_band="bandpass",
+                                 filter_frequency=[3, 45])
 
 
-
-    # Filtered signal
-    ecg_df["ECG_Filtered"] = biosppy_ecg["filtered"]
+    # Extract filtered signal
+    ecg_df["ECG_Filtered"] = ecg_preprocessed["filtered"]
 
     # Store R peaks indexes
-    rpeaks = biosppy_ecg['rpeaks']
+    rpeaks = ecg_preprocessed['rpeaks']
 
     # Transform to markers to add to the main dataframe
     rpeaks_signal = np.array([np.nan]*len(ecg))
@@ -116,8 +119,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
     # Heart Rate
     # =============
-    heart_rate = biosppy_ecg["heart_rate"]  # Get heart rate values
-    heart_rate_times = biosppy_ecg["heart_rate_ts"]  # the time (in sec)
+    heart_rate = ecg_preprocessed["heart_rate"]  # Get heart rate values
+    heart_rate_times = ecg_preprocessed["heart_rate_ts"]  # the time (in sec)
     heart_rate_times = np.round(heart_rate_times*sampling_rate).astype(int)  # Convert to timepoints
     try:
         heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
@@ -128,7 +131,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
     # Heartbeats
     # =============
-    heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
+    heartbeats = pd.DataFrame(ecg_preprocessed["templates"]).T
     heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
 
     # Signal quality
@@ -148,7 +151,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     processed_ecg = {"df": ecg_df,
                      "ECG": {
                             "Cardiac_Cycles": heartbeats,
-                            "R_Peaks": biosppy_ecg["rpeaks"]
+                            "R_Peaks": ecg_preprocessed["rpeaks"]
                             }
                      }
 
