@@ -13,8 +13,15 @@ df = pd.read_csv("https://raw.githubusercontent.com/neuropsychology/NeuroKit.py/
 
 #df = pd.read_csv('normal_ECG.csv')
 #df = df.loc[10000:100000].reset_index(drop=True)  # Select 10s of signal
-#sampling_rate=1000
-#ecg=df["ECG"]
+sampling_rate=100
+ecg=df["ECG"]
+
+
+filter_type="FIR"
+filter_band="bandpass"
+filter_frequency=[3, 45]
+
+ecg_preprocess(ecg, 100)
 #rsp=dict(biosppy.resp.resp(df["RSP"], sampling_rate, show=False))["filtered"]
 #rpeaks = dict(biosppy.ecg.ecg(ecg, sampling_rate, show=False))["rpeaks"]
 #

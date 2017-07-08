@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], quality_model="default", age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -34,6 +34,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
         Respiratory (RSP) signal array.
     sampling_rate : int
         Sampling rate (samples/second).
+    filter_type : str
+        Can be Finite Impulse Response filter ("FIR"), Butterworth filter ("butter"), Chebyshev filters ("cheby1" and "cheby2"), Elliptic filter ("ellip") or Bessel filter ("bessel").
+    filter_band : str
+        Band type, can be Low-pass filter ("lowpass"), High-pass filter ("highpass"), Band-pass filter ("bandpass"), Band-stop filter ("bandstop").
+    filter_frequency : int or list
+        Cutoff frequencies, format depends on type of band: "lowpass" or "bandpass": single frequency (int), "bandpass" or "bandstop": pair of frequencies (list).
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
     age : float
@@ -98,14 +104,19 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     # Convert to DataFrame
     ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
 
-    # Compute several features using biosppy
-    biosppy_ecg = dict(biosppy.signals.ecg.ecg(ecg, sampling_rate=sampling_rate, show=False))
+    # Ecg preprocessing
+    ecg_preprocessed = ecg_preprocess(ecg,
+                                 sampling_rate=sampling_rate,
+                                 filter_type=filter_type,
+                                 filter_band=filter_band,
+                                 filter_frequency=filter_frequency)
 
-    # Filtered signal
-    ecg_df["ECG_Filtered"] = biosppy_ecg["filtered"]
+
+    # Extract filtered signal
+    ecg_df["ECG_Filtered"] = ecg_preprocessed["ECG_Filtered"]
 
     # Store R peaks indexes
-    rpeaks = biosppy_ecg['rpeaks']
+    rpeaks = ecg_preprocessed['rpeaks']
 
     # Transform to markers to add to the main dataframe
     rpeaks_signal = np.array([np.nan]*len(ecg))
@@ -114,8 +125,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
     # Heart Rate
     # =============
-    heart_rate = biosppy_ecg["heart_rate"]  # Get heart rate values
-    heart_rate_times = biosppy_ecg["heart_rate_ts"]  # the time (in sec)
+    heart_rate = ecg_preprocessed["heart_rate"]  # Get heart rate values
+    heart_rate_times = ecg_preprocessed["heart_rate_ts"]  # the time (in sec)
     heart_rate_times = np.round(heart_rate_times*sampling_rate).astype(int)  # Convert to timepoints
     try:
         heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
@@ -126,7 +137,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
     # Heartbeats
     # =============
-    heartbeats = pd.DataFrame(biosppy_ecg["templates"]).T
+    heartbeats = pd.DataFrame(ecg_preprocessed["Cardiac_Cycles"]).T
     heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
 
     # Signal quality
@@ -146,7 +157,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     processed_ecg = {"df": ecg_df,
                      "ECG": {
                             "Cardiac_Cycles": heartbeats,
-                            "R_Peaks": biosppy_ecg["rpeaks"]
+                            "R_Peaks": ecg_preprocessed["rpeaks"]
                             }
                      }
 
@@ -176,6 +187,113 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsa.pop("df")], axis=1)
 
     return(processed_ecg)
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45]):
+    """
+    ECG signal preprocessing.
+
+    Parameters
+    ----------
+    ecg : list or ndarray
+        ECG signal array.
+    sampling_rate : int
+        Sampling rate (samples/second).
+    filter_type : str
+        Can be Finite Impulse Response filter ("FIR"), Butterworth filter ("butter"), Chebyshev filters ("cheby1" and "cheby2"), Elliptic filter ("ellip") or Bessel filter ("bessel").
+    filter_band : str
+        Band type, can be Low-pass filter ("lowpass"), High-pass filter ("highpass"), Band-pass filter ("bandpass"), Band-stop filter ("bandstop").
+    filter_frequency : int or list
+        Cutoff frequencies, format depends on type of band: "lowpass" or "bandpass": single frequency (int), "bandpass" or "bandstop": pair of frequencies (list).
+
+    Returns
+    ----------
+    ecg_preprocessed : dict
+        Preprocesed ECG.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> Rpeaks = nk.ecg_find_peaks(signal)
+
+    Notes
+    ----------
+    *Authors*
+
+    - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
+    - Dominique Makowski (https://dominiquemakowski.github.io/)
+
+    *Dependencies*
+
+    - biosppy
+    - numpy
+
+    *See Also*
+
+    - BioSPPY: https://github.com/PIA-Group/BioSPPy
+
+    """
+    # Ensure numpy
+    ecg = np.array(ecg)
+
+    sampling_rate = float(sampling_rate)
+
+    # Filter signal
+    order = int(0.3 * sampling_rate)
+    filtered, _, _ = biosppy.tools.filter_signal(signal=ecg,
+                                      ftype=filter_type,
+                                      band=filter_band,
+                                      order=order,
+                                      frequency=filter_frequency,
+                                      sampling_rate=sampling_rate)
+
+    # Segment
+    rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
+
+    # Correct R-peak locations
+    rpeaks, = biosppy.ecg.correct_rpeaks(signal=filtered,
+                             rpeaks=rpeaks,
+                             sampling_rate=sampling_rate,
+                             tol=0.05)
+
+    # Extract cardiac cycles and rpeaks
+    cardiac_cycles, rpeaks = biosppy.ecg.extract_heartbeats(signal=filtered,
+                                           rpeaks=rpeaks,
+                                           sampling_rate=sampling_rate,
+                                           before=0.2,
+                                           after=0.4)
+
+    # Compute heart rate
+    heart_rate_idx, heart_rate = biosppy.tools.get_heart_rate(beats=rpeaks,
+                                   sampling_rate=sampling_rate,
+                                   smooth=True,
+                                   size=3)
+
+    # Get time indices
+    length = len(ecg)
+    T = (length - 1) / sampling_rate
+    ts = np.linspace(0, T, length, endpoint=False)
+    ts_heart_rate = ts[heart_rate_idx]
+    cardiac_cycles_tmpl = np.linspace(-0.2, 0.4, cardiac_cycles.shape[1], endpoint=False)
+
+
+    # Output
+    ecg_preprocessed = {"ts": ts, 'ECG_Filtered': filtered, 'rpeaks': rpeaks, 'Cardiac_Cycles_ts': cardiac_cycles_tmpl, 'Cardiac_Cycles': cardiac_cycles, 'heart_rate_ts': ts_heart_rate, 'heart_rate': heart_rate}
+
+    return(ecg_preprocessed)
+
+
+
 
 
 # ==============================================================================
