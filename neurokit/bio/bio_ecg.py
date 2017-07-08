@@ -201,7 +201,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
 # ==============================================================================
 def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45]):
     """
-    ECG signal preprocessing, mainly based on biosppy.ecg.ecg().
+    ECG signal preprocessing.
 
     Parameters
     ----------
