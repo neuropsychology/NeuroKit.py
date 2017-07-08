@@ -20,6 +20,8 @@ ecg=df["ECG"]
 filter_type="FIR"
 filter_band="bandpass"
 filter_frequency=[3, 45]
+
+ecg_preprocess(ecg, 100)
 #rsp=dict(biosppy.resp.resp(df["RSP"], sampling_rate, show=False))["filtered"]
 #rpeaks = dict(biosppy.ecg.ecg(ecg, sampling_rate, show=False))["rpeaks"]
 #

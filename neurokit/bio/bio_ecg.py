@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], quality_model="default", age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -34,6 +34,12 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
         Respiratory (RSP) signal array.
     sampling_rate : int
         Sampling rate (samples/second).
+    filter_type : str
+        Can be Finite Impulse Response filter ("FIR"), Butterworth filter ("butter"), Chebyshev filters ("cheby1" and "cheby2"), Elliptic filter ("ellip") or Bessel filter ("bessel").
+    filter_band : str
+        Band type, can be Low-pass filter ("lowpass"), High-pass filter ("highpass"), Band-pass filter ("bandpass"), Band-stop filter ("bandstop").
+    filter_frequency : int or list
+        Cutoff frequencies, format depends on type of band: "lowpass" or "bandpass": single frequency (int), "bandpass" or "bandstop": pair of frequencies (list).
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
     age : float
@@ -101,13 +107,13 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
     # Ecg preprocessing
     ecg_preprocessed = ecg_preprocess(ecg,
                                  sampling_rate=sampling_rate,
-                                 filter_type="FIR",
-                                 filter_band="bandpass",
-                                 filter_frequency=[3, 45])
+                                 filter_type=filter_type,
+                                 filter_band=filter_band,
+                                 filter_frequency=filter_frequency)
 
 
     # Extract filtered signal
-    ecg_df["ECG_Filtered"] = ecg_preprocessed["filtered"]
+    ecg_df["ECG_Filtered"] = ecg_preprocessed["ECG_Filtered"]
 
     # Store R peaks indexes
     rpeaks = ecg_preprocessed['rpeaks']
@@ -131,7 +137,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, quality_model="default", age=
 
     # Heartbeats
     # =============
-    heartbeats = pd.DataFrame(ecg_preprocessed["templates"]).T
+    heartbeats = pd.DataFrame(ecg_preprocessed["Cardiac_Cycles"]).T
     heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
 
     # Signal quality
@@ -261,7 +267,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
                              tol=0.05)
 
     # Extract cardiac cycles and rpeaks
-    templates, rpeaks = biosppy.ecg.extract_heartbeats(signal=filtered,
+    cardiac_cycles, rpeaks = biosppy.ecg.extract_heartbeats(signal=filtered,
                                            rpeaks=rpeaks,
                                            sampling_rate=sampling_rate,
                                            before=0.2,
@@ -278,11 +284,11 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     T = (length - 1) / sampling_rate
     ts = np.linspace(0, T, length, endpoint=False)
     ts_heart_rate = ts[heart_rate_idx]
-    ts_tmpl = np.linspace(-0.2, 0.4, templates.shape[1], endpoint=False)
+    cardiac_cycles_tmpl = np.linspace(-0.2, 0.4, cardiac_cycles.shape[1], endpoint=False)
 
 
     # Output
-    ecg_preprocessed = {"ts": ts, 'filtered': filtered, 'rpeaks': rpeaks, 'templates_ts': ts_tmpl, 'templates': templates, 'heart_rate_ts': ts_heart_rate, 'heart_rate': heart_rate}
+    ecg_preprocessed = {"ts": ts, 'ECG_Filtered': filtered, 'rpeaks': rpeaks, 'Cardiac_Cycles_ts': cardiac_cycles_tmpl, 'Cardiac_Cycles': cardiac_cycles, 'heart_rate_ts': ts_heart_rate, 'heart_rate': heart_rate}
 
     return(ecg_preprocessed)
 

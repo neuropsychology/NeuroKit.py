@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_quality_model="default", use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_quality_model="default", use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 
@@ -38,6 +38,12 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
         Subject's gender ("m" or "f").
     position : str
         Recording position. To compare with data from Voss et al. (2015), use "supine".
+    ecg_filter_type : str
+        Can be Finite Impulse Response filter ("FIR"), Butterworth filter ("butter"), Chebyshev filters ("cheby1" and "cheby2"), Elliptic filter ("ellip") or Bessel filter ("bessel").
+    ecg_filter_band : str
+        Band type, can be Low-pass filter ("lowpass"), High-pass filter ("highpass"), Band-pass filter ("bandpass"), Band-stop filter ("bandstop").
+    ecg_filter_frequency : int or list
+        Cutoff frequencies, format depends on type of band: "lowpass" or "bandpass": single frequency (int), "bandpass" or "bandstop": pair of frequencies (list).
     ecg_quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
     use_cvxEDA : bool
@@ -105,7 +111,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
 
     # ECG & RSP
     if ecg is not None:
-        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, quality_model=ecg_quality_model, age=age, sex=sex, position=position)
+        ecg = ecg_process(ecg=ecg, rsp=rsp, sampling_rate=sampling_rate, filter_type=ecg_filter_type, filter_band=ecg_filter_band, filter_frequency=ecg_filter_frequency, quality_model=ecg_quality_model, age=age, sex=sex, position=position)
         processed_bio["ECG"] = ecg["ECG"]
         if rsp is not None:
             processed_bio["RSP"] = ecg["RSP"]
