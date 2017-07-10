@@ -74,7 +74,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
 
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -231,7 +231,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     *Authors*
 
     - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -389,7 +389,7 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
 
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -516,7 +516,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -632,7 +632,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
 
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
     - Rhenan Bartels (https://github.com/rhenanbartels)
 
     *Dependencies*
@@ -824,7 +824,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Details*
 
@@ -916,7 +916,7 @@ def ecg_wave_detector(ecg, rpeaks, plot=False):
 
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
 
 
@@ -1011,7 +1011,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Details*
 
@@ -1099,7 +1099,7 @@ def ecg_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
 
     *Authors*
 
-    - Dominique Makowski (https://dominiquemakowski.github.io/)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 

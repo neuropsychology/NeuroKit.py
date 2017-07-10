@@ -97,5 +97,17 @@ class Test(unittest.TestCase):
         time_passed = clock.get()
         self.assertEqual(isinstance(time_passed, float), True)
 
+    def test_compute_interoceptive_accuracy(self):
+        self.assertEqual(nk.compute_interoceptive_accuracy(5, 3), 0.5)
+
+#==============================================================================
+# STATISTICS
+#==============================================================================
+    def test_find_outliers(self):
+        outliers = nk.find_outliers([1, 2, 1, 5, 666, 4, 1 ,3, 5])
+        self.assertEqual(outliers[4], True)
+
+
+
 if __name__ == '__main__':
     unittest.main()

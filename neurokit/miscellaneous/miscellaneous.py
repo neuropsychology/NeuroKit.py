@@ -343,3 +343,54 @@ def BMI(height, weight, age, sex):
 
 
     return(bmi)
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def compute_interoceptive_accuracy(nbeats_real, nbeats_reported):
+    """
+    Computes interoceptive accuracy according to Garfinkel (2015).
+
+    Parameters
+    ----------
+    nbeats_real : int or list
+        Real number of heartbeats.
+    nbeats_reported : int or list
+        Reported number of heartbeats.
+
+    Returns
+    ----------
+    accuracy : float or list
+        Objective accuracy in detecting internal bodily sensations. It is the central construct underpinning other interoceptive measures (Garfinkel, 2015).
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>>
+    >>> nk.compute_interoceptive_accuracy(5, 3)
+
+
+    Authors
+    ----------
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    Dependencies
+    ----------
+    - numpy
+    """
+    # Convert to array if list
+    if isinstance(nbeats_real, list):
+        nbeats_real = np.array(nbeats_real)
+        nbeats_reported = np.array(nbeats_reported)
+    # Compute accuracy
+    accuracy = 1 - (abs(nbeats_real-nbeats_reported))/((nbeats_real+nbeats_reported)/2)
+
+    return(accuracy)

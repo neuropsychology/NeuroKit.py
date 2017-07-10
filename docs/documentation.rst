@@ -143,7 +143,15 @@ z_score
 
 .. autofunction:: neurokit.z_score
 
+dprime
+---------------
 
+.. autofunction:: neurokit.dprime
+
+find_outliers
+---------------
+
+.. autofunction:: neurokit.find_outliers
 
 Miscellaneous
 =====================
@@ -154,8 +162,9 @@ BMI
 .. autofunction:: neurokit.BMI
 
 
+compute_interoceptive_accuracy
+---------------------------------
 
-
-
+.. autofunction:: neurokit.compute_interoceptive_accuracy
 
 

@@ -68,10 +68,13 @@ Main features:
     - *Skin Conductance Responses (SCR) onsets, peaks, amplitudes, latency, rise time, ...*
   - **[`emg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#emg-process)**: Extract EMG features
     - *Pulse onsets*
+- **Signal**
+    - **[`complexity()`](http://neurokit.readthedocs.io/en/latest/documentation.html#complexity)**: Extract complexity/chaos indices, such as values of entropy (Shannon's, Sample and Multiscale), fractal dimension, Hurst and Lyapunov exponents and more
 - **Statistics**
   - **[`z_score()`](http://neurokit.readthedocs.io/en/latest/documentation.html#z-score)**: Normalize (scale and reduce) variables
+  - **[`find_outliers()`](http://neurokit.readthedocs.io/en/latest/documentation.html#find_outliers)**: Identify outliers
+  - **[`dprime()`](http://neurokit.readthedocs.io/en/latest/documentation.html#dprime)**: Computes Signal Detection Theory (SDT) parameters (d', c, beta, a', b''d)
 - **Miscellaneous**
-  - **[`complexity()`](http://neurokit.readthedocs.io/en/latest/documentation.html#complexity)**: Extract complexity/chaos indices, such as values of entropy (Shannon's, Sample and Multiscale), fractal dimension, Hurst and Lyapunov exponents and more
   - **[`BMI()`](http://neurokit.readthedocs.io/en/latest/documentation.html#bmi)**: Compute the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
 
 

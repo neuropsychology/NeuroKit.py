@@ -1,9 +1,20 @@
 from setuptools import setup, find_packages
+import re
 
+
+# ------------------
+def find_version():
+    result = re.search(r'{}\s*=\s*[\'"]([^\'"]*)[\'"]'.format("__version__"), open('neurokit/__init__.py').read())
+    return result.group(1)
+# ------------------
+
+
+
+# ------------------
 setup(
 name = "neurokit",
 description = ("A Python Toolbox for Statistics and Signal Processing (EEG, EDA, ECG, EMG...)."),
-version = "0.1.5",
+version = find_version(),
 license = "MIT",
 author = "Dominique Makowski",
 author_email = "dom.makowski@gmail.com",
