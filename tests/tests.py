@@ -107,7 +107,9 @@ class Test(unittest.TestCase):
         outliers = nk.find_outliers([1, 2, 1, 5, 666, 4, 1 ,3, 5])
         self.assertEqual(outliers[4], True)
 
-
+    def test_dprime(self):
+        parameters = nk.dprime(n_Hit=7, n_Miss=4, n_FA=6, n_CR=6)
+        self.assertEqual(np.round(parameters["bppd"], 2), -0.5)
 
 if __name__ == '__main__':
     unittest.main()
