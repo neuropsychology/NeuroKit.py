@@ -95,7 +95,7 @@ class Test(unittest.TestCase):
     def test_Time(self):
         clock = nk.Time()
         time_passed = clock.get()
-        self.assertEqual(isinstance(time_passed), float)
+        self.assertEqual(isinstance(time_passed, float), True)
 
 if __name__ == '__main__':
     unittest.main()
