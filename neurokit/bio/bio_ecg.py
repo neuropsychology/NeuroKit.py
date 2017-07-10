@@ -846,7 +846,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 
                 hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-203)/262
                 hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-101)/143
-                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-3.33)/3.47
+                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-3.33)/3.47
             else:
                 hrv_adjusted["meanNN_Adjusted"] = (hrv["meanNN"]-911)/128
                 hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-33.0)/14.8
@@ -854,7 +854,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 
                 hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-84)/115
                 hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-29.5)/36.6
-                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-4.29)/4.06
+                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-4.29)/4.06
         if sex == "f":
             if age <= 49:
                 hrv_adjusted["meanNN_Adjusted"] = (hrv["meanNN"]-901)/117
@@ -863,7 +863,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 
                 hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-159)/181
                 hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-125)/147
-                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-2.75)/2.93
+                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-2.75)/2.93
             else:
                 hrv_adjusted["meanNN_Adjusted"] = (hrv["meanNN"]-880)/115
                 hrv_adjusted["sdNN_Adjusted"] = (hrv["sdNN"]-31.6)/13.6
@@ -871,7 +871,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 
                 hrv_adjusted["LF_Adjusted"] = (hrv["LF"]-66)/83
                 hrv_adjusted["HF_Adjusted"] = (hrv["HF"]-41.4)/72.1
-                hrv_adjusted["LFHF_Adjusted"] = (hrv["LFHF"]-2.09)/2.05
+                hrv_adjusted["LF/HF_Adjusted"] = (hrv["LF/HF"]-2.09)/2.05
 
     return(hrv_adjusted)
 

@@ -1,6 +1,7 @@
 import unittest
 import os
 import numpy as np
+import pandas as pd
 import neurokit as nk
 
 run_tests_in_local = False
@@ -29,10 +30,12 @@ class Test(unittest.TestCase):
 
         df = self.test_read_acqknowledge()
 
-        if run_tests_in_local is False:
-            bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], ecg_quality_model=os.getcwd() + r"/neurokit/materials/heartbeat_classification.model")  # If travis
-        else:
-            bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"])  # If local
+        if run_tests_in_local is False:  # If travis
+            ecg_quality_model = os.getcwd() + r"/neurokit/materials/heartbeat_classification.model"
+        else:  # If local
+            ecg_quality_model = "default"
+
+        bio = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], eda=df["EDA"], sampling_rate=100, add=df["Photosensor"], ecg_quality_model=ecg_quality_model, age=24, sex="m", position="supine")
 
         self.assertEqual(len(bio), 4)
         return(bio)
@@ -61,16 +64,38 @@ class Test(unittest.TestCase):
 #        self.assertEqual("%.2f" %complexity["Sample_Entropy_Euclidean"], '2.25')
 #        self.assertEqual("%.2f" %complexity["Shannon_Entropy"], '6.64')
 
+    def test_find_events(self):
+        signal = [0]*30 + [1]*5 + [0]*30 + [1]*5 +[0]*30
+        events = nk.find_events(np.array(signal))
+        self.assertEqual(len(events["onsets"]), 2)
 
+    def test_create_epochs(self):
+        signal = [0]*30 + [1]*5 + [0]*30 + [1]*5 +[0]*30
+        events = nk.find_events(np.array(signal))
+        data = nk.create_epochs(pd.DataFrame({"Signal": signal}), events_onsets=events["onsets"], duration=5)
+        self.assertEqual(len(data), 2)
 #==============================================================================
 # MISCELLANEOUS
 #==============================================================================
     def test_BMI(self):
-            self.assertEqual(round(nk.BMI(182, 70, 27, "m")['BMI_old'], 2), 21.13)
+        self.assertEqual(round(nk.BMI(182, 70, 27, "m")['BMI_old'], 2), 21.13)
+
     def test_mad(self):
-            self.assertEqual(nk.mad([1, 2, 3, 4, 5, 6, 7]), 2.0)
+        self.assertEqual(nk.mad([1, 2, 3, 4, 5, 6, 7]), 2.0)
 
+    def test_find_following_duplicates(self):
+        array = ["a","a","b","a","a","a","c","c","b","b"]
+        first = nk.find_following_duplicates(array)[0]
+        self.assertEqual(first, True)
 
+    def test_find_closest_in_list(self):
+        closest = nk.find_closest_in_list(1.8, [3, 5, 6, 1, 2])
+        self.assertEqual(closest, 2)
+
+    def test_Time(self):
+        clock = nk.Time()
+        time_passed = clock.get()
+        self.assertEqual(isinstance(time_passed, float), True)
 
 if __name__ == '__main__':
     unittest.main()

@@ -40,7 +40,7 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate=1000, r
     Returns
     ----------
     df : pandas.DataFrame()
-        the acqknowledge file converted to a dataframe.
+        The AcqKnowledge file converted to a dataframe.
 
 
     Example

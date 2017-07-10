@@ -38,7 +38,7 @@ class Time():
 
     Authors
     ----------
-    Dominique Makowski
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     Dependencies
     ----------
@@ -68,7 +68,7 @@ class Time():
 
         Authors
         ----------
-        Dominique Makowski
+        - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
         Dependencies
         ----------
@@ -99,7 +99,7 @@ class Time():
 
         Authors
         ----------
-        Dominique Makowski
+        - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
         Dependencies
         ----------
@@ -121,14 +121,14 @@ class Time():
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def find_following_duplicates(mylist):
+def find_following_duplicates(array):
     """
     Find the duplicates that are following themselves.
 
     Parameters
     ----------
-    mylist =  list
-        A list.
+    array :  list or array
+        A list containig duplicates.
 
     Returns
     ----------
@@ -139,25 +139,25 @@ def find_following_duplicates(mylist):
     ----------
     >>> import neurokit as nk
     >>> mylist = ["a","a","b","a","a","a","c","c","b","b"]
-    >>> nk.remove_following_duplicates(mylist)
+    >>> nk.find_following_duplicates(mylist)
 
     Authors
     ----------
-    Dominique Makowski
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     Dependencies
     ----------
-    None
+    - numpy
     """
-    mylist = mylist.copy()
+    array = array.copy()
 
 
     uniques = []
-    for i in range(len(mylist)):
+    for i in range(len(array)):
         if i == 0:
             uniques.append(True)
         else:
-            if mylist[i] == mylist[i-1]:
+            if array[i] == array[i-1]:
                 uniques.append(False)
             else:
                 uniques.append(True)
@@ -180,19 +180,19 @@ def find_following_duplicates(mylist):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def closest_in_list(number, array, direction="both", strictly=False):
+def find_closest_in_list(number, array, direction="both", strictly=False):
     """
     Find the closest number in the array from x.
 
     Parameters
     ----------
-    number =  float
+    number :  float
         The number.
-    array = list
+    array : list
         The list to look in.
-    direction = str
+    direction : str
         "both" for smaller or greater, "greater" for only greater numbers and "smaller" for the closest smaller.
-    strictly = bool
+    strictly : bool
         False for stricly superior or inferior or True for including equal.
 
     Returns
@@ -202,16 +202,11 @@ def closest_in_list(number, array, direction="both", strictly=False):
     Example
     ----------
     >>> import neurokit as nk
-    >>> array = [3, 5, 6, 1, 2]
-    >>> nk.find_closest_in_list(1.8, array)
+    >>> nk.find_closest_in_list(1.8, [3, 5, 6, 1, 2])
 
     Authors
     ----------
-    Dominique Makowski
-
-    Dependencies
-    ----------
-    None
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
     """
     if direction == "both":
         closest = min(array, key=lambda x:abs(x-number))
@@ -270,7 +265,7 @@ def BMI(height, weight, age, sex):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *See Also*
 
