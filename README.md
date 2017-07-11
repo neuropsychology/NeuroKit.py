@@ -15,7 +15,7 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 |Documentation|[![Documentation Status](https://readthedocs.org/projects/neurokit/badge/?version=latest)](http://neurokit.readthedocs.io/en/latest/?badge=latest)|
 |Discussion|[![Join the chat at https://gitter.im/NeuroKit-py/Lobby](https://img.shields.io/gitter/room/neuropsychology/NeuroKit.py.js.svg)](https://gitter.im/NeuroKit-py/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)|
 |Questions|[![](https://img.shields.io/badge/issue-create-purple.svg?colorB=FF9800)](https://github.com/neuropsychology/NeuroKit.py/issues)|
-|Authors|[![](https://img.shields.io/badge/CV-D._Makowski-purple.svg?colorB=9C27B0)](https://dominiquemakowski.github.io/) [![](https://img.shields.io/badge/CV-R._Bartels-purple.svg?colorB=9C27B0)](https://github.com/rhenanbartels)|
+|Authors|[![](https://img.shields.io/badge/CV-D._Makowski-purple.svg?colorB=9C27B0)](https://dominiquemakowski.github.io/)|
 
 ---
 
@@ -35,7 +35,7 @@ Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials
 - You need some help? You found a bug? You would like to request a new feature? 
   Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
 - Want to add a feature? Correct a bug? You're more than welcome to contribute!
-  Check [this page](http://ecole-de-neuropsychologie.readthedocs.io/en/latest/Contributing/Contribute/) to see how to submit your changes on github.
+  Check [this page](https://github.com/neuropsychology/NeuroKit.py/blob/master/CONTRIBUTING.md) to see how to submit your changes on github.
 
 ## Description
 
