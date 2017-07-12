@@ -6,6 +6,7 @@
 ### Major changes
 - Introducing CHANGELOG
 ### Minor changes
+- Added segmenter choice option for ecg processing [#20](https://github.com/neuropsychology/NeuroKit.py/pull/20)
 - Improved CONTRIBUTING.md
 - Structural changes 
 - Increase tests
