@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], quality_model="default", age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], segmenter="hamilton", quality_model="default", age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -40,6 +40,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
         Band type, can be Low-pass filter ("lowpass"), High-pass filter ("highpass"), Band-pass filter ("bandpass"), Band-stop filter ("bandstop").
     filter_frequency : int or list
         Cutoff frequencies, format depends on type of band: "lowpass" or "bandpass": single frequency (int), "bandpass" or "bandstop": pair of frequencies (list).
+    segmenter : str
+        The cardiac phase segmenter. Can be "hamilton", "gamboa", "engzee", "christov" or "ssf". See :func:`neurokit.ecg_preprocess()` for details.
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
     age : float
@@ -199,7 +201,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45]):
+def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], filter_order=0.3, segmenter="hamilton"):
     """
     ECG signal preprocessing.
 
@@ -209,12 +211,16 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
         ECG signal array.
     sampling_rate : int
         Sampling rate (samples/second).
-    filter_type : str
+    filter_type : str or None
         Can be Finite Impulse Response filter ("FIR"), Butterworth filter ("butter"), Chebyshev filters ("cheby1" and "cheby2"), Elliptic filter ("ellip") or Bessel filter ("bessel").
     filter_band : str
         Band type, can be Low-pass filter ("lowpass"), High-pass filter ("highpass"), Band-pass filter ("bandpass"), Band-stop filter ("bandstop").
     filter_frequency : int or list
         Cutoff frequencies, format depends on type of band: "lowpass" or "bandpass": single frequency (int), "bandpass" or "bandstop": pair of frequencies (list).
+    filter_order : float
+        Filter order.
+    segmenter : str
+        The cardiac phase segmenter. Can be "hamilton", "gamboa", "engzee", "christov" or "ssf".
 
     Returns
     ----------
@@ -223,11 +229,16 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     Example
     ----------
-    >>> import neurokit as nk
+    >>> import neurokit as
     >>> Rpeaks = nk.ecg_find_peaks(signal)
 
     Notes
     ----------
+    *Details*
+
+    - **segmenter**: Different methods of segmentation are implemented: **hamilton** (`Hamilton, 2002 <http://www.eplimited.com/osea13.pdf/>`_) , **gamboa** (`gamboa, 2008 <http://www.lx.it.pt/~afred/pub/thesisHugoGamboa.pdf/>`_), **engzee** (Engelse and Zeelenberg, 1979; Lourenco et al., 2012), **christov** (Christov, 2004) or **ssf** (Slope Sum Function).
+
+
     *Authors*
 
     - the bioSSPy dev team (https://github.com/PIA-Group/BioSPPy)
@@ -242,6 +253,12 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     - BioSPPY: https://github.com/PIA-Group/BioSPPy
 
+    References
+    -----------
+    - Canento, F., Lourenço, A., Silva, H., & Fred, A. (2013). Review and Comparison of Real Time Electrocardiogram Segmentation Algorithms for Biometric Applications. In Proceedings of the 6th Int’l Conference on Health Informatics (HEALTHINF).
+    - Christov, I. I. (2004). Real time electrocardiogram QRS detection using combined adaptive threshold. Biomedical engineering online, 3(1), 28.
+    - Engelse, W. A. H., & Zeelenberg, C. (1979). A single scan algorithm for QRS-detection and feature extraction. Computers in cardiology, 6(1979), 37-42.
+    - Lourenço, A., Silva, H., Leite, P., Lourenço, R., & Fred, A. L. (2012, February). Real Time Electrocardiogram Segmentation for Finger based ECG Biometrics. In Biosignals (pp. 49-54).
     """
     # Ensure numpy
     ecg = np.array(ecg)
@@ -249,16 +266,31 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     sampling_rate = float(sampling_rate)
 
     # Filter signal
-    order = int(0.3 * sampling_rate)
-    filtered, _, _ = biosppy.tools.filter_signal(signal=ecg,
-                                      ftype=filter_type,
-                                      band=filter_band,
-                                      order=order,
-                                      frequency=filter_frequency,
-                                      sampling_rate=sampling_rate)
+    if filter_type in ["FIR", "butter", "cheby1", "cheby2", "ellip", "bessel"]:
+        order = int(filter_order * sampling_rate)
+        filtered, _, _ = biosppy.tools.filter_signal(signal=ecg,
+                                          ftype=filter_type,
+                                          band=filter_band,
+                                          order=order,
+                                          frequency=filter_frequency,
+                                          sampling_rate=sampling_rate)
+    else:
+        filtered = ecg  # filtered is not-filtered
 
     # Segment
-    rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
+    if segmenter == "hamilton":
+        rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
+    elif segmenter == "gamboa":
+        rpeaks, = biosppy.ecg.gamboa_segmenter(signal=filtered, sampling_rate=sampling_rate, tol=0.002)
+    elif segmenter == "engzee":
+        rpeaks, = biosppy.ecg.engzee_segmenter(signal=filtered, sampling_rate=sampling_rate, threshold=0.48)
+    elif segmenter == "christov":
+        rpeaks, = biosppy.ecg.christov_segmenter(signal=filtered, sampling_rate=sampling_rate)
+    elif segmenter == "ssf":
+        rpeaks, = biosppy.ecg.ssf_segmenter(signal=filtered, sampling_rate=sampling_rate, threshold=20, before=0.03, after=0.01)
+    else:
+        rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
+
 
     # Correct R-peak locations
     rpeaks, = biosppy.ecg.correct_rpeaks(signal=filtered,
