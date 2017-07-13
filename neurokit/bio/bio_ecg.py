@@ -134,7 +134,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
 
         # RSA
         # =============
-        rsa = ecg_rsa(rpeaks, rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
+        rsa = ecg_rsa(processed_ecg["ECG"]["R_Peaks"], rsp["df"]["RSP_Filtered"], sampling_rate=sampling_rate)
         processed_ecg["ECG"]["RSA"] = rsa
         processed_ecg["df"] = pd.concat([processed_ecg["df"], rsa.pop("df")], axis=1)
 
