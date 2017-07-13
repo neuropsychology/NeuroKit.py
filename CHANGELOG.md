@@ -6,7 +6,7 @@
 ### Minor changes
 - Better separation between `ecg_preprocess` and `ecg_process` (and short vs long computation processes) [#21](https://github.com/neuropsychology/NeuroKit.py/pull/21)
 
-
+---------
 ## 0.1.6 
 
 ### Breaking changes
