@@ -103,72 +103,22 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     """
     # Preprocessing
     # =============
-    # Convert to DataFrame
-    ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})
-
-    # Ecg preprocessing
-    ecg_preprocessed = ecg_preprocess(ecg,
-                                 sampling_rate=sampling_rate,
-                                 filter_type=filter_type,
-                                 filter_band=filter_band,
-                                 filter_frequency=filter_frequency)
-
-
-    # Extract filtered signal
-    ecg_df["ECG_Filtered"] = ecg_preprocessed["ECG_Filtered"]
-
-    # Store R peaks indexes
-    rpeaks = ecg_preprocessed['rpeaks']
-
-    # Transform to markers to add to the main dataframe
-    rpeaks_signal = np.array([np.nan]*len(ecg))
-    rpeaks_signal[rpeaks] = 1
-    ecg_df["ECG_R_peaks"] = rpeaks_signal
-
-    # Heart Rate
-    # =============
-    heart_rate = ecg_preprocessed["heart_rate"]  # Get heart rate values
-    heart_rate_times = ecg_preprocessed["heart_rate_ts"]  # the time (in sec)
-    heart_rate_times = np.round(heart_rate_times*sampling_rate).astype(int)  # Convert to timepoints
-    try:
-        heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
-        ecg_df["Heart_Rate"] = heart_rate
-    except TypeError:
-        print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
-        ecg_df["Heart_Rate"] = np.nan
-
-    # Heartbeats
-    # =============
-    heartbeats = pd.DataFrame(ecg_preprocessed["Cardiac_Cycles"]).T
-    heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
+    processed_ecg = ecg_preprocess(ecg,
+                                   sampling_rate=sampling_rate,
+                                   filter_type=filter_type,
+                                   filter_band=filter_band,
+                                   filter_frequency=filter_frequency,
+                                   segmenter=segmenter)
 
     # Signal quality
     # =============
-    quality = ecg_signal_quality(heartbeats, sampling_rate, quality_model=quality_model)
-
-    # Waves
-    # =============
-    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], rpeaks)
-
-    # Systole
-    # =============
-    ecg_df["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
-
-    # Store results
-    # =============
-    processed_ecg = {"df": ecg_df,
-                     "ECG": {
-                            "Cardiac_Cycles": heartbeats,
-                            "R_Peaks": ecg_preprocessed["rpeaks"]
-                            }
-                     }
-
+    quality = ecg_signal_quality(processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
     processed_ecg["ECG"].update(quality)
-    processed_ecg["ECG"].update(waves)
+
 
     # HRV
     # =============
-    hrv = ecg_hrv(rpeaks, sampling_rate)
+    hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate)
     processed_ecg["ECG"]["HRV"] = hrv
     processed_ecg["df"]["ECG_RR_Interval"] = hrv.pop("RR_Interval")
     if age is not None and sex is not None and position is not None:
@@ -260,7 +210,9 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     - Engelse, W. A. H., & Zeelenberg, C. (1979). A single scan algorithm for QRS-detection and feature extraction. Computers in cardiology, 6(1979), 37-42.
     - Lourenço, A., Silva, H., Leite, P., Lourenço, R., & Fred, A. L. (2012, February). Real Time Electrocardiogram Segmentation for Finger based ECG Biometrics. In Biosignals (pp. 49-54).
     """
-    # Ensure numpy
+    # Signal Processing
+    # =======================
+    # Transform to array
     ecg = np.array(ecg)
 
     sampling_rate = float(sampling_rate)
@@ -315,14 +267,53 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     length = len(ecg)
     T = (length - 1) / sampling_rate
     ts = np.linspace(0, T, length, endpoint=False)
-    ts_heart_rate = ts[heart_rate_idx]
-    cardiac_cycles_tmpl = np.linspace(-0.2, 0.4, cardiac_cycles.shape[1], endpoint=False)
+    heart_rate_times = ts[heart_rate_idx]
+    heart_rate_times = np.round(heart_rate_times*sampling_rate).astype(int)  # Convert heart rate times to timepoints
+
+    # what for is this line in biosppy??
+#    cardiac_cycles_tmpl = np.linspace(-0.2, 0.4, cardiac_cycles.shape[1], endpoint=False)
+
+    # Prepare Output Dataframe
+    # ==========================
+    ecg_df = pd.DataFrame({"ECG_Raw": np.array(ecg)})  # Create a dataframe
+    ecg_df["ECG_Filtered"] = filtered  # Add filtered signal
+
+    # Add R peaks
+    rpeaks_signal = np.array([np.nan]*len(ecg))
+    rpeaks_signal[rpeaks] = 1
+    ecg_df["ECG_R_peaks"] = rpeaks_signal
 
 
-    # Output
-    ecg_preprocessed = {"ts": ts, 'ECG_Filtered': filtered, 'rpeaks': rpeaks, 'Cardiac_Cycles_ts': cardiac_cycles_tmpl, 'Cardiac_Cycles': cardiac_cycles, 'heart_rate_ts': ts_heart_rate, 'heart_rate': heart_rate}
+    # Heart Rate
+    try:
+        heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
+        ecg_df["Heart_Rate"] = heart_rate
+    except TypeError:
+        print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
+        ecg_df["Heart_Rate"] = np.nan
 
-    return(ecg_preprocessed)
+    # Store Additional Feature
+    # ========================
+    processed_ecg = {"df": ecg_df,
+                     "ECG": {
+                            "R_Peaks": rpeaks
+                            }
+                     }
+
+    # Heartbeats
+    heartbeats = pd.DataFrame(cardiac_cycles).T
+    heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
+    processed_ecg["ECG"]["Cardiac_Cycles"] = heartbeats
+
+    # Waves
+    waves = ecg_wave_detector(ecg_df["ECG_Filtered"], rpeaks)
+    processed_ecg["ECG"].update(waves)
+
+    # Systole
+    processed_ecg["df"]["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
+
+
+    return(processed_ecg)
 
 
 
