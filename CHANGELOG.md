@@ -1,11 +1,13 @@
 ## CURRENT : 0.1.7 
 
 ### Breaking changes
+- `ecg_wave_detector()`: removed the plot parameter [#22](https://github.com/neuropsychology/NeuroKit.py/pull/21)
 ### New functions
+- Added new QRS segmenter (pekkanen) method [#22](https://github.com/neuropsychology/NeuroKit.py/pull/21)
 ### Major changes
 ### Minor changes
 - Better separation between `ecg_preprocess` and `ecg_process` (and short vs long computation processes) [#21](https://github.com/neuropsychology/NeuroKit.py/pull/21)
-
+- Completely Separated bio_ecg and bio_ecg_preprocessing files [#22](https://github.com/neuropsychology/NeuroKit.py/pull/21)
 ---------
 ## 0.1.6 
 
