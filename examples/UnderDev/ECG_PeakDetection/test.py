@@ -5,20 +5,6 @@ import neurokit as nk
 import biosppy
 import matplotlib.pyplot as plt
 import scipy
-#df = pd.read_csv('data.csv')
-#df = df.loc[5000:10000]
-#
-#sampling_rate=1000
-#df = nk.bio_process(ecg=df["ECG"], sampling_rate=sampling_rate)
-#ecg = df["df"]["ECG_Filtered"]
-#rpeaks = df["ECG"]["R_Peaks"]
-#
-#
-#ecg_waves = ecg_wave_detector(ecg, rpeaks)
-#systole = ecg_systole(ecg, rpeaks, ecg_waves["T_Waves"])
-#df["df"]["Systole"] = systole
-#
-#df["df"].plot()
 
 
 
@@ -27,67 +13,109 @@ df = df.loc[10000:20000]
 
 
 sampling_rate=1000
-df = nk.bio_process(ecg=df["ECG"], sampling_rate=sampling_rate)
+df = nk.ecg_preprocess(ecg=df["ECG"], sampling_rate=sampling_rate)["df"]
+#df.plot()
 
 #df["df"]["ECG_Filtered"].plot()
 
-rri = df["ECG"]['RR_Intervals']
-rpeaks = df["ECG"]['R_Peaks']
 
 
 
+import numpy as np
+import scipy.signal
+import scipy.ndimage
 
-# HRV Test
+def segmenter_pekkanen(ecg, sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.0,):
+    """
+    ECG R peak detection based on `Kathirvel et al. (2001) <http://link.springer.com/article/10.1007/s13239-011-0065-3/fulltext.html>`_ with some tweaks (mainly robust estimation of the rectified signal cutoff threshold).
 
-# Initialize empty dict
-hrv = {}
+    Parameters
+    ----------
+    ecg : list or ndarray
+        ECG signal array.
+    sampling_rate : int
+        Sampling rate (samples/second).
+    window_size : float
+        Ransac window size.
+    lfreq : float
+        Low frequency of the band pass filter.
+    hfreq : float
+        High frequency of the band pass filter.
 
-# Preprocessing
-# ==================
-# Basic resampling to 1Hz to standardize the scale
-rri = rri/sampling_rate
-rri = rri.astype(float)
+    Returns
+    ----------
+    rpeaks : ndarray
+        R peaks location.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> rpeaks = nk.segmenter_pekkanen(ecg_signal, 1000)
+
+    *Authors*
+
+    - `Jami Pekkanen <https://github.com/jampekka>`_
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
+    - scipy
+    - numpy
+
+    *See Also*
+
+    - rpeakdetect: https://github.com/tru-hy/rpeakdetect
+    """
+
+    window_size = int(window_size*sampling_rate)
+
+    lowpass = scipy.signal.butter(1, hfreq/(sampling_rate/2.0), 'low')
+    highpass = scipy.signal.butter(1, lfreq/(sampling_rate/2.0), 'high')
+
+    # TODO: Could use an actual bandpass filter
+    ecg_low = scipy.signal.filtfilt(*lowpass, x=ecg)
+    ecg_band = scipy.signal.filtfilt(*highpass, x=ecg_low)
+
+    # Square (=signal power) of the first difference of the signal
+    decg = np.diff(ecg_band)
+    decg_power = decg**2
+
+    # Robust threshold and normalizator estimation
+    thresholds = []
+    max_powers = []
+    for i in range(int(len(decg_power)/window_size)):
+        sample = slice(i*window_size, (i+1)*window_size)
+        d = decg_power[sample]
+        thresholds.append(0.5*np.std(d))
+        max_powers.append(np.max(d))
+
+    threshold = 0.5*np.std(decg_power)
+    threshold = np.median(thresholds)
+    max_power = np.median(max_powers)
+    decg_power[decg_power < threshold] = 0
+
+    decg_power = decg_power/max_power
+    decg_power[decg_power > 1.0] = 1.0
+    square_decg_power = decg_power**2
+
+#    shannon_energy = -square_decg_power*np.log(square_decg_power)  # This errors
+#    shannon_energy[np.where(np.isfinite(shannon_energy) == False)] = 0.0
+    shannon_energy = -square_decg_power*np.log(square_decg_power.clip(min=1e-6))
+    shannon_energy[np.where(shannon_energy <= 0)] = 0.0
 
 
-# Artifact detection - Statistical
-for index, rr in enumerate(rri):
-    # Remove RR intervals that differ more than 25% from the previous one
-    if rri[index] < rri[index-1]*0.75:
-        rri[index] = np.nan
-    if rri[index] > rri[index-1]*1.25:
-        rri[index] = np.nan
+    mean_window_len = int(sampling_rate*0.125+1)
+    lp_energy = np.convolve(shannon_energy, [1.0/mean_window_len]*mean_window_len, mode='same')
+    #lp_energy = scipy.signal.filtfilt(*lowpass2, x=shannon_energy)
 
-# Artifact detection - Physiological (http://emedicine.medscape.com/article/2172196-overview)
-rri = pd.Series(rri)
-rri[rri < 0.6] = np.nan
-rri[rri > 1.3] = np.nan
+    lp_energy = scipy.ndimage.gaussian_filter1d(lp_energy, sampling_rate/8.0)
+    lp_energy_diff = np.diff(lp_energy)
 
-# Artifact treatment
-hrv["n_Artifacts"] = pd.isnull(rri).sum()/len(rri)
+    rpeaks = (lp_energy_diff[:-1] > 0) & (lp_energy_diff[1:] < 0)
+    rpeaks = np.flatnonzero(rpeaks)
+    rpeaks -= 1
 
+    return(rpeaks)
 
-artifacts_indices = rri.index[rri.isnull()]  # get the indices of the outliers
-rri = rri.drop(artifacts_indices)  # remove the artifacts
-
-# resampling RRIbeat signal in order to make it a function of time (not a function of beat)
-
-beat_time = rpeaks[1:] # the time (in samples) at which each beat occured (and thus the RR intervals occured) starting from the 2nd beat
-beat_time = np.delete(beat_time, artifacts_indices) #delete also the outlier beat moments
-beat_time = beat_time/sampling_rate  # the time (in sec) at which each beat occured, starting from the 2nd beat
-beat_time = beat_time-beat_time[0] #offseting in order to start from 0 sec
-
-
-
-# fit a 3rd degree spline in the RRIbeat data. s=0 guarantees that it will pass through ALL the given points
-spline = scipy.interpolate.splrep(x=beat_time, y=rri, k=3, s=0)
-
-# RR intervals indexed per time
-rri_new = scipy.interpolate.splev(x=np.arange(0, beat_time[-1], 1/sampling_rate), tck=spline, der=0)
-
-
-
-data = df["df"][["ECG_Filtered", "Heart_Rate"]].copy()
-data["ECG_HRV"] = np.nan
-data["ECG_HRV"].ix[rpeaks[0]+1:rpeaks[0]+len(rri_new)] = rri_new
-
-nk.z_score(data).plot()
+rpeaks = segmenter_pekkanen(df["ECG_Raw"], 1000)
+nk.plot_events_in_signal(df["ECG_Raw"], rpeaks)
