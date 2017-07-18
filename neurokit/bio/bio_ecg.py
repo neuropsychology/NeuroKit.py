@@ -7,6 +7,7 @@ import pandas as pd
 import sklearn
 import nolds
 import mne
+import biosppy
 
 from .bio_ecg_preprocessing import *
 from .bio_rsp import *
@@ -118,8 +119,8 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     # HRV
     # =============
     hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate)
-    processed_ecg["ECG"]["HRV"] = hrv
     processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")])
+    processed_ecg["ECG"]["HRV"] = hrv
     if age is not None and sex is not None and position is not None:
         processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
 
@@ -543,7 +544,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
       "VHF": [0.4, 0.5]}
 
 
-    # Frequency-Domain Power over Time
+    # Frequency-Domain Power over time
     freq_powers = {}
     for band in freq_bands:
         freqs = freq_bands[band]
