@@ -7,6 +7,7 @@ import pandas as pd
 import sklearn
 import nolds
 import mne
+import biosppy
 
 from .bio_ecg_preprocessing import *
 from .bio_rsp import *
@@ -118,11 +119,10 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     # HRV
     # =============
     hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate)
+    processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
     processed_ecg["ECG"]["HRV"] = hrv
-    processed_ecg["df"]["ECG_RR_Interval"] = hrv.pop("RR_Interval")
     if age is not None and sex is not None and position is not None:
         processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
-
 
     # RSP
     # =============
@@ -489,16 +489,17 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
     beats_times -= beats_times[0]
     beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
     try:
-        RRi = discrete_to_continuous(RRis, beats_times, 1000)  # Interpolation using 3rd order spline
+        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
     except TypeError:
         print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
         return(hrv)
+
 
     # Rescale to 1000Hz
     RRis = RRis*1000
     RRi = RRi*1000
     hrv["RR_Intervals"] = RRis  # Values of RRis
-    hrv["RR_Interval"] = RRi  # Continuous (interpolated) signal of RRi
+    hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
 
     # Time Domain
     # ==================
@@ -515,8 +516,9 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
     nn20 = sum(abs(np.diff(RRis)) > 20)
     hrv["pNN20"] = nn20 / len(RRis) * 100
 
-
-    # To Do: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
+    # Geometrical Method
+    # ====================
+    # TODO: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
     try:
         bin_number = 32  # Initialize bin_width value
         # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
@@ -533,20 +535,44 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
 
     # Frequency Domain
     # =================
-    # Compute Power Spectral Density (PSD) using multitaper method
-    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=10, fmin=0, fmax=0.5,  adaptive=False, normalization='full')
+    freq_bands = {
+      "ULF": [0.0001, 0.0033],
+      "VLF": [0.0033, 0.04],
+      "LF": [0.04, 0.15],
+      "HF": [0.15, 0.40],
+      "VHF": [0.4, 0.5]}
 
-    def power_in_band(power, freq, low, high):
-        power =  np.trapz(y=power[(freq >= low) & (freq < high)], x=freq[(freq >= low) & (freq < high)])
+
+    # Frequency-Domain Power over time
+    freq_powers = {}
+    for band in freq_bands:
+        freqs = freq_bands[band]
+        # Filter to keep only the band of interest
+        filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype='butter', band='bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
+        # Apply Hilbert transform
+        amplitude, phase = biosppy.signals.tools.analytic_signal(filtered)
+        # Extract Amplitude of Envolope (power)
+        freq_powers["ECG_HRV_" + band] = amplitude
+
+    freq_powers = pd.DataFrame.from_dict(freq_powers)
+    freq_powers.index = hrv["df"].index
+    hrv["df"] = pd.concat([hrv["df"], freq_powers], axis=1)
+
+
+    # Compute Power Spectral Density (PSD) using multitaper method
+    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization='length')
+
+    def power_in_band(power, freq, band):
+        power =  np.trapz(y=power[(freq >= band[0]) & (freq < band[1])], x=freq[(freq >= band[0]) & (freq < band[1])])
         return(power)
 
     # Extract Power according to frequency bands
-    hrv["ULF"] = power_in_band(power, freq, 0, 0.0033)
-    hrv["VLF"] = power_in_band(power, freq, 0.0033, 0.04)
-    hrv["LF"] = power_in_band(power, freq, 0.04, 0.15)
-    hrv["HF"] = power_in_band(power, freq, 0.15, 0.4)
-    hrv["VHF"] = power_in_band(power, freq, 0.4, 0.5)
-    hrv["Total_Power"] = power_in_band(power, freq, 0, 0.5)
+    hrv["ULF"] = power_in_band(power, freq, freq_bands["ULF"])
+    hrv["VLF"] = power_in_band(power, freq, freq_bands["VLF"])
+    hrv["LF"] = power_in_band(power, freq, freq_bands["LF"])
+    hrv["HF"] = power_in_band(power, freq, freq_bands["HF"])
+    hrv["VHF"] = power_in_band(power, freq, freq_bands["VHF"])
+    hrv["Total_Power"] = power_in_band(power, freq, [0, 0.5])
 
     hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
     hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
@@ -555,7 +581,8 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
     hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
 
 
-    # Non-Linear Dynamics - This also must be checked by an expert - Should it be applied on the interpolated on raw RRis?
+    # TODO: THIS HAS TO BE CHECKED BY AN EXPERT - Should it be applied on the interpolated on raw RRis?
+    # Non-Linear Dynamics
     # ======================
     if len(RRis) > 17:
         hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
@@ -570,9 +597,9 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
         hrv["Correlation_Dimension"] = np.nan
     hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
     hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
-    hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.0033, 0.04, 0.001))
-    hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.04, 0.15, 0.001))
-    hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, 1000, bands=np.arange(0.15, 0.40, 0.001))
+    hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
+    hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
+    hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
     hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
     try:  # Otherwise travis errors for some reasons :(
         hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
