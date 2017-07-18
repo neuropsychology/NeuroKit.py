@@ -11,10 +11,13 @@ import seaborn as sns
 
 
 df = pd.read_csv("https://raw.githubusercontent.com/neuropsychology/NeuroKit.py/master/examples/Bio/bio_100Hz.csv")
-df = nk.ecg_process(ecg=df["ECG"], sampling_rate=100)
+ecg=df["ECG"]
+rsp=df["RSP"]
 sampling_rate=100
-
-rpeaks = df["ECG"]["R_Peaks"]
+#df = nk.ecg_process(ecg=df["ECG"], rsp=df["RSP"], sampling_rate=100)
+#sampling_rate=100
+#df["df"].plot()
+#rpeaks = df["ECG"]["R_Peaks"]
 
 #
 #rri = df["ECG_RR_Interval"]
@@ -77,163 +80,163 @@ rpeaks = df["ECG"]["R_Peaks"]
 #biosppy.signals.tools.filter_signal(signal=None, ftype='FIR', band='lowpass',
 #
 # Initialize empty dict
-    hrv = {}
-
-    # Preprocessing
-    # ==================
-    # Extract RR intervals (RRis)
-    RRis = np.diff(rpeaks)
-    # Basic resampling to 1Hz to standardize the scale
-    RRis = RRis/sampling_rate
-    RRis = RRis.astype(float)
-
-
-    # Artifact detection - Statistical
-    for index, rr in enumerate(RRis):
-        # Remove RR intervals that differ more than 25% from the previous one
-        if RRis[index] < RRis[index-1]*0.75:
-            RRis[index] = np.nan
-        if RRis[index] > RRis[index-1]*1.25:
-            RRis[index] = np.nan
-
-    # Artifact detection - Physiological (http://emedicine.medscape.com/article/2172196-overview)
-    RRis = pd.Series(RRis)
-    RRis[RRis < 0.6] = np.nan
-    RRis[RRis > 1.3] = np.nan
-
-    # Artifacts treatment
-    hrv["n_Artifacts"] = pd.isnull(RRis).sum()/len(RRis)
-    artifacts_indices = RRis.index[RRis.isnull()]  # get the artifacts indices
-    RRis = RRis.drop(artifacts_indices)  # remove the artifacts
-
-    # Convert to continuous RR interval (RRi)
-    beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
-    beats_times -= beats_times[0]
-    beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
-    try:
-        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
-    except TypeError:
-        print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
-        return(hrv)
-
-
-    # Rescale to 1000Hz
-    RRis = RRis*1000
-    RRi = RRi*1000
-    hrv["RR_Intervals"] = RRis  # Values of RRis
-    hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
-
-    # Time Domain
-    # ==================
-    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
-    hrv["meanNN"] = np.mean(RRis)
-    hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
-    hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
-    hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"] * 100
-    hrv["medianNN"] = np.median(abs(RRis))
-    hrv["madNN"] = mad(RRis, constant=1)
-    hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
-    nn50 = sum(abs(np.diff(RRis)) > 50)
-    hrv["pNN50"] = nn50 / len(RRis) * 100
-    nn20 = sum(abs(np.diff(RRis)) > 20)
-    hrv["pNN20"] = nn20 / len(RRis) * 100
-
-    # Geometrical Method
-    # ====================
-    # TODO: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
-    try:
-        bin_number = 32  # Initialize bin_width value
-        # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
-        for bin_number_current in range(2, 50):
-            bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
-            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
-                bin_number = bin_number_current
-        hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
-        hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
-    except ValueError:
-        hrv["Triang"] = np.nan
-        hrv["Shannon_h"] = np.nan
-
-
-    # Frequency Domain
-    # =================
-    freq_bands = {
-      "ULF": [0.0001, 0.0033],
-      "VLF": [0.0033, 0.04],
-      "LF": [0.04, 0.15],
-      "HF": [0.15, 0.40],
-      "VHF": [0.4, 0.5]}
-
-
-    # Frequency-Domain Power over Time
-    freq_powers = {}
-    for band in freq_bands:
-        freqs = freq_bands[band]
-        # Filter to keep only the band of interest
-        filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype='butter', band='bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
-        # Apply Hilbert transform
-        amplitude, phase = biosppy.signals.tools.analytic_signal(filtered)
-        # Extract Amplitude of Envolope (power)
-        freq_powers["ECG_HRV_" + band] = amplitude
-
-    freq_powers = pd.DataFrame.from_dict(freq_powers)
-    freq_powers.index = hrv["df"].index
-    hrv["df"] = pd.concat([hrv["df"], freq_powers])
-
-
-    # Compute Power Spectral Density (PSD) using multitaper method
-    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization='length')
-
-    def power_in_band(power, freq, band):
-        power =  np.trapz(y=power[(freq >= band[0]) & (freq < band[1])], x=freq[(freq >= band[0]) & (freq < band[1])])
-        return(power)
-
-    # Extract Power according to frequency bands
-    hrv["ULF"] = power_in_band(power, freq, freq_bands["ULF"])
-    hrv["VLF"] = power_in_band(power, freq, freq_bands["VLF"])
-    hrv["LF"] = power_in_band(power, freq, freq_bands["LF"])
-    hrv["HF"] = power_in_band(power, freq, freq_bands["HF"])
-    hrv["VHF"] = power_in_band(power, freq, freq_bands["VHF"])
-    hrv["Total_Power"] = power_in_band(power, freq, [0, 0.5])
-
-    hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
-    hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
-    hrv["LF/HF"] = hrv["LF"]/hrv["HF"]
-    hrv["LF/P"] = hrv["LF"]/hrv["Total_Power"]
-    hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
-
-
-    # TODO: THIS HAS TO BE CHECKED BY AN EXPERT - Should it be applied on the interpolated on raw RRis?
-    # Non-Linear Dynamics
-    # ======================
-    if len(RRis) > 17:
-        hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
-    if len(RRis) > 66:
-        hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
-    hrv["Shannon"] = entropy_shannon(RRis)
-    hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
-    try:
-        hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
-    except AssertionError as error:
-        print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
-        hrv["Correlation_Dimension"] = np.nan
-    hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
-    hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
-    hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
-    hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
-    hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
-    hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
-    try:  # Otherwise travis errors for some reasons :(
-        hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
-    except Exception:
-        hrv["Lyapunov"] = np.nan
-    hrv["FD_Petrosian"] = fd_petrosian(RRis)
-    hrv["FD_Higushi"] = fd_higushi(RRis, k_max=16)
-
-    # TO DO:
-    # Include many others (see Voss 2015)
-
-    return(hrv)
+#    hrv = {}
+#
+#    # Preprocessing
+#    # ==================
+#    # Extract RR intervals (RRis)
+#    RRis = np.diff(rpeaks)
+#    # Basic resampling to 1Hz to standardize the scale
+#    RRis = RRis/sampling_rate
+#    RRis = RRis.astype(float)
+#
+#
+#    # Artifact detection - Statistical
+#    for index, rr in enumerate(RRis):
+#        # Remove RR intervals that differ more than 25% from the previous one
+#        if RRis[index] < RRis[index-1]*0.75:
+#            RRis[index] = np.nan
+#        if RRis[index] > RRis[index-1]*1.25:
+#            RRis[index] = np.nan
+#
+#    # Artifact detection - Physiological (http://emedicine.medscape.com/article/2172196-overview)
+#    RRis = pd.Series(RRis)
+#    RRis[RRis < 0.6] = np.nan
+#    RRis[RRis > 1.3] = np.nan
+#
+#    # Artifacts treatment
+#    hrv["n_Artifacts"] = pd.isnull(RRis).sum()/len(RRis)
+#    artifacts_indices = RRis.index[RRis.isnull()]  # get the artifacts indices
+#    RRis = RRis.drop(artifacts_indices)  # remove the artifacts
+#
+#    # Convert to continuous RR interval (RRi)
+#    beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
+#    beats_times -= beats_times[0]
+#    beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
+#    try:
+#        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
+#    except TypeError:
+#        print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
+#        return(hrv)
+#
+#
+#    # Rescale to 1000Hz
+#    RRis = RRis*1000
+#    RRi = RRi*1000
+#    hrv["RR_Intervals"] = RRis  # Values of RRis
+#    hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
+#
+#    # Time Domain
+#    # ==================
+#    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
+#    hrv["meanNN"] = np.mean(RRis)
+#    hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
+#    hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
+#    hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"] * 100
+#    hrv["medianNN"] = np.median(abs(RRis))
+#    hrv["madNN"] = mad(RRis, constant=1)
+#    hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
+#    nn50 = sum(abs(np.diff(RRis)) > 50)
+#    hrv["pNN50"] = nn50 / len(RRis) * 100
+#    nn20 = sum(abs(np.diff(RRis)) > 20)
+#    hrv["pNN20"] = nn20 / len(RRis) * 100
+#
+#    # Geometrical Method
+#    # ====================
+#    # TODO: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
+#    try:
+#        bin_number = 32  # Initialize bin_width value
+#        # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
+#        for bin_number_current in range(2, 50):
+#            bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
+#            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
+#                bin_number = bin_number_current
+#        hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
+#        hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
+#    except ValueError:
+#        hrv["Triang"] = np.nan
+#        hrv["Shannon_h"] = np.nan
+#
+#
+#    # Frequency Domain
+#    # =================
+#    freq_bands = {
+#      "ULF": [0.0001, 0.0033],
+#      "VLF": [0.0033, 0.04],
+#      "LF": [0.04, 0.15],
+#      "HF": [0.15, 0.40],
+#      "VHF": [0.4, 0.5]}
+#
+#
+#    # Frequency-Domain Power over Time
+#    freq_powers = {}
+#    for band in freq_bands:
+#        freqs = freq_bands[band]
+#        # Filter to keep only the band of interest
+#        filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype='butter', band='bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
+#        # Apply Hilbert transform
+#        amplitude, phase = biosppy.signals.tools.analytic_signal(filtered)
+#        # Extract Amplitude of Envolope (power)
+#        freq_powers["ECG_HRV_" + band] = amplitude
+#
+#    freq_powers = pd.DataFrame.from_dict(freq_powers)
+#    freq_powers.index = hrv["df"].index
+#    hrv["df"] = pd.concat([hrv["df"], freq_powers])
+#
+#
+#    # Compute Power Spectral Density (PSD) using multitaper method
+#    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization='length')
+#
+#    def power_in_band(power, freq, band):
+#        power =  np.trapz(y=power[(freq >= band[0]) & (freq < band[1])], x=freq[(freq >= band[0]) & (freq < band[1])])
+#        return(power)
+#
+#    # Extract Power according to frequency bands
+#    hrv["ULF"] = power_in_band(power, freq, freq_bands["ULF"])
+#    hrv["VLF"] = power_in_band(power, freq, freq_bands["VLF"])
+#    hrv["LF"] = power_in_band(power, freq, freq_bands["LF"])
+#    hrv["HF"] = power_in_band(power, freq, freq_bands["HF"])
+#    hrv["VHF"] = power_in_band(power, freq, freq_bands["VHF"])
+#    hrv["Total_Power"] = power_in_band(power, freq, [0, 0.5])
+#
+#    hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
+#    hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
+#    hrv["LF/HF"] = hrv["LF"]/hrv["HF"]
+#    hrv["LF/P"] = hrv["LF"]/hrv["Total_Power"]
+#    hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
+#
+#
+#    # TODO: THIS HAS TO BE CHECKED BY AN EXPERT - Should it be applied on the interpolated on raw RRis?
+#    # Non-Linear Dynamics
+#    # ======================
+#    if len(RRis) > 17:
+#        hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
+#    if len(RRis) > 66:
+#        hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
+#    hrv["Shannon"] = entropy_shannon(RRis)
+#    hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
+#    try:
+#        hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
+#    except AssertionError as error:
+#        print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
+#        hrv["Correlation_Dimension"] = np.nan
+#    hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
+#    hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
+#    hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
+#    hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
+#    hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
+#    hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
+#    try:  # Otherwise travis errors for some reasons :(
+#        hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
+#    except Exception:
+#        hrv["Lyapunov"] = np.nan
+#    hrv["FD_Petrosian"] = fd_petrosian(RRis)
+#    hrv["FD_Higushi"] = fd_higushi(RRis, k_max=16)
+#
+#    # TO DO:
+#    # Include many others (see Voss 2015)
+#
+#    return(hrv)
 #
 #
 #tf = {}
