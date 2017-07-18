@@ -556,7 +556,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
 
     freq_powers = pd.DataFrame.from_dict(freq_powers)
     freq_powers.index = hrv["df"].index
-    hrv["df"] = pd.concat([hrv["df"], freq_powers])
+    hrv["df"] = pd.concat([hrv["df"], freq_powers], axis=1)
 
 
     # Compute Power Spectral Density (PSD) using multitaper method

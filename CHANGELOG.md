@@ -1,13 +1,14 @@
-## CURRENT : 0.1.7 
+## CURRENT : 0.1
 
 ### Breaking changes
-- `ecg_wave_detector()`: removed the plot parameter [#22](https://github.com/neuropsychology/NeuroKit.py/pull/21)
+- `ecg_wave_detector()`: removed the plot parameter [#22](https://github.com/neuropsychology/NeuroKit.py/pull/22)
 ### New functions
-- Added new QRS segmenter (pekkanen) method [#22](https://github.com/neuropsychology/NeuroKit.py/pull/21)
+- Added new QRS segmenter (pekkanen) method [#22](https://github.com/neuropsychology/NeuroKit.py/pull/22)
+- Enhanced HRV processing: computes HRV frequency domain power over time (since 0.1.8) [#23](https://github.com/neuropsychology/NeuroKit.py/pull/23)
 ### Major changes
 ### Minor changes
 - Better separation between `ecg_preprocess` and `ecg_process` (and short vs long computation processes) [#21](https://github.com/neuropsychology/NeuroKit.py/pull/21)
-- Completely Separated bio_ecg and bio_ecg_preprocessing files [#22](https://github.com/neuropsychology/NeuroKit.py/pull/21)
+- Completely Separated bio_ecg and bio_ecg_preprocessing files [#22](https://github.com/neuropsychology/NeuroKit.py/pull/22)
 ---------
 ## 0.1.6 
 
