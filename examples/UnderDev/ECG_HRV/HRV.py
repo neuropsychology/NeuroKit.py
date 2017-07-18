@@ -14,11 +14,9 @@ df = pd.read_csv("https://raw.githubusercontent.com/neuropsychology/NeuroKit.py/
 ecg=df["ECG"]
 rsp=df["RSP"]
 sampling_rate=100
-df = nk.ecg_process(ecg=df["ECG"], rsp=df["RSP"], sampling_rate=100)
+df = nk.bio_process(ecg=df["ECG"], rsp=df["RSP"], sampling_rate=100)
 
-rpeaks = df["ECG"]["R_Peaks"]
-dfhrv = df["ECG"]["HRV"]["df"]
-dfhrv.plot()
+df["df"].plot()
 #sampling_rate=100
 #df["df"].plot()
 #rpeaks = df["ECG"]["R_Peaks"]
