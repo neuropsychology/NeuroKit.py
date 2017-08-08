@@ -37,11 +37,17 @@ Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials
 - Want to add a feature? Correct a bug? You're more than welcome to contribute!
   Check [this page](https://github.com/neuropsychology/NeuroKit.py/blob/master/CONTRIBUTING.md) to see how to submit your changes on github.
 
-## Description
+## Documentation
+
+- [Tutorials](http://neurokit.readthedocs.io/en/latest/tutorials/index.html)
+  - [x] Biosignals processing
+  - [ ] M/EEG processing
+- [API Documentation](http://neurokit.readthedocs.io/en/latest/documentation.html)
+
+
+## Features
 
 This package provides a high level integration of complex statistical routines for researchers and clinicians with not much experience in programming, statistics or signal theory.
-
-Main features:
 
 - **M/EEG**
   - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read and convert many EEG and MEG files to an [`mne.io.Raw`](http://martinos.org/mne/stable/generated/mne.io.Raw.html#mne.io.Raw) object
@@ -77,17 +83,6 @@ Main features:
 - **Miscellaneous**
   - **[`BMI()`](http://neurokit.readthedocs.io/en/latest/documentation.html#bmi)**: Compute the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
 
-
-
-
-
-
-## Documentation
-
-- [Tutorials](http://neurokit.readthedocs.io/en/latest/tutorials/index.html)
-  - [x] Biosignals processing
-  - [ ] M/EEG processing
-- [API Documentation](http://neurokit.readthedocs.io/en/latest/documentation.html)
 
 
 ## Citation
