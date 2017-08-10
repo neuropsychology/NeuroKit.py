@@ -592,7 +592,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["RRi", "time", "frequency"
         # TODO: THIS HAS TO BE CHECKED BY AN EXPERT - Should it be applied on the interpolated on raw RRis?
         # Non-Linear Dynamics
         # ======================
-            if "nonlinear" in hrv_features:
+        if "nonlinear" in hrv_features:
             if len(RRis) > 17:
                 hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
             if len(RRis) > 66:
