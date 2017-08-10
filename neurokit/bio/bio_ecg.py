@@ -45,7 +45,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
     hrv_features : list
-        What HRV indices to compute. 'RRi' is the minimum. Then, either of 'time', 'frequency' or 'nonlinear' to select the different domains.
+        What HRV indices to compute. 'RRi' is the minimum. Then, either of 'time', 'frequency' or 'nonlinear' to select the different domains. None to skip this function.
     age : float
         Subject's age for adjusted HRV.
     sex : str
@@ -114,17 +114,19 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
 
     # Signal quality
     # ===============
-    quality = ecg_signal_quality(processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
-    processed_ecg["ECG"].update(quality)
+    if quality_model is not None:
+        quality = ecg_signal_quality(processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
+        processed_ecg["ECG"].update(quality)
 
 
     # HRV
     # =============
-    hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate)
-    processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
-    processed_ecg["ECG"]["HRV"] = hrv
-    if age is not None and sex is not None and position is not None:
-        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
+    if hrv_features is not None:
+        hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate, hrv_features=hrv_features)
+        processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
+        processed_ecg["ECG"]["HRV"] = hrv
+        if age is not None and sex is not None and position is not None:
+            processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
 
     # RSP
     # =============
@@ -299,7 +301,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     cardiac_cycles : pd.DataFrame
         DataFrame containing heartbeats. Computed by :function:`neurokit.ecg_process`.
     quality_model : str
-        Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
+        Path to model used to check signal quality. "default" uses the builtin model.
 
     Returns
     ----------
@@ -326,41 +328,40 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     - numpy
     - pandas
     """
+    if len(cardiac_cycles) > 200:
+        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
+    if len(cardiac_cycles) < 200:
+        cardiac_cycles = cardiac_cycles.resample("1L").pad()
+        cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
+
+    if len(cardiac_cycles) < 200:
+        fill_dict = {}
+        for i in cardiac_cycles.columns:
+            fill_dict[i] = [np.nan] * (200-len(cardiac_cycles))
+        cardiac_cycles = pd.concat([pd.DataFrame(fill_dict), cardiac_cycles], ignore_index=True)
+
+    cardiac_cycles = cardiac_cycles.fillna(method="bfill")
+    cardiac_cycles = cardiac_cycles.reset_index(drop=True)[8:200]
+    cardiac_cycles = z_score(cardiac_cycles).T
+    cardiac_cycles = np.array(cardiac_cycles)
+
+    if quality_model == "default":
+        model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
+    else:
+        model = sklearn.externals.joblib.load(quality_model)
+
     # Initialize empty dict
     quality = {}
 
-    if quality_model is not None:
-        if len(cardiac_cycles) > 200:
-            cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
-        if len(cardiac_cycles) < 200:
-            cardiac_cycles = cardiac_cycles.resample("1L").pad()
-            cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
+    # Find dominant class
+    lead = model.predict(cardiac_cycles)
+    lead = pd.Series(lead).value_counts().index[0]
+    quality["Probable_Lead"] = lead
 
-        if len(cardiac_cycles) < 200:
-            fill_dict = {}
-            for i in cardiac_cycles.columns:
-                fill_dict[i] = [np.nan] * (200-len(cardiac_cycles))
-            cardiac_cycles = pd.concat([pd.DataFrame(fill_dict), cardiac_cycles], ignore_index=True)
-
-        cardiac_cycles = cardiac_cycles.fillna(method="bfill")
-        cardiac_cycles = cardiac_cycles.reset_index(drop=True)[8:200]
-        cardiac_cycles = z_score(cardiac_cycles).T
-        cardiac_cycles = np.array(cardiac_cycles)
-
-        if quality_model == "default":
-            model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
-        else:
-            model = sklearn.externals.joblib.load(quality_model)
-
-        # Find dominant class
-        lead = model.predict(cardiac_cycles)
-        lead = pd.Series(lead).value_counts().index[0]
-        quality["Probable_Lead"] = lead
-
-        predict = pd.DataFrame(model.predict_proba(cardiac_cycles))
-        predict.columns = model.classes_
-        quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
-        quality["Average_Signal_Quality"] = predict[lead].mean()
+    predict = pd.DataFrame(model.predict_proba(cardiac_cycles))
+    predict.columns = model.classes_
+    quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
+    quality["Average_Signal_Quality"] = predict[lead].mean()
 
     return(quality)
 

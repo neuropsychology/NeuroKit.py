@@ -47,7 +47,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
     ecg_quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
     ecg_hrv_features : list
-        What HRV indices to compute. 'RRi' is the minimum. Then, either of 'time', 'frequency' or 'nonlinear' to select the different domains.
+        What HRV indices to compute. 'RRi' is the minimum. Then, either of 'time', 'frequency' or 'nonlinear' to select the different domains. None to skip this function.
     ecg_segmenter : str
         The cardiac phase segmenter. Can be "hamilton", "gamboa", "engzee", "christov" or "ssf". See :func:`neurokit.ecg_preprocess()` for details.
     use_cvxEDA : bool
