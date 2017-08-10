@@ -43,7 +43,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     segmenter : str
         The cardiac phase segmenter. Can be "hamilton", "gamboa", "engzee", "christov" or "ssf". See :func:`neurokit.ecg_preprocess()` for details.
     quality_model : str
-        Path to model used to check signal quality. "default" uses the builtin model.
+        Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
     hrv_features : list
         What HRV indices to compute. 'RRi' is the minimum. Then, either of 'time', 'frequency' or 'nonlinear' to select the different domains.
     age : float
@@ -299,7 +299,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     cardiac_cycles : pd.DataFrame
         DataFrame containing heartbeats. Computed by :function:`neurokit.ecg_process`.
     quality_model : str
-        Path to model used to check signal quality. "default" uses the builtin model.
+        Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
 
     Returns
     ----------
@@ -326,6 +326,9 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     - numpy
     - pandas
     """
+    # Initialize empty dict
+    quality = {}
+
     if quality_model is not None:
         if len(cardiac_cycles) > 200:
             cardiac_cycles = cardiac_cycles.rolling(20).mean().resample("3L").pad()
@@ -349,8 +352,6 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
         else:
             model = sklearn.externals.joblib.load(quality_model)
 
-        quality = {}
-
         # Find dominant class
         lead = model.predict(cardiac_cycles)
         lead = pd.Series(lead).value_counts().index[0]
@@ -361,7 +362,8 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
         quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
         quality["Average_Signal_Quality"] = predict[lead].mean()
 
-        return(quality)
+    return(quality)
+
 
 
 # ==============================================================================

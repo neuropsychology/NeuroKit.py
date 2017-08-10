@@ -45,7 +45,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
     ecg_filter_frequency : int or list
         Cutoff frequencies, format depends on type of band: "lowpass" or "bandpass": single frequency (int), "bandpass" or "bandstop": pair of frequencies (list).
     ecg_quality_model : str
-        Path to model used to check signal quality. "default" uses the builtin model.
+        Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
     ecg_hrv_features : list
         What HRV indices to compute. 'RRi' is the minimum. Then, either of 'time', 'frequency' or 'nonlinear' to select the different domains.
     ecg_segmenter : str
