@@ -22,7 +22,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], segmenter="hamilton", quality_model="default", age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], segmenter="hamilton", quality_model="default", hrv_features=["time", "frequency", "nonlinear"], age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -43,7 +43,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     segmenter : str
         The cardiac phase segmenter. Can be "hamilton", "gamboa", "engzee", "christov" or "ssf". See :func:`neurokit.ecg_preprocess()` for details.
     quality_model : str
-        Path to model used to check signal quality. "default" uses the builtin model.
+        Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
+    hrv_features : list
+        What HRV indices to compute. Any or all of 'time', 'frequency' or 'nonlinear'. None to skip this function.
     age : float
         Subject's age for adjusted HRV.
     sex : str
@@ -111,18 +113,20 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
                                    segmenter=segmenter)
 
     # Signal quality
-    # =============
-    quality = ecg_signal_quality(processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
-    processed_ecg["ECG"].update(quality)
+    # ===============
+    if quality_model is not None:
+        quality = ecg_signal_quality(processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
+        processed_ecg["ECG"].update(quality)
 
 
     # HRV
     # =============
-    hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate)
-    processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
-    processed_ecg["ECG"]["HRV"] = hrv
-    if age is not None and sex is not None and position is not None:
-        processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
+    if hrv_features is not None:
+        hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate, hrv_features=hrv_features)
+        processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
+        processed_ecg["ECG"]["HRV"] = hrv
+        if age is not None and sex is not None and position is not None:
+            processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
 
     # RSP
     # =============
@@ -346,6 +350,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     else:
         model = sklearn.externals.joblib.load(quality_model)
 
+    # Initialize empty dict
     quality = {}
 
     # Find dominant class
@@ -361,6 +366,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     return(quality)
 
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -369,7 +375,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rpeaks, sampling_rate=1000):
+def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonlinear"]):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
@@ -379,6 +385,8 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
         R-peak location indices.
     sampling_rate : int
         Sampling rate (samples/second).
+    hrv_features : list
+        What HRV indices to compute. Any or all of 'time', 'frequency' or 'nonlinear'.
 
     Returns
     ----------
@@ -503,115 +511,121 @@ def ecg_hrv(rpeaks, sampling_rate=1000):
 
     # Time Domain
     # ==================
-    hrv["RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
-    hrv["meanNN"] = np.mean(RRis)
-    hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
-    hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
-    hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"] * 100
-    hrv["medianNN"] = np.median(abs(RRis))
-    hrv["madNN"] = mad(RRis, constant=1)
-    hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
-    nn50 = sum(abs(np.diff(RRis)) > 50)
-    hrv["pNN50"] = nn50 / len(RRis) * 100
-    nn20 = sum(abs(np.diff(RRis)) > 20)
-    hrv["pNN20"] = nn20 / len(RRis) * 100
+    if "time" in hrv_features:
+        hrv["RMSSD"] = np.sqrt(np.mean(np.diff(RRis) ** 2))
+        hrv["meanNN"] = np.mean(RRis)
+        hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
+        hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
+        hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"] * 100
+        hrv["medianNN"] = np.median(abs(RRis))
+        hrv["madNN"] = mad(RRis, constant=1)
+        hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
+        nn50 = sum(abs(np.diff(RRis)) > 50)
+        hrv["pNN50"] = nn50 / len(RRis) * 100
+        nn20 = sum(abs(np.diff(RRis)) > 20)
+        hrv["pNN20"] = nn20 / len(RRis) * 100
 
-    # Geometrical Method
-    # ====================
-    # TODO: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
-    try:
-        bin_number = 32  # Initialize bin_width value
-        # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
-        for bin_number_current in range(2, 50):
-            bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
-            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
-                bin_number = bin_number_current
-        hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
-        hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
-    except ValueError:
-        hrv["Triang"] = np.nan
-        hrv["Shannon_h"] = np.nan
+        # Geometrical Method
+        # ====================
+        # TODO: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
+        try:
+            bin_number = 32  # Initialize bin_width value
+            # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
+            for bin_number_current in range(2, 50):
+                bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
+                if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
+                    bin_number = bin_number_current
+            hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
+            hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
+        except ValueError:
+            hrv["Triang"] = np.nan
+            hrv["Shannon_h"] = np.nan
 
 
     # Frequency Domain
     # =================
-    freq_bands = {
-      "ULF": [0.0001, 0.0033],
-      "VLF": [0.0033, 0.04],
-      "LF": [0.04, 0.15],
-      "HF": [0.15, 0.40],
-      "VHF": [0.4, 0.5]}
+    if "frequency" in hrv_features:
+        freq_bands = {
+          "ULF": [0.0001, 0.0033],
+          "VLF": [0.0033, 0.04],
+          "LF": [0.04, 0.15],
+          "HF": [0.15, 0.40],
+          "VHF": [0.4, 0.5]}
 
 
-    # Frequency-Domain Power over time
-    freq_powers = {}
-    for band in freq_bands:
-        freqs = freq_bands[band]
-        # Filter to keep only the band of interest
-        filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype='butter', band='bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
-        # Apply Hilbert transform
-        amplitude, phase = biosppy.signals.tools.analytic_signal(filtered)
-        # Extract Amplitude of Envolope (power)
-        freq_powers["ECG_HRV_" + band] = amplitude
+        # Frequency-Domain Power over time
+        freq_powers = {}
+        for band in freq_bands:
+            freqs = freq_bands[band]
+            # Filter to keep only the band of interest
+            filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype='butter', band='bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
+            # Apply Hilbert transform
+            amplitude, phase = biosppy.signals.tools.analytic_signal(filtered)
+            # Extract Amplitude of Envolope (power)
+            freq_powers["ECG_HRV_" + band] = amplitude
 
-    freq_powers = pd.DataFrame.from_dict(freq_powers)
-    freq_powers.index = hrv["df"].index
-    hrv["df"] = pd.concat([hrv["df"], freq_powers], axis=1)
+        freq_powers = pd.DataFrame.from_dict(freq_powers)
+        freq_powers.index = hrv["df"].index
+        hrv["df"] = pd.concat([hrv["df"], freq_powers], axis=1)
 
 
-    # Compute Power Spectral Density (PSD) using multitaper method
-    power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization='length')
+        # Compute Power Spectral Density (PSD) using multitaper method
+        power, freq = mne.time_frequency.psd_array_multitaper(RRi, sfreq=sampling_rate, fmin=0, fmax=0.5,  adaptive=False, normalization='length')
 
-    def power_in_band(power, freq, band):
-        power =  np.trapz(y=power[(freq >= band[0]) & (freq < band[1])], x=freq[(freq >= band[0]) & (freq < band[1])])
-        return(power)
+        def power_in_band(power, freq, band):
+            power =  np.trapz(y=power[(freq >= band[0]) & (freq < band[1])], x=freq[(freq >= band[0]) & (freq < band[1])])
+            return(power)
 
-    # Extract Power according to frequency bands
-    hrv["ULF"] = power_in_band(power, freq, freq_bands["ULF"])
-    hrv["VLF"] = power_in_band(power, freq, freq_bands["VLF"])
-    hrv["LF"] = power_in_band(power, freq, freq_bands["LF"])
-    hrv["HF"] = power_in_band(power, freq, freq_bands["HF"])
-    hrv["VHF"] = power_in_band(power, freq, freq_bands["VHF"])
-    hrv["Total_Power"] = power_in_band(power, freq, [0, 0.5])
+        # Extract Power according to frequency bands
+        hrv["ULF"] = power_in_band(power, freq, freq_bands["ULF"])
+        hrv["VLF"] = power_in_band(power, freq, freq_bands["VLF"])
+        hrv["LF"] = power_in_band(power, freq, freq_bands["LF"])
+        hrv["HF"] = power_in_band(power, freq, freq_bands["HF"])
+        hrv["VHF"] = power_in_band(power, freq, freq_bands["VHF"])
+        hrv["Total_Power"] = power_in_band(power, freq, [0, 0.5])
 
-    hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
-    hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
-    hrv["LF/HF"] = hrv["LF"]/hrv["HF"]
-    hrv["LF/P"] = hrv["LF"]/hrv["Total_Power"]
-    hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
+        hrv["LFn"] = hrv["LF"]/(hrv["LF"]+hrv["HF"])
+        hrv["HFn"] = hrv["HF"]/(hrv["LF"]+hrv["HF"])
+        hrv["LF/HF"] = hrv["LF"]/hrv["HF"]
+        hrv["LF/P"] = hrv["LF"]/hrv["Total_Power"]
+        hrv["HF/P"] = hrv["HF"]/hrv["Total_Power"]
 
 
     # TODO: THIS HAS TO BE CHECKED BY AN EXPERT - Should it be applied on the interpolated on raw RRis?
     # Non-Linear Dynamics
     # ======================
-    if len(RRis) > 17:
-        hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
-    if len(RRis) > 66:
-        hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
-    hrv["Shannon"] = entropy_shannon(RRis)
-    hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
-    try:
-        hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
-    except AssertionError as error:
-        print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
-        hrv["Correlation_Dimension"] = np.nan
-    hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
-    hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
-    hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
-    hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
-    hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
-    hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
-    try:  # Otherwise travis errors for some reasons :(
-        hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
-    except Exception:
-        hrv["Lyapunov"] = np.nan
-    hrv["FD_Petrosian"] = fd_petrosian(RRis)
-    hrv["FD_Higushi"] = fd_higushi(RRis, k_max=16)
+    if "nonlinear" in hrv_features:
+        if len(RRis) > 17:
+            hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
+        if len(RRis) > 66:
+            hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
+        hrv["Shannon"] = entropy_shannon(RRis)
+        hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
+        try:
+            hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
+        except AssertionError as error:
+            print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
+            hrv["Correlation_Dimension"] = np.nan
+        hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
+        hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
+        hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
+        hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
+        hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
+        hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
+        try:  # Otherwise travis errors for some reasons :(
+            hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
+        except Exception:
+            hrv["Lyapunov"] = np.nan
+        hrv["FD_Petrosian"] = fd_petrosian(RRis)
+        hrv["FD_Higushi"] = fd_higushi(RRis, k_max=16)
 
     # TO DO:
     # Include many others (see Voss 2015)
 
+
     return(hrv)
+
+
 
 # ==============================================================================
 # ==============================================================================
