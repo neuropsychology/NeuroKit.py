@@ -87,14 +87,14 @@ def create_epochs(data, events_onsets, sampling_rate=1000, duration=1, onset=0, 
     for event, event_onset in enumerate(events_onsets):
 
         epoch_onset = int(event_onset + onset[event])
-        epoch_end = int(event_onset+duration[event])
+        epoch_end = int(event_onset+duration[event]+1)
 
         epoch = data[epoch_onset:epoch_end].copy()
-        epoch.index  = np.linspace(start=onset_in_s[event], stop=duration_in_s[event], num=len(epoch), endpoint=False)
+        epoch.index  = np.linspace(start=onset_in_s[event], stop=duration_in_s[event], num=len(epoch), endpoint=True)
 
 
-        relative_time = np.linspace(start=onset[event], stop=duration[event], num=len(epoch), endpoint=False).astype(int).tolist()
-        absolute_time = np.linspace(start=epoch_onset, stop=epoch_end, num=len(epoch), endpoint=False).astype(int).tolist()
+        relative_time = np.linspace(start=onset[event], stop=duration[event], num=len(epoch), endpoint=True).astype(int).tolist()
+        absolute_time = np.linspace(start=epoch_onset, stop=epoch_end, num=len(epoch), endpoint=True).astype(int).tolist()
 
         epoch["Epoch_Relative_Time"] = relative_time
         epoch["Epoch_Absolute_Time"] = absolute_time

@@ -730,20 +730,18 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
+def ecg_EventRelated(epoch, event_length, window_post=4):
     """
     Extract event-related ECG changes.
 
     Parameters
     ----------
     epoch : pandas.DataFrame
-        An epoch contains in the epochs dict returned by :function:`neurokit.create_epochs()` on dataframe returned by :function:`neurokit.bio_process()`. Index should range from -4s to +4s (relatively to event onset and end).
+        An epoch contained in the epochs dict returned by :function:`neurokit.create_epochs()` on dataframe returned by :function:`neurokit.bio_process()`. Index should range from -4s to +4s (relatively to event onset and end).
     event_length : int
-        In seconds.
-    sampling_rate : int
-        Sampling rate (samples/second).
+        Event length in seconds.
     window_post : float
-        Post-stimulus window size (in seconds) to include eventual responses (usually 3 or 4).
+        Post-stimulus window size (in seconds) to include late responses (usually 3 or 4).
 
     Returns
     ----------

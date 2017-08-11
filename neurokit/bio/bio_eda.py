@@ -8,11 +8,11 @@ import cvxopt as cv
 import cvxopt.solvers
 
 from ..statistics import z_score
+from ..miscellaneous import find_closest_in_list
 
 
 
 
-
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -21,7 +21,7 @@ from ..statistics import z_score
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, scr_min_amplitude=0.1):
+def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, scr_min_amplitude=0.1):
     """
     Automated processing of EDA signal.
 
@@ -88,15 +88,45 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True,
     - Greco, A., Valenza, G., Lanata, A., Scilingo, E. P., & Citi, L. (2016). cvxEDA: A convex optimization approach to electrodermal activity processing. IEEE Transactions on Biomedical Engineering, 63(4), 797-804.
 
     """
+    # Initialization
+    eda = np.array(eda)
     eda_df = pd.DataFrame({"EDA_Raw": np.array(eda)})
 
-    # Convex optimization
-    if use_cvxEDA is True:
-        try:
-            eda = cvxEDA(eda, sampling_rate=sampling_rate, normalize=cvxEDA_normalize, alpha=cvxEDA_alpha, gamma=cvxEDA_gamma)
-            eda_df["EDA_Phasic"] = eda
-        except:
-            print("NeuroKit Warning: couln't apply cvxEDA on EDA signal. Using normal.")
+    # Preprocessing
+    # ===================
+    # Filtering
+    filtered, _, _ = biosppy.tools.filter_signal(signal=eda,
+                                 ftype='butter',
+                                 band='lowpass',
+                                 order=4,
+                                 frequency=5,
+                                 sampling_rate=sampling_rate)
+
+    # Smoothing
+    filtered, _ = biosppy.tools.smoother(signal=filtered,
+                              kernel='boxzen',
+                              size=int(0.75 * sampling_rate),
+                              mirror=True)
+    eda_df["EDA_Filtered"] = filtered
+    eda_df.plot()
+
+    # Derive Phasic and Tonic
+    try:
+        tonic, phasic = cvxEDA(eda, sampling_rate=sampling_rate, alpha=cvxEDA_alpha, gamma=cvxEDA_gamma)
+        eda_df["EDA_Phasic"] = phasic
+        eda_df["EDA_Tonic"] = tonic
+        signal = phasic
+    except:
+        print("NeuroKit Warning: eda_process(): couln't apply cvxEDA to extract phasic and tonic components. Using raw signal.")
+        signal = eda
+
+    # Skin-Conductance Responses
+    # ===========================
+    if scr_method = "kim":
+        onsets, peaks, amplitudes = biosppy.eda.kbk_scr(signal=signal, sampling_rate=sampling_rate, min_amplitude=0.1)
+    if scr_method = "gamboa":
+        onsets, peaks, amplitudes = biosppy.eda.basic_scr(signal=signal, sampling_rate=sampling_rate)
+
 
     # Compute several features using biosppy
     biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False, min_amplitude=scr_min_amplitude))
@@ -140,7 +170,7 @@ def eda_process(eda, sampling_rate=1000, use_cvxEDA=True, cvxEDA_normalize=True,
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
+def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-4, gamma=1e-2, solver=None, verbose=False, options={'reltol':1e-9}):
     """
     A convex optimization approach to electrodermal activity processing (CVXEDA).
 
@@ -153,8 +183,6 @@ def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10.
            raw EDA signal array.
        sampling_rate : int
            Sampling rate (samples/second).
-       normalize : bool
-           Normalize the signal before applying cvx algorithm.
        tau0 : float
            Slow time constant of the Bateman function.
        tau1 : float
@@ -202,8 +230,8 @@ def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10.
     """
     frequency = 1/sampling_rate
 
-    if normalize is True:
-        eda = z_score(eda)
+    # Normalizing signal
+    eda = z_score(eda)
     eda = np.array(eda)[:,0]
 
     n = len(eda)
@@ -280,7 +308,7 @@ def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10.
     phasic = np.array(phasic)[:,0]
 #    results = (np.array(a).ravel() for a in (r, t, p, l, d, e, obj))
 
-    return(phasic)
+    return(tonic, phasic)
 
 
 
@@ -294,7 +322,7 @@ def cvxEDA(eda, sampling_rate, normalize=True, tau0=2., tau1=0.7, delta_knot=10.
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
+def eda_EventRelated(epoch, event_length, window_post=4):
     """
     Extract event-related EDA and Skin Conductance Response (SCR).
 
@@ -303,9 +331,7 @@ def eda_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     epoch : pandas.DataFrame
         An epoch contains in the epochs dict returned by :function:`neurokit.create_epochs()` on dataframe returned by :function:`neurokit.bio_process()`. Index must range from -4s to +4s (relatively to event onset and end).
     event_length : int
-        In seconds.
-    sampling_rate : int
-        Sampling rate (samples/second).
+        Event's length in seconds.
     window_post : float
         Post-stimulus window size (in seconds) to include eventual responses (usually 3 or 4).
 
@@ -356,78 +382,71 @@ def eda_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     References
     -----------
     - Schneider, R., Schmidt, S., Binder, M., Schäfer, F., & Walach, H. (2003). Respiration-related artifacts in EDA recordings: introducing a standardized method to overcome multiple interpretations. Psychological reports, 93(3), 907-920.
+    - Leiner, D., Fahr, A., & Früh, H. (2012). EDA positive change: A simple algorithm for electrodermal activity to measure general audience arousal during media exposure. Communication Methods and Measures, 6(4), 237-250.
     """
     # Initialization
-    event_length = event_length/sampling_rate*1000
     EDA_Response = {}
+    window_end = event_length + window_post
+    onset = find_closest_in_list(0.5, epoch.index, direction="smaller")
+
 
     # Sanity check
-    if epoch.index[-1]/sampling_rate*1000-event_length < 1000:
-        print("NeuroKit Warning: eda_ERP(): your epoch only lasts for about %.2f s post stimulus. You might lose some SCRs." %((epoch.index[-1]/sampling_rate*1000-event_length)/1000))
-
-    if epoch.index[0]/sampling_rate*1000 > -3000:
-        print("NeuroKit Warning: eda_ERP(): your epoch only starts %.2f s before the stimulus. Might induce some errors in artifacts correction." %((epoch.index[0]/sampling_rate*1000)/1000))
-
+    if epoch.index[-1]-event_length < 1:
+        print("NeuroKit Warning: eda_EventRelated(): your epoch only lasts for about %.2f s post stimulus. You might lose some SCRs." %(epoch.index[-1]-event_length))
 
 
     # EDA Based
     # =================
-    baseline = epoch["EDA_Filtered"].ix[0]
-    eda_peak = epoch["EDA_Filtered"].ix[sampling_rate:event_length+window_post*sampling_rate].max()
+    baseline = epoch["EDA_Filtered"][0:onset].min()
+    eda_peak = epoch["EDA_Filtered"][onset:window_end].max()
     EDA_Response["EDA_Peak"] = eda_peak - baseline
 
+
+    epoch["EDA_Filtered"].plot()
     # SCR Based
     # =================
-    # Very Basic Model
-#    EDA_Response["SCR_Amplitude_Basic"] = epoch["SCR_Peaks"].ix[100:event_length+4*sampling_rate].max()
-#    if np.isnan(EDA_Response["SCR_Amplitude_Basic"]):
-#        EDA_Response["SCR_Magnitude_Basic"] = 0
-#    else:
-#        EDA_Response["SCR_Magnitude_Basic"] = EDA_Response["SCR_Amplitude_Basic"]
-
-    # Model
-    peak_onset = epoch["SCR_Onsets"].ix[0:event_length].idxmax()
+    # Computation
+    peak_onset = epoch["SCR_Onsets"][onset:window_end].idxmax()
     if pd.isnull(peak_onset) is False:
-        EDA_Response["SCR_Amplitude"] = epoch["SCR_Peaks"].ix[peak_onset:event_length+window_post*sampling_rate].max()
-        peak_loc = epoch["SCR_Peaks"].ix[peak_onset:event_length+window_post*sampling_rate].idxmax()
-        EDA_Response["SCR_Magnitude"] = EDA_Response["SCR_Amplitude"]
-        if pd.isnull(EDA_Response["SCR_Amplitude"]):
-            EDA_Response["SCR_Magnitude"] = 0
-    else:
-        EDA_Response["SCR_Amplitude"] = np.nan
-        EDA_Response["SCR_Magnitude"] = 0
+        amplitude = epoch["SCR_Peaks"][peak_onset:window_end].max()
+        peak_time = epoch["SCR_Peaks"][peak_onset:window_end].idxmax()
 
-    # Log
-    EDA_Response["SCR_Amplitude_Log"] = np.log(1+EDA_Response["SCR_Amplitude"])
-    EDA_Response["SCR_Magnitude_Log"] = np.log(1+EDA_Response["SCR_Magnitude"])
-
-
-    # Latency and Rise time
-    if np.isfinite(EDA_Response["SCR_Amplitude"]):
-        peak_onset = epoch["SCR_Onsets"].ix[0:peak_loc].idxmax()
-
-        EDA_Response["SCR_PeakTime"] = peak_loc/sampling_rate*1000
-        EDA_Response["SCR_Latency"] = peak_onset/sampling_rate*1000
-        EDA_Response["SCR_RiseTime"] = (peak_loc - peak_onset)/sampling_rate*1000
-    else:
-        EDA_Response["SCR_PeakTime"] = np.nan
-        EDA_Response["SCR_Latency"] = np.nan
-        EDA_Response["SCR_RiseTime"] = np.nan
-
-
-    EDA_Response["SCR_Strength"] = EDA_Response["SCR_Magnitude"]/(EDA_Response["SCR_Latency"]/1000)
-#     RSP Corrected
-    # This needs to be done!!
-    if "RSP_Filtered" in epoch.columns:
-#        granger = statsmodels.tsa.stattools.grangercausalitytests(epoch[["EDA_Filtered", "RSP_Filtered"]], 10)
-        RSP_z = z_score(epoch["RSP_Filtered"])
-        RSP_peak = RSP_z.ix[:0].max()
-        if np.isnan(RSP_peak[0]) and RSP_peak[0] > 1.96:
-            EDA_Response["SCR_Amplitude_RSP_Corrected"] = EDA_Response["SCR_Amplitude"]/(RSP_peak-0.96)
-            EDA_Response["SCR_Magnitude_RSP_Corrected"] = EDA_Response["SCR_Magnitude"]/(RSP_peak-0.96)
+        if pd.isnull(amplitude):
+            magnitude = 0
         else:
-            EDA_Response["SCR_Amplitude_RSP_Corrected"] = EDA_Response["SCR_Amplitude"]
-            EDA_Response["SCR_Magnitude_RSP_Corrected"] = EDA_Response["SCR_Magnitude"]
+            magnitude = amplitude
+
+        risetime = peak_time - peak_onset
+        strength = magnitude/risetime
+        recovery = nk.find_closest_in_list(magnitude/2, epoch.index, direction="smaller")
+        try:
+
+    else:
+        amplitude = np.nan
+        magnitude = 0
+        risetime = np.nan
+        strength = np.nan
+
+    # Storage
+    EDA_Response["SCR_Amplitude"] = amplitude
+    EDA_Response["SCR_Magnitude"] = magnitude
+    EDA_Response["SCR_Amplitude_Log"] = np.log(1+amplitude)
+    EDA_Response["SCR_Magnitude_Log"] = np.log(1+magnitude)
+    EDA_Response["SCR_Latency"] = peak_onset
+    EDA_Response["SCR_PeakTime"] = peak_time
+    EDA_Response["SCR_RiseTime"] = risetime
+    EDA_Response["SCR_Strength"] = strength  # Experimental
+
+
+
+
+    # Artifact Correction
+    # ====================
+    # TODO !!
+    # Respiration artifacts
+    if "RSP_Filtered" in epoch.columns:
+        pass  # I Dunno, maybe with granger causality or something?
+
 
     return(EDA_Response)
 
