@@ -3,3 +3,11 @@
 # Check https://circleci.com/docs/2.0/language-python/ for more details
 #
 version: 2
+
+machine:
+  python:
+    version: 3.6
+    
+dependencies:
+  override:
+    - pip install -r requirements.txt
