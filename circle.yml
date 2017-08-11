@@ -4,9 +4,18 @@
 #
 version: 2
 
+jobs:
+  build:
+    working_directory: ~/circulate
+    docker:
+      - image: python:3.6.0
+    steps:
+      - checkout
+      - run: pip install -r requirements.txt
+      
 machine:
   python:
-    version: 3.6
+    version: 3.6.0
     
 dependencies:
   override:
