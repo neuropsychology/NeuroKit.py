@@ -418,8 +418,7 @@ def eda_EventRelated(epoch, event_length, window_post=4):
 
         risetime = peak_time - peak_onset
         strength = magnitude/risetime
-        recovery = nk.find_closest_in_list(magnitude/2, epoch.index, direction="smaller")
-        try:
+#        recovery = nk.find_closest_in_list(magnitude/2, epoch.index, direction="smaller")
 
     else:
         amplitude = np.nan
