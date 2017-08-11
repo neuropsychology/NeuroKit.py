@@ -3,6 +3,6 @@ signal submodule.
 """
 
 from .events import *
-from .evoked import *
+from .epochs import *
 from .complexity import *
 from .signal import *

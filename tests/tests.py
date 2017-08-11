@@ -41,12 +41,12 @@ class Test(unittest.TestCase):
         return(bio)
 
 
-    def test_hrv(self):
-
-        bio = self.test_bio_process()
-
-        self.assertEqual(len(bio["ECG"]["R_Peaks"]), 499)
-        self.assertEqual(len(bio["EDA"]["SCR_Onsets"]), 5)
+#    def test_hrv(self):
+#
+#        bio = self.test_bio_process()
+#
+#        self.assertEqual(len(bio["ECG"]["R_Peaks"]), 499)
+#        self.assertEqual(len(bio["EDA"]["SCR_Onsets"]), 5)
 
 #==============================================================================
 # SIGNAL

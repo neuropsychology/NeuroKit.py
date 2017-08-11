@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], eda_alpha=8e-4, eda_gamma=1e-2, scr_method="makowski", scr_treshold=0.1, add=None, emg_names=None):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 
@@ -50,14 +50,19 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
         What HRV indices to compute. Any or all of 'time', 'frequency' or 'nonlinear'. None to skip this function.
     ecg_segmenter : str
         The cardiac phase segmenter. Can be "hamilton", "gamboa", "engzee", "christov" or "ssf". See :func:`neurokit.ecg_preprocess()` for details.
-    use_cvxEDA : bool
-        Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
+    eda_alpha : float
+        cvxEDA penalization for the sparse SMNA driver.
+    eda_gamma : float
+        cvxEDA penalization for the tonic spline coefficients.
+    scr_method : str
+        SCR extraction algorithm. "makowski" (default), "kim" (biosPPy's default; See Kim et al., 2004) or "gamboa" (Gamboa, 2004).
+    scr_treshold : float
+        SCR minimum treshold (in terms of signal standart deviation).
     add : pandas.DataFrame
         Dataframe or channels to add by concatenation to the processed dataframe.
     emg_names : list
         List of EMG channel names.
-    scr_min_amplitude : float
-        Minimum treshold by which to exclude Skin Conductance Responses (SCRs).
+
 
     Returns
     ----------
@@ -109,6 +114,8 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
     - Azevedo, R. T., Garfinkel, S. N., Critchley, H. D., & Tsakiris, M. (2017). Cardiac afferent activity modulates the expression of racial stereotypes. Nature communications, 8.
     - Edwards, L., Ring, C., McIntyre, D., & Carroll, D. (2001). Modulation of the human nociceptive flexion reflex across the cardiac cycle. Psychophysiology, 38(4), 712-718.
     - Gray, M. A., Rylander, K., Harrison, N. A., Wallin, B. G., & Critchley, H. D. (2009). Following one's heart: cardiac rhythms gate central initiation of sympathetic reflexes. Journal of Neuroscience, 29(6), 1817-1825.
+    - Kim, K. H., Bang, S. W., & Kim, S. R. (2004). Emotion recognition system using short-term monitoring of physiological signals. Medical and biological engineering and computing, 42(3), 419-427.
+    - Gamboa, H. (2008). Multi-Modal Behavioral Biometrics Based on HCI and Electrophysiology (Doctoral dissertation, PhD thesis, Universidade Técnica de Lisboa, Instituto Superior Técnico).
     """
     processed_bio = {}
     bio_df = pd.DataFrame({})
@@ -129,7 +136,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
 
     # EDA
     if eda is not None:
-        eda = eda_process(eda=eda, sampling_rate=sampling_rate, use_cvxEDA=use_cvxEDA, scr_min_amplitude=scr_min_amplitude)
+        eda = eda_process(eda=eda, sampling_rate=sampling_rate, alpha=eda_alpha, gamma=eda_gamma, scr_method=scr_method, scr_treshold=scr_treshold)
         processed_bio["EDA"] = eda["EDA"]
         bio_df = pd.concat([bio_df, eda["df"]], axis=1)
 
