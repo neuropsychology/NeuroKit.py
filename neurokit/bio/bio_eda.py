@@ -21,9 +21,9 @@ from ..miscellaneous import find_closest_in_list
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, scr_method="makowski", scr_treshold=0.1):
+def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method="makowski", scr_treshold=0.1):
     """
-    Automated processing of EDA signal.
+    Automated processing of EDA signal using convex optimization (CVXEDA; Greco et al., 2015).
 
     Parameters
     ----------
@@ -31,14 +31,10 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
         EDA signal array.
     sampling_rate : int
         Sampling rate (samples/second).
-    use_cvxEDA : bool
-        Use convex optimization (CVXEDA) described in "cvxEDA: a Convex Optimization Approach to Electrodermal Activity Processing" (Greco et al., 2015).
-    cvxEDA_normalize : bool
-        Normalize the signal before applying cvx algorithm.
-    cvxEDA_alpha : float
-        Penalization for the sparse SMNA driver.
-    cvxEDA_gamma : float
-        Penalization for the tonic spline coefficients.
+    alpha : float
+        cvxEDA penalization for the sparse SMNA driver.
+    gamma : float
+        cvxEDA penalization for the tonic spline coefficients.
     scr_method : str
         SCR extraction algorithm. "makowski" (default), "kim" (biosPPy's default; See Kim et al., 2004) or "gamboa" (Gamboa, 2004).
     scr_treshold : float
@@ -90,7 +86,6 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
     - Greco, A., Valenza, G., Lanata, A., Scilingo, E. P., & Citi, L. (2016). cvxEDA: A convex optimization approach to electrodermal activity processing. IEEE Transactions on Biomedical Engineering, 63(4), 797-804.
     - Kim, K. H., Bang, S. W., & Kim, S. R. (2004). Emotion recognition system using short-term monitoring of physiological signals. Medical and biological engineering and computing, 42(3), 419-427.
     - Gamboa, H. (2008). Multi-Modal Behavioral Biometrics Based on HCI and Electrophysiology (Doctoral dissertation, PhD thesis, Universidade Técnica de Lisboa, Instituto Superior Técnico).
-
     """
     # Initialization
     eda = np.array(eda)
@@ -115,7 +110,7 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
 
     # Derive Phasic and Tonic
     try:
-        tonic, phasic = cvxEDA(eda, sampling_rate=sampling_rate, alpha=cvxEDA_alpha, gamma=cvxEDA_gamma)
+        tonic, phasic = cvxEDA(eda, sampling_rate=sampling_rate, alpha=alpha, gamma=gamma)
         eda_df["EDA_Phasic"] = phasic
         eda_df["EDA_Tonic"] = tonic
         signal = phasic
@@ -134,7 +129,7 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
         recoveries = [np.nan]*len(onsets)
 
     else:  # makowski's algorithm
-        onsets, peaks, amplitudes, recoveries = eda_find_SCR(signal, sampling_rate=sampling_rate, treshold=scr_treshold, method="fast")
+        onsets, peaks, amplitudes, recoveries = eda_scr(signal, sampling_rate=sampling_rate, treshold=scr_treshold, method="fast")
 
 
     # Store SCR onsets and recoveries positions
@@ -330,8 +325,55 @@ def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_find_SCR(signal, sampling_rate=1000, treshold=0.1, method="fast"):
+def eda_scr(signal, sampling_rate=1000, treshold=0.1, method="fast"):
     """
+    Skin-Conductance Responses extraction algorithm.
+
+    Parameters
+    ----------
+    signal :  list or array
+        EDA signal array.
+    sampling_rate : int
+        Sampling rate (samples/second).
+    treshold : float
+        SCR minimum treshold (in terms of signal standart deviation).
+    method : str
+        "fast" or "slow". Either use a gradient-based approach or a local extrema one.
+
+    Returns
+    ----------
+    onsets, peaks, amplitudes, recoveries : lists
+        SCRs features.
+
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>>
+    >>> onsets, peaks, amplitudes, recoveries = nk.eda_scr(eda_signal)
+
+
+    Notes
+    ----------
+    *Authors*
+
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
+    - biosppy
+    - numpy
+    - pandas
+
+    *See Also*
+
+    - BioSPPy: https://github.com/PIA-Group/BioSPPy
+
+
+    References
+    -----------
+    - Kim, K. H., Bang, S. W., & Kim, S. R. (2004). Emotion recognition system using short-term monitoring of physiological signals. Medical and biological engineering and computing, 42(3), 419-427.
+    - Gamboa, H. (2008). Multi-Modal Behavioral Biometrics Based on HCI and Electrophysiology (Doctoral dissertation, PhD thesis, Universidade Técnica de Lisboa, Instituto Superior Técnico).
     """
     # Processing
     # ===========
