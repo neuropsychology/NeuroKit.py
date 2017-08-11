@@ -122,9 +122,9 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
 
     # Skin-Conductance Responses
     # ===========================
-    if scr_method = "kim":
+    if scr_method == "kim":
         onsets, peaks, amplitudes = biosppy.eda.kbk_scr(signal=signal, sampling_rate=sampling_rate, min_amplitude=0.1)
-    if scr_method = "gamboa":
+    if scr_method == "gamboa":
         onsets, peaks, amplitudes = biosppy.eda.basic_scr(signal=signal, sampling_rate=sampling_rate)
 
 
