@@ -11,7 +11,7 @@ import numpy as np
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def create_epochs(data, events_onsets, duration=1000, onset=0, index=None):
+def create_epochs(data, events_onsets, sampling_rate=1000, duration=1, onset=0, index=None):
     """
     Epoching a dataframe.
 
@@ -21,10 +21,12 @@ def create_epochs(data, events_onsets, duration=1000, onset=0, index=None):
         Data*time.
     events_onsets : list
         A list of event onsets indices.
+    sampling_rate : int
+        Sampling rate (samples/second).
     duration : int or list
-        Duration(s) of each epoch(s) (in time points).
+        Duration(s) of each epoch(s) (in seconds).
     onset : int
-        Epoch onset (in time points, relative to event onset).
+        Epoch onset(s) relative to events_onsets (in seconds).
     index : list
         Events names in order that will be used as index. Must contains uniques names. If not provided, will be replaced by event number.
 
@@ -48,27 +50,57 @@ def create_epochs(data, events_onsets, duration=1000, onset=0, index=None):
 
     - numpy
     """
-    # Adjust duration regarding onset
-    if isinstance(duration, int):
-        duration = np.array([duration]*len(events_onsets))
-    else:
+    # Convert ints to arrays if needed
+    if isinstance(duration, list):
         duration = np.array(duration)
+    else:
+        duration = np.array([duration]*len(events_onsets))
 
-    # Check the index
+    if isinstance(onset, list):
+        onset = np.array(onset)
+    else:
+        onset = np.array([onset]*len(events_onsets))
+
+    # Store durations
+    duration_in_s = duration.copy()
+    onset_in_s = onset.copy()
+
+    # Convert to timepoints
+    duration = duration*sampling_rate
+    onset = onset*sampling_rate
+
+
+
+    # Create the index
     if index is None:
         index = list(range(len(events_onsets)))
     else:
         if len(list(set(index))) != len(index):
-            print("NeuroKit error: create_epochs(): events_names does not contain uniques names, replacing them by numbers.")
+            print("NeuroKit Warning: create_epochs(): events_names does not contain uniques names, replacing them by numbers.")
             index = list(range(len(events_onsets)))
         else:
             index = list(index)
+
+
     # Create epochs
     epochs = {}
     for event, event_onset in enumerate(events_onsets):
-        event_onset += onset
-        epoch = data[event_onset:event_onset+duration[event]]
-        epoch.index  = range(onset, duration[event] + onset)
+
+        epoch_onset = int(event_onset + onset[event])
+        epoch_end = int(event_onset+duration[event])
+
+        epoch = data[epoch_onset:epoch_end].copy()
+        epoch.index  = np.linspace(start=onset_in_s[event], stop=duration_in_s[event], num=len(epoch), endpoint=False)
+
+
+        relative_time = np.linspace(start=onset[event], stop=duration[event], num=len(epoch), endpoint=False).astype(int).tolist()
+        absolute_time = np.linspace(start=epoch_onset, stop=epoch_end, num=len(epoch), endpoint=False).astype(int).tolist()
+
+        epoch["Epoch_Relative_Time"] = relative_time
+        epoch["Epoch_Absolute_Time"] = absolute_time
+
         epochs[index[event]] = epoch
+
+
 
     return(epochs)
