@@ -5,8 +5,8 @@ python:
   - "3.5-dev" # 3.5 development branch
   - "3.6"
   - "3.6-dev" # 3.6 development branch
-  #- "3.7-dev"
-  #- "nightly"
+  - "3.7-dev"
+  - "nightly"
 # command to install dependencies
 install: "pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master"
 # command to run tests
