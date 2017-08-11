@@ -70,8 +70,8 @@ This package provides a high level integration of complex statistical routines f
     - *Respiratory phase (inspiration/expiration)*
     - *Respiratory cycles characteristics (onsets, length, ...)*
   - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA)
-    - *Phasic component using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110))*
-    - *Skin Conductance Responses (SCR) onsets, peaks, amplitudes, latency, rise time, ...*
+    - *Tonic and phasic components using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110))*
+    - *Skin Conductance Responses (SCR) onsets, peaks, amplitudes, latencies, recovery times, ...*
   - **[`emg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#emg-process)**: Extract EMG features
     - *Pulse onsets*
 - **Signal**
