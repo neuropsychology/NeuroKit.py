@@ -21,7 +21,7 @@ from ..miscellaneous import find_closest_in_list
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, scr_min_amplitude=0.1):
+def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, scr_method="makowski", scr_treshold=0.1):
     """
     Automated processing of EDA signal.
 
@@ -39,8 +39,10 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
         Penalization for the sparse SMNA driver.
     cvxEDA_gamma : float
         Penalization for the tonic spline coefficients.
-    scr_min_amplitude : float
-        Minimum treshold by which to exclude Skin Conductance Responses (SCRs).
+    scr_method : str
+        SCR extraction algorithm. "makowski" (default), "kim" (biosPPy's default; See Kim et al., 2004) or "gamboa" (Gamboa, 2004).
+    scr_treshold : float
+        SCR minimum treshold (in terms of signal standart deviation).
 
     Returns
     ----------
@@ -68,7 +70,7 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -86,6 +88,8 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
     -----------
     - Greco, A., Valenza, G., & Scilingo, E. P. (2016). Evaluation of CDA and CvxEDA Models. In Advances in Electrodermal Activity Processing with Applications for Mental Health (pp. 35-43). Springer International Publishing.
     - Greco, A., Valenza, G., Lanata, A., Scilingo, E. P., & Citi, L. (2016). cvxEDA: A convex optimization approach to electrodermal activity processing. IEEE Transactions on Biomedical Engineering, 63(4), 797-804.
+    - Kim, K. H., Bang, S. W., & Kim, S. R. (2004). Emotion recognition system using short-term monitoring of physiological signals. Medical and biological engineering and computing, 42(3), 419-427.
+    - Gamboa, H. (2008). Multi-Modal Behavioral Biometrics Based on HCI and Electrophysiology (Doctoral dissertation, PhD thesis, Universidade Técnica de Lisboa, Instituto Superior Técnico).
 
     """
     # Initialization
@@ -108,7 +112,6 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
                               size=int(0.75 * sampling_rate),
                               mirror=True)
     eda_df["EDA_Filtered"] = filtered
-    eda_df.plot()
 
     # Derive Phasic and Tonic
     try:
@@ -117,35 +120,41 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
         eda_df["EDA_Tonic"] = tonic
         signal = phasic
     except:
-        print("NeuroKit Warning: eda_process(): couln't apply cvxEDA to extract phasic and tonic components. Using raw signal.")
+        print("NeuroKit Warning: eda_process(): Error in cvxEDA algorithm, couldn't extract phasic and tonic components. Using raw signal.")
         signal = eda
 
     # Skin-Conductance Responses
     # ===========================
     if scr_method == "kim":
-        onsets, peaks, amplitudes = biosppy.eda.kbk_scr(signal=signal, sampling_rate=sampling_rate, min_amplitude=0.1)
-    if scr_method == "gamboa":
+        onsets, peaks, amplitudes = biosppy.eda.kbk_scr(signal=signal, sampling_rate=sampling_rate, min_amplitude=scr_treshold)
+        recoveries = [np.nan]*len(onsets)
+
+    elif scr_method == "gamboa":
         onsets, peaks, amplitudes = biosppy.eda.basic_scr(signal=signal, sampling_rate=sampling_rate)
+        recoveries = [np.nan]*len(onsets)
+
+    else:  # makowski's algorithm
+        onsets, peaks, amplitudes, recoveries = eda_find_SCR(signal, sampling_rate=sampling_rate, treshold=scr_treshold, method="fast")
 
 
-    # Compute several features using biosppy
-    biosppy_eda = dict(biosppy.signals.eda.eda(eda, sampling_rate=sampling_rate, show=False, min_amplitude=scr_min_amplitude))
-
-    eda_df["EDA_Filtered"] = biosppy_eda["filtered"]
-
-    # Store SCR onsets
-    scr_onsets = np.array([np.nan]*len(eda))
-    if len(biosppy_eda['onsets']) > 0:
-        scr_onsets[biosppy_eda['onsets']] = 1
+    # Store SCR onsets and recoveries positions
+    scr_onsets = np.array([np.nan]*len(signal))
+    if len(onsets) > 0:
+        scr_onsets[onsets] = 1
     eda_df["SCR_Onsets"] = scr_onsets
+
+    scr_recoveries = np.array([np.nan]*len(signal))
+    if len(recoveries) > 0:
+        scr_recoveries[recoveries[pd.notnull(recoveries)].astype(int)] = 1
+    eda_df["SCR_Recoveries"] = scr_recoveries
 
     # Store SCR peaks and amplitudes
     scr_peaks = np.array([np.nan]*len(eda))
     peak_index = 0
     for index in range(len(scr_peaks)):
         try:
-            if index == biosppy_eda["peaks"][peak_index]:
-                scr_peaks[index] = biosppy_eda['amplitudes'][peak_index]
+            if index == peaks[peak_index]:
+                scr_peaks[index] = amplitudes[peak_index]
                 peak_index += 1
         except:
             pass
@@ -153,9 +162,10 @@ def eda_process(eda, sampling_rate=1000, cvxEDA_alpha=8e-4, cvxEDA_gamma=1e-2, s
 
     processed_eda = {"df": eda_df,
                      "EDA": {
-                            "SCR_Onsets": biosppy_eda['onsets'],
-                            "SCR_Peaks_Indexes": biosppy_eda["peaks"],
-                            "SCR_Peaks_Amplitudes": biosppy_eda['amplitudes']}}
+                            "SCR_Onsets": onsets,
+                            "SCR_Peaks_Indexes": peaks,
+                            "SCR_Recovery_Indexes": recoveries,
+                            "SCR_Peaks_Amplitudes": amplitudes}}
     return(processed_eda)
 
 
@@ -312,6 +322,81 @@ def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-
 
 
 
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eda_find_SCR(signal, sampling_rate=1000, treshold=0.1, method="fast"):
+    """
+    """
+    # Processing
+    # ===========
+    if method == "slow":
+        # Compute gradient (sort of derivative)
+        gradient = np.gradient(signal)
+        # Smoothing
+        size = int(0.1 * sampling_rate)
+        smooth, _ = biosppy.tools.smoother(signal=gradient, kernel='bartlett', size=size, mirror=True)
+        # Find zero-crossings
+        zeros, = biosppy.tools.zero_cross(signal=smooth, detrend=True)
+
+        # Separate onsets and peaks
+        onsets = []
+        peaks = []
+        for i in zeros:
+            if smooth[i+1] > smooth[i-1]:
+                onsets.append(i)
+            else:
+                peaks.append(i)
+    else:
+        # find extrema
+        peaks, _ = biosppy.tools.find_extrema(signal=signal, mode='max')
+        onsets, _ = biosppy.tools.find_extrema(signal=signal, mode='min')
+
+
+    # Keep only pairs
+    peaks = peaks[peaks > onsets[0]]
+    onsets = onsets[onsets < peaks[-1]]
+
+    # Artifact Treatment
+    # ====================
+    # Compute rising times
+    risingtimes = peaks-onsets
+    risingtimes = risingtimes/sampling_rate*1000
+
+    peaks = peaks[risingtimes > 100]
+    onsets = onsets[risingtimes > 100]
+
+    # Compute amplitudes
+    amplitudes = signal[peaks]-signal[onsets]
+
+    # Remove low amplitude variations
+    mask = amplitudes > np.std(signal)*treshold
+    peaks = peaks[mask]
+    onsets = onsets[mask]
+    amplitudes = amplitudes[mask]
+
+    # Recovery moments
+    recoveries = []
+    for x, peak in enumerate(peaks):
+        try:
+            window = signal[peak:onsets[x+1]]
+        except IndexError:
+            window = signal[peak:]
+        recovery_amp = signal[peak]-amplitudes[x]/2
+        try:
+            smaller = find_closest_in_list(recovery_amp, window, "smaller")
+            recovery_pos = peak + list(window).index(smaller)
+            recoveries.append(recovery_pos)
+        except ValueError:
+            recoveries.append(np.nan)
+    recoveries = np.array(recoveries)
+
+    return(onsets, peaks, amplitudes, recoveries)
 
 
 # ==============================================================================
