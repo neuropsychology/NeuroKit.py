@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["RRi", "time", "frequency", "nonlinear"], use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], use_cvxEDA=True, add=None, emg_names=None, scr_min_amplitude=0.1):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 
@@ -47,7 +47,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
     ecg_quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model. None to skip this function.
     ecg_hrv_features : list
-        What HRV indices to compute. 'RRi' is the minimum. Then, either of 'time', 'frequency' or 'nonlinear' to select the different domains. None to skip this function.
+        What HRV indices to compute. Any or all of 'time', 'frequency' or 'nonlinear'. None to skip this function.
     ecg_segmenter : str
         The cardiac phase segmenter. Can be "hamilton", "gamboa", "engzee", "christov" or "ssf". See :func:`neurokit.ecg_preprocess()` for details.
     use_cvxEDA : bool
