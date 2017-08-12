@@ -489,6 +489,11 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     RRis[RRis < 0.6] = np.nan
     RRis[RRis > 1.3] = np.nan
 
+     # Sanity check
+    if len(RRis) <= 1:
+        print("NeuroKit Warning: ecg_hrv(): Not enough R peaks to compute HRV :/")
+        return(hrv)
+
     # Artifacts treatment
     hrv["n_Artifacts"] = pd.isnull(RRis).sum()/len(RRis)
     artifacts_indices = RRis.index[RRis.isnull()]  # get the artifacts indices
@@ -499,9 +504,9 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     RRis = RRis*1000
     hrv["RR_Intervals"] = RRis  # Values of RRis
 
-    # Sanity check
+    # Sanity check fater artifact removal
     if len(RRis) <= 1:
-        print("NeuroKit Warning: ecg_hrv(): Not enough R peaks to compute HRV :/")
+        print("NeuroKit Warning: ecg_hrv(): Not enough normal R peaks to compute HRV :/")
         return(hrv)
 
     # Time Domain
@@ -511,7 +516,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         hrv["meanNN"] = np.mean(RRis)
         hrv["sdNN"] = np.std(RRis, ddof=1)  # make it calculate N-1
         hrv["cvNN"] = hrv["sdNN"] / hrv["meanNN"]
-        hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"] * 100
+        hrv["CVSD"] = hrv["RMSSD"] / hrv["meanNN"]
         hrv["medianNN"] = np.median(abs(RRis))
         hrv["madNN"] = mad(RRis, constant=1)
         hrv["mcvNN"] = hrv["madNN"] / hrv["medianNN"]
