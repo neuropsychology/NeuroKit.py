@@ -7,6 +7,7 @@
 ## CURRENT : 0.1
 
 ### Breaking changes
+- EventRelated functions for biosignals: complete overhaul (**since 0.1.93**) [#30](https://github.com/neuropsychology/NeuroKit.py/pull/30)
 - `eda_process()`: Completely refactored that function,  removed many parameters. (**since 0.1.92**) [#29](https://github.com/neuropsychology/NeuroKit.py/pull/29)
 - `ecg_wave_detector()`: removed the plot parameter (**since 0.1.7**) [#22](https://github.com/neuropsychology/NeuroKit.py/pull/22)
 - `indentify_outliers` changed to `find_outliers` to start creating some coherence in the API (using prefixes like `find_`, `read_`, `compute_`, `process_`, `plot_` etc.) (**since 0.1.6**) [#19](https://github.com/neuropsychology/NeuroKit.py/pull/19) 

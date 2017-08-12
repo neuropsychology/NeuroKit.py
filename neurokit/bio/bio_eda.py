@@ -470,18 +470,19 @@ def eda_EventRelated(epoch, event_length, window_post=4):
     Example
     ----------
     >>> import neurokit as nk
-    >>> bio = nk.bio_process(eda=df["EDA"], add=df["Photosensor"])
+    >>> bio = nk.bio_process(ecg=data["ECG"], rsp=data["RSP"], eda=data["EDA"], sampling_rate=1000, add=data["Photosensor"])
     >>> df = bio["df"]
     >>> events = nk.find_events(df["Photosensor"], cut="lower")
-    >>> epochs = nk.create_epochs(df, events["onsets"], duration=events["durations"]+8000, onset=-4000)
+    >>> epochs = nk.create_epochs(df, events["onsets"], duration=7, onset=-0.5)
     >>> for epoch in epochs:
-    >>>     EDA_Response = nk.eda_ERP(epoch, event_length=4000)
+    >>>     bio_response = nk.bio_EventRelated(epoch, event_length=4, window_post=3)
 
     Notes
     ----------
+    **Looking for help**: *Experimental*: respiration artifacts correction needs to be implemented.
+
     *Details*
 
-    - **Looking for help**: *Experimental*: respiration artifacts correction needs to be implemented.
     - **EDA_Peak**: Max of EDA (in a window starting 1s after the stim onset) minus baseline.
     - **SCR_Amplitude**: Peak of SCR. If no SCR, returns NA.
     - **SCR_Magnitude**: Peak of SCR. If no SCR, returns 0.
@@ -491,11 +492,12 @@ def eda_EventRelated(epoch, event_length, window_post=4):
     - **SCR_Latency**: Time between stim onset and SCR onset.
     - **SCR_RiseTime**: Time between SCR onset and peak.
     - **SCR_Strength**: *Experimental*: peak divided by latency. Angle of the line between peak and onset.
+    - **SCR_RecoveryTime**: Time between peak and recovery point (half of the amplitude).
 
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -514,8 +516,6 @@ def eda_EventRelated(epoch, event_length, window_post=4):
     # Initialization
     EDA_Response = {}
     window_end = event_length + window_post
-    onset = find_closest_in_list(0.5, epoch.index, direction="smaller")
-
 
     # Sanity check
     if epoch.index[-1]-event_length < 1:
@@ -524,44 +524,49 @@ def eda_EventRelated(epoch, event_length, window_post=4):
 
     # EDA Based
     # =================
-    baseline = epoch["EDA_Filtered"][0:onset].min()
-    eda_peak = epoch["EDA_Filtered"][onset:window_end].max()
-    EDA_Response["EDA_Peak"] = eda_peak - baseline
+    # This is a basic and bad model
+    if "EDA_Filtered" in epoch.columns:
+        baseline = epoch["EDA_Filtered"][0:1].min()
+        eda_peak = epoch["EDA_Filtered"][1:window_end].max()
+        EDA_Response["EDA_Peak"] = eda_peak - baseline
 
 
-    epoch["EDA_Filtered"].plot()
     # SCR Based
     # =================
-    # Computation
-    peak_onset = epoch["SCR_Onsets"][onset:window_end].idxmax()
-    if pd.isnull(peak_onset) is False:
-        amplitude = epoch["SCR_Peaks"][peak_onset:window_end].max()
-        peak_time = epoch["SCR_Peaks"][peak_onset:window_end].idxmax()
+    if "SCR_Onsets" in epoch.columns:
+        # Computation
+        peak_onset = epoch["SCR_Onsets"][1:window_end].idxmax()
+        if pd.isnull(peak_onset) is False:
+            amplitude = epoch["SCR_Peaks"][peak_onset:window_end].max()
+            peak_time = epoch["SCR_Peaks"][peak_onset:window_end].idxmax()
 
-        if pd.isnull(amplitude):
-            magnitude = 0
+            if pd.isnull(amplitude):
+                magnitude = 0
+            else:
+                magnitude = amplitude
+
+            risetime = peak_time - peak_onset
+            strength = magnitude/risetime
+            recovery = epoch["SCR_Recoveries"][peak_time:window_end].idxmax() - peak_time
+
         else:
-            magnitude = amplitude
+            amplitude = np.nan
+            magnitude = 0
+            risetime = np.nan
+            strength = np.nan
+            peak_time = np.nan
+            recovery = np.nan
 
-        risetime = peak_time - peak_onset
-        strength = magnitude/risetime
-#        recovery = nk.find_closest_in_list(magnitude/2, epoch.index, direction="smaller")
-
-    else:
-        amplitude = np.nan
-        magnitude = 0
-        risetime = np.nan
-        strength = np.nan
-
-    # Storage
-    EDA_Response["SCR_Amplitude"] = amplitude
-    EDA_Response["SCR_Magnitude"] = magnitude
-    EDA_Response["SCR_Amplitude_Log"] = np.log(1+amplitude)
-    EDA_Response["SCR_Magnitude_Log"] = np.log(1+magnitude)
-    EDA_Response["SCR_Latency"] = peak_onset
-    EDA_Response["SCR_PeakTime"] = peak_time
-    EDA_Response["SCR_RiseTime"] = risetime
-    EDA_Response["SCR_Strength"] = strength  # Experimental
+        # Storage
+        EDA_Response["SCR_Amplitude"] = amplitude
+        EDA_Response["SCR_Magnitude"] = magnitude
+        EDA_Response["SCR_Amplitude_Log"] = np.log(1+amplitude)
+        EDA_Response["SCR_Magnitude_Log"] = np.log(1+magnitude)
+        EDA_Response["SCR_Latency"] = peak_onset
+        EDA_Response["SCR_PeakTime"] = peak_time
+        EDA_Response["SCR_RiseTime"] = risetime
+        EDA_Response["SCR_Strength"] = strength  # Experimental
+        EDA_Response["SCR_RecoveryTime"] = recovery
 
 
 
