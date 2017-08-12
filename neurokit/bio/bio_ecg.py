@@ -828,11 +828,11 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
         systole_beg = np.nan
         systole_end = np.nan
         for i in epoch[0:window_end].index:
-            if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
+            if epoch["ECG_Systole"].ix[i] != ECG_Response["ECG_Phase_Systole"]:
                 systole_end = i
                 break
         for i in epoch[:0].index[::-1]:
-            if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
+            if epoch["ECG_Systole"].ix[i] != ECG_Response["ECG_Phase_Systole"]:
                 systole_beg = i
                 break
 
