@@ -730,7 +730,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_EventRelated(epoch, event_length, window_post=4):
+def ecg_EventRelated(epoch, event_length=1, window_post=0):
     """
     Extract event-related ECG changes.
 
@@ -751,31 +751,28 @@ def ecg_EventRelated(epoch, event_length, window_post=4):
     Example
     ----------
     >>> import neurokit as nk
-    >>> bio = nk.bio_process(ecg=df["ECG"], add=df["Photosensor"])
+    >>> bio = nk.bio_process(ecg=data["ECG"], rsp=data["RSP"], eda=data["EDA"], sampling_rate=1000, add=data["Photosensor"])
     >>> df = bio["df"]
     >>> events = nk.find_events(df["Photosensor"], cut="lower")
-    >>> epochs = nk.create_epochs(df, events["onsets"], duration=events["durations"]+8000, onset=-4000)
+    >>> epochs = nk.create_epochs(df, events["onsets"], duration=7, onset=-0.5)
     >>> for epoch in epochs:
-    >>>     ECG_Response = nk.ecg_ERP(epoch, event_length=4000)
+    >>>     bio_response = nk.bio_EventRelated(epoch, event_length=4, window_post=3)
 
     Notes
     ----------
     *Details*
 
-    - **Heart_Rate_Baseline**: mean HR before stimulus onset.
-    - **Heart_Rate_Min**: Min HR after stimulus onset.
-    - **Heart_Rate_MinDiff**: HR mininum - baseline.
-    - **Heart_Rate_MinTime**: Time of minimum.
-    - **Heart_Rate_Max**: Max HR after stimulus onset.
-    - **Heart_Rate_MaxDiff**: Max HR - baseline.
-    - **Heart_Rate_MaxTime**: Time of maximum.
-    - **Heart_Rate_Mean**: Mean HR after stimulus onset.
-    - **Heart_Rate_MeanDiff**: Mean HR - baseline.
+    - ***_Baseline**: Signal at onset.
+    - ***_Min**: Mininmum of signal after stimulus onset.
+    - ***_MinDiff**: Signal mininum - baseline.
+    - ***_MinTime**: Time of signal minimum.
+    - ***_Max**: Maximum of signal after stimulus onset.
+    - ***_MaxDiff**: Signal maximum - baseline.
+    - ***_MaxTime**: Time of signal maximum.
+    - ***_Mean**: Mean signal after stimulus onset.
+    - ***_MeanDiff**: Mean signal - baseline.
     - **Cardiac_Systole**: Cardiac phase on stimulus onset (1 = systole, 0 = diastole).
     - **Cardiac_Systole_Completion**: Percentage of cardiac phase completion on simulus onset.
-    - **HRV**: Returns HRV features. See :func:`neurokit.ecg_hrv()`.
-    - **HRV_Diff**: HRV post-stimulus - HRV pre-stimulus.
-
 
 
     *Authors*
@@ -793,54 +790,70 @@ def ecg_EventRelated(epoch, event_length, window_post=4):
     -----------
     """
     # Initialization
-    event_length = event_length/sampling_rate*1000
     ECG_Response = {}
+    window_end = event_length + window_post
 
     # Heart Rate
-    ECG_Response["Heart_Rate_Baseline"] = epoch["Heart_Rate"].ix[:0].mean()
-    ECG_Response["Heart_Rate_Min"] = epoch["Heart_Rate"].ix[0:event_length].min()
-    ECG_Response["Heart_Rate_MinDiff"] = ECG_Response["Heart_Rate_Min"] - ECG_Response["Heart_Rate_Baseline"]
-    ECG_Response["Heart_Rate_MinTime"] = epoch["Heart_Rate"].ix[0:event_length].idxmin()/sampling_rate*1000
-    ECG_Response["Heart_Rate_Max"] = epoch["Heart_Rate"].ix[0:event_length].max()
-    ECG_Response["Heart_Rate_MaxDiff"] = ECG_Response["Heart_Rate_Max"] - ECG_Response["Heart_Rate_Baseline"]
-    ECG_Response["Heart_Rate_MaxTime"] = epoch["Heart_Rate"].ix[0:event_length].idxmax()/sampling_rate*1000
-    ECG_Response["Heart_Rate_Mean"] = epoch["Heart_Rate"].ix[0:event_length].mean()
-    ECG_Response["Heart_Rate_MeanDiff"] = ECG_Response["Heart_Rate_Mean"] - ECG_Response["Heart_Rate_Baseline"]
+    # =============
+    if "Heart_Rate" in epoch.columns:
+        ECG_Response["Heart_Rate_Baseline"] = epoch["Heart_Rate"].ix[0]
+        ECG_Response["Heart_Rate_Min"] = epoch["Heart_Rate"].ix[0:window_end].min()
+        ECG_Response["Heart_Rate_MinDiff"] = ECG_Response["Heart_Rate_Min"] - ECG_Response["Heart_Rate_Baseline"]
+        ECG_Response["Heart_Rate_MinTime"] = epoch["Heart_Rate"].ix[0:window_end].idxmin()
+        ECG_Response["Heart_Rate_Max"] = epoch["Heart_Rate"].ix[0:window_end].max()
+        ECG_Response["Heart_Rate_MaxDiff"] = ECG_Response["Heart_Rate_Max"] - ECG_Response["Heart_Rate_Baseline"]
+        ECG_Response["Heart_Rate_MaxTime"] = epoch["Heart_Rate"].ix[0:window_end].idxmax()
+        ECG_Response["Heart_Rate_Mean"] = epoch["Heart_Rate"].ix[0:window_end].mean()
+        ECG_Response["Heart_Rate_MeanDiff"] = ECG_Response["Heart_Rate_Mean"] - ECG_Response["Heart_Rate_Baseline"]
 
 
     # Cardiac Phase
-    ECG_Response["Cardiac_Systole"] = epoch["ECG_Systole"].ix[0]
+    # =============
+    if "ECG_Systole" in epoch.columns:
+        ECG_Response["Cardiac_Systole"] = epoch["ECG_Systole"].ix[0]
 
-    for i in range(0, int(event_length)-1):
-        if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
-            systole_end = i
-            break
+        # Identify beginning and end
+        systole_beg = np.nan
+        systole_end = np.nan
+        for i in epoch[0:window_end].index:
+            if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
+                systole_end = i
+                break
+        for i in epoch[:0].index[::-1]:
+            if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
+                systole_beg = i
+                break
 
-    for i in range(0, epoch.index[0]+1, -1):
-        if epoch["ECG_Systole"].ix[i] != ECG_Response["Cardiac_Systole"]:
-            systole_beg = i
-            break
-
-    try:
+        # Compute percentage
         ECG_Response["Cardiac_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
-    except ZeroDivisionError:
-        ECG_Response["Cardiac_Systole_Completion"] = np.nan
 
-    # HRV
-    rpeaks_before = epoch[epoch["ECG_Rpeaks"]==1].ix[:0].index/sampling_rate*1000
-    rri_before = np.diff(rpeaks_before)
-    rpeaks = epoch[epoch["ECG_Rpeaks"]==1].ix[0:event_length].index/sampling_rate*1000
-    rri = np.diff(rpeaks)
 
-    try:
-        hrv_baseline = ecg_hrv(rri_before, sampling_rate, segment_length=len(rri_before))
-        hrv = ecg_hrv(rri, sampling_rate, segment_length=len(rri))
+    # RR Interval
+    # ==================
+    if "ECG_RR_Interval" in epoch.columns:
+        ECG_Response["ECG_RRi_Baseline"] = epoch["ECG_RR_Interval"].ix[0]
+        ECG_Response["ECG_RRi_Min"] = epoch["ECG_RR_Interval"].ix[0:window_end].min()
+        ECG_Response["ECG_RRi_MinDiff"] = ECG_Response["ECG_RRi_Min"] - ECG_Response["ECG_RRi_Baseline"]
+        ECG_Response["ECG_RRi_MinTime"] = epoch["ECG_RR_Interval"].ix[0:window_end].idxmin()
+        ECG_Response["ECG_RRi_Max"] = epoch["ECG_RR_Interval"].ix[0:window_end].max()
+        ECG_Response["ECG_RRi_MaxDiff"] = ECG_Response["ECG_RRi_Max"] - ECG_Response["ECG_RRi_Baseline"]
+        ECG_Response["ECG_RRi_MaxTime"] = epoch["ECG_RR_Interval"].ix[0:window_end].idxmax()
+        ECG_Response["ECG_RRi_Mean"] = epoch["ECG_RR_Interval"].ix[0:window_end].mean()
+        ECG_Response["ECG_RRi_MeanDiff"] = ECG_Response["ECG_RRi_Mean"] - ECG_Response["ECG_RRi_Baseline"]
 
-        for key in hrv:
-            ECG_Response["HRV_" + key] = hrv[key]
-            ECG_Response["HRV_Diff_" + key] = hrv[key] - hrv_baseline[key]
-    except IndexError:
-        print("NeuroKit Warning: ecg_ERP(): Not enough R peaks to compute HRV.")
+    # RSA
+    # ==========
+    if "RSA" in epoch.columns:
+        ECG_Response["ECG_RSA_Baseline"] = epoch["RSA"].ix[0]
+        ECG_Response["ECG_RSA_Min"] = epoch["RSA"].ix[0:window_end].min()
+        ECG_Response["ECG__RSA_MinDiff"] = ECG_Response["ECG_RSA_Min"] - ECG_Response["ECG_RSA_Baseline"]
+        ECG_Response["ECG_RSA_MinTime"] = epoch["RSA"].ix[0:window_end].idxmin()
+        ECG_Response["ECG_RSA_Max"] = epoch["RSA"].ix[0:window_end].max()
+        ECG_Response["ECG_RSA_MaxDiff"] = ECG_Response["ECG_RSA_Max"] - ECG_Response["ECG_RSA_Baseline"]
+        ECG_Response["ECG_RSA_MaxTime"] = epoch["RSA"].ix[0:window_end].idxmax()
+        ECG_Response["ECG_RSA_Mean"] = epoch["RSA"].ix[0:window_end].mean()
+        ECG_Response["ECG_RSA_MeanDiff"] = ECG_Response["ECG_RSA_Mean"] - ECG_Response["ECG_RSA_Baseline"]
+
 
     return(ECG_Response)
 

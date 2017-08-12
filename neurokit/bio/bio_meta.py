@@ -165,7 +165,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
+def bio_EventRelated(epoch, event_length, window_post=4):
     """
     Extract event-related bio (EDA, ECG and RSP) changes.
 
@@ -188,12 +188,12 @@ def bio_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     Example
     ----------
     >>> import neurokit as nk
-    >>> bio = nk.bio_process(RSP=df["RSP"], add=df["Photosensor"])
+    >>> bio = nk.bio_process(ecg=data["ECG"], rsp=data["RSP"], eda=data["EDA"], sampling_rate=1000, add=data["Photosensor"])
     >>> df = bio["df"]
     >>> events = nk.find_events(df["Photosensor"], cut="lower")
-    >>> epochs = nk.create_epochs(df, events["onsets"], duration=events["durations"]+8000, onset=-4000)
+    >>> epochs = nk.create_epochs(df, events["onsets"], duration=7, onset=-0.5)
     >>> for epoch in epochs:
-    >>>     bio_response = nk.bio_ERP(epoch, event_length=4000)
+    >>>     bio_response = nk.bio_EventRelated(epoch, event_length=4, window_post=3)
 
     Notes
     ----------
@@ -201,19 +201,18 @@ def bio_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
 
     - **ECG Features**
 
-        - **Heart_Rate_Baseline**: mean HR before stimulus onset.
-        - **Heart_Rate_Min**: Min HR after stimulus onset.
-        - **Heart_Rate_MinDiff**: HR mininum - baseline.
-        - **Heart_Rate_MinTime**: Time of minimum.
-        - **Heart_Rate_Max**: Max HR after stimulus onset.
-        - **Heart_Rate_MaxDiff**: Max HR - baseline.
-        - **Heart_Rate_MaxTime**: Time of maximum.
-        - **Heart_Rate_Mean**: Mean HR after stimulus onset.
-        - **Heart_Rate_MeanDiff**: Mean HR - baseline.
+        - ***_Baseline**: Signal at onset.
+        - ***_Min**: Mininmum of signal after stimulus onset.
+        - ***_MinDiff**: Signal mininum - baseline.
+        - ***_MinTime**: Time of signal minimum.
+        - ***_Max**: Maximum of signal after stimulus onset.
+        - ***_MaxDiff**: Signal maximum - baseline.
+        - ***_MaxTime**: Time of signal maximum.
+        - ***_Mean**: Mean signal after stimulus onset.
+        - ***_MeanDiff**: Mean signal - baseline.
         - **Cardiac_Systole**: Cardiac phase on stimulus onset (1 = systole, 0 = diastole).
         - **Cardiac_Systole_Completion**: Percentage of cardiac phase completion on simulus onset.
-        - **HRV**: Returns HRV features. See :func:`neurokit.ecg_hrv()`.
-        - **HRV_Diff**: HRV post-stimulus - HRV pre-stimulus.
+
     - **Respiration Features**
 
         - **RSP_Rate_Baseline**: mean RSP Rate before stimulus onset.
@@ -231,12 +230,9 @@ def bio_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
         - **RSP_MaxTime**: Time of RSP Max.
         - **RSP_Inspiration**: Respiration phase on stimulus onset (1 = inspiration, 0 = expiration).
         - **RSP_Inspiration_Completion**: Percentage of respiration phase on stimulus onset.
-        - **RSP_Cycle_Length**: Mean duration of RSP cycles (inspiration and expiration) after stimulus onset.
-        - **RSP_Cycle_Length_Baseline**: Mean duration of RSP cycles (inspiration and expiration) before stimulus onset.
-        - **RSP_Cycle_LengthDiff**: mean cycle length after - mean cycle length before stimulus onset.
+
     - **EDA Features**
 
-        - **Looking for help**: *Experimental*: respiration artifacts correction needs to be implemented.
         - **EDA_Peak**: Max of EDA (in a window starting 1s after the stim onset) minus baseline.
         - **SCR_Amplitude**: Peak of SCR. If no SCR, returns NA.
         - **SCR_Magnitude**: Peak of SCR. If no SCR, returns 0.
@@ -245,7 +241,8 @@ def bio_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
         - **SCR_PeakTime**: Time of peak.
         - **SCR_Latency**: Time between stim onset and SCR onset.
         - **SCR_RiseTime**: Time between SCR onset and peak.
-        - **SCR_Strength**: *Experimental*: peak divided by latency.
+        - **SCR_Strength**: *Experimental*: peak divided by latency. Angle of the line between peak and onset.
+        - **SCR_RecoveryTime**: Time between peak and recovery point (half of the amplitude).
 
 
     *Authors*
@@ -265,14 +262,14 @@ def bio_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     - Schneider, R., Schmidt, S., Binder, M., Schäfer, F., & Walach, H. (2003). Respiration-related artifacts in EDA recordings: introducing a standardized method to overcome multiple interpretations. Psychological reports, 93(3), 907-920.
     """
     bio_response = {}
-    if "ECG_Filtered" in epoch.columns:
-        ECG_Response = ecg_EventRelated(epoch, event_length, sampling_rate, window_post)
-        bio_response.update(ECG_Response)
-    if "RSP_Filtered" in epoch.columns:
-        RSP_Response = rsp_EventRelated(epoch, event_length, sampling_rate, window_post)
-        bio_response.update(RSP_Response)
-    if "EDA_Filtered" in epoch.columns:
-        EDA_Response = eda_EventRelated(epoch, event_length, sampling_rate, window_post)
-        bio_response.update(EDA_Response)
+
+    ECG_Response = ecg_EventRelated(epoch, event_length, sampling_rate, window_post)
+    bio_response.update(ECG_Response)
+
+    RSP_Response = rsp_EventRelated(epoch, event_length, sampling_rate, window_post)
+    bio_response.update(RSP_Response)
+
+    EDA_Response = eda_EventRelated(epoch, event_length, sampling_rate, window_post)
+    bio_response.update(EDA_Response)
 
     return(bio_response)

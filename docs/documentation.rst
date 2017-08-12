@@ -17,6 +17,21 @@ ecg_process
 
 .. autofunction:: neurokit.ecg_process
 
+ecg_preprocess
+---------------
+
+.. autofunction:: neurokit.ecg_preprocess
+
+ecg_hrv
+-----------------
+
+.. autofunction:: neurokit.ecg_hrv
+
+ecg_rsa
+-----------------
+
+.. autofunction:: neurokit.ecg_rsa
+
 
 rsp_process
 ---------------
@@ -28,20 +43,16 @@ eda_process
 
 .. autofunction:: neurokit.eda_process
 
+eda_scr
+---------------
+
+.. autofunction:: neurokit.eda_scr
+
 emg_process
 ---------------
 
 .. autofunction:: neurokit.emg_process
 
-ecg_hrv
------------------
-
-.. autofunction:: neurokit.ecg_hrv
-
-ecg_rsa
------------------
-
-.. autofunction:: neurokit.ecg_rsa
 
 bio_EventRelated
 -----------------
@@ -160,6 +171,13 @@ BMI
 ---------------
 
 .. autofunction:: neurokit.BMI
+
+
+find_closest_in_list
+---------------------
+
+.. autofunction:: neurokit.find_closest_in_list
+
 
 
 compute_interoceptive_accuracy

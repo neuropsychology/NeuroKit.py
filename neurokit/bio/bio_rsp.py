@@ -216,7 +216,7 @@ def rsp_find_cycles(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def rsp_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
+def rsp_EventRelated(epoch, event_length, window_post=4):
     """
     Extract event-related respiratory (RSP) changes.
 
@@ -239,12 +239,12 @@ def rsp_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     Example
     ----------
     >>> import neurokit as nk
-    >>> bio = nk.bio_process(RSP=df["RSP"], add=df["Photosensor"])
+    >>> bio = nk.bio_process(ecg=data["ECG"], rsp=data["RSP"], eda=data["EDA"], sampling_rate=1000, add=data["Photosensor"])
     >>> df = bio["df"]
     >>> events = nk.find_events(df["Photosensor"], cut="lower")
-    >>> epochs = nk.create_epochs(df, events["onsets"], duration=events["durations"]+8000, onset=-4000)
+    >>> epochs = nk.create_epochs(df, events["onsets"], duration=7, onset=-0.5)
     >>> for epoch in epochs:
-    >>>     RSP_Response = nk.rsp_ERP(epoch, event_length=4000)
+    >>>     bio_response = nk.bio_EventRelated(epoch, event_length=4, window_post=3)
 
     Notes
     ----------
@@ -265,15 +265,11 @@ def rsp_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     - **RSP_MaxTime**: Time of RSP Max.
     - **RSP_Inspiration**: Respiration phase on stimulus onset (1 = inspiration, 0 = expiration).
     - **RSP_Inspiration_Completion**: Percentage of respiration phase on stimulus onset.
-    - **RSP_Cycle_Length**: Mean duration of RSP cycles (inspiration and expiration) after stimulus onset.
-    - **RSP_Cycle_Length_Baseline**: Mean duration of RSP cycles (inspiration and expiration) before stimulus onset.
-    - **RSP_Cycle_LengthDiff**: mean cycle length after - mean cycle length before stimulus onset.
-
 
 
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -287,70 +283,41 @@ def rsp_EventRelated(epoch, event_length, sampling_rate=1000, window_post=4):
     - Gomez, P., Stahel, W. A., & Danuser, B. (2004). Respiratory responses during affective picture viewing. Biological Psychology, 67(3), 359-373.
     """
     # Initialization
-    event_length = event_length/sampling_rate*1000
     RSP_Response = {}
+    window_end = event_length + window_post
 
     # RSP Rate
-    RSP_Response["RSP_Rate_Baseline"] = epoch["RSP_Rate"].ix[:0].mean()
-    RSP_Response["RSP_Rate_Min"] = epoch["RSP_Rate"].ix[0:event_length].min()
-    RSP_Response["RSP_Rate_MinDiff"] = RSP_Response["RSP_Rate_Min"] - RSP_Response["RSP_Rate_Baseline"]
-    RSP_Response["RSP_Rate_MinTime"] = epoch["RSP_Rate"].ix[0:event_length].idxmin()/sampling_rate*1000
-    RSP_Response["RSP_Rate_Max"] = epoch["RSP_Rate"].ix[0:event_length].max()
-    RSP_Response["RSP_Rate_MaxDiff"] = RSP_Response["RSP_Rate_Max"] - RSP_Response["RSP_Rate_Baseline"]
-    RSP_Response["RSP_Rate_MaxTime"] = epoch["RSP_Rate"].ix[0:event_length].idxmax()/sampling_rate*1000
-    RSP_Response["RSP_Rate_Mean"] = epoch["RSP_Rate"].ix[0:event_length].mean()
-    RSP_Response["RSP_Rate_MeanDiff"] = RSP_Response["RSP_Rate_Mean"] - RSP_Response["RSP_Rate_Baseline"]
+    # =============
+    if "RSP_Rate" in epoch.columns:
+        RSP_Response["RSP_Rate_Baseline"] = epoch["RSP_Rate"].ix[0]
+        RSP_Response["RSP_Rate_Min"] = epoch["RSP_Rate"].ix[0:window_end].min()
+        RSP_Response["RSP_Rate_MinDiff"] = RSP_Response["RSP_Rate_Min"] - RSP_Response["RSP_Rate_Baseline"]
+        RSP_Response["RSP_Rate_MinTime"] = epoch["RSP_Rate"].ix[0:window_end].idxmin()
+        RSP_Response["RSP_Rate_Max"] = epoch["RSP_Rate"].ix[0:window_end].max()
+        RSP_Response["RSP_Rate_MaxDiff"] = RSP_Response["RSP_Rate_Max"] - RSP_Response["RSP_Rate_Baseline"]
+        RSP_Response["RSP_Rate_MaxTime"] = epoch["RSP_Rate"].ix[0:window_end].idxmax()
+        RSP_Response["RSP_Rate_Mean"] = epoch["RSP_Rate"].ix[0:window_end].mean()
+        RSP_Response["RSP_Rate_MeanDiff"] = RSP_Response["RSP_Rate_Mean"] - RSP_Response["RSP_Rate_Baseline"]
 
-    # Normalize
-    baseline_mean = epoch["RSP_Filtered"].ix[:0].mean()
-    baseline_std = epoch["RSP_Filtered"].ix[:0].std()
-    z_rsp = (epoch["RSP_Filtered"].ix[0:]-baseline_mean)/baseline_std
-
-    RSP_Response["RSP_Min"] = z_rsp.min()
-    RSP_Response["RSP_MinTime"] = z_rsp.ix[0:event_length].idxmin()/sampling_rate*1000
-    RSP_Response["RSP_Max"] = z_rsp.ix[0:event_length].max()
-    RSP_Response["RSP_MaxTime"] = z_rsp.ix[0:event_length].idxmax()/sampling_rate*1000
 
     # RSP Phase
-    RSP_Response["RSP_Inspiration"] = epoch["RSP_Inspiration"].ix[0]
+    # =============
+    if "RSP_Inspiration" in epoch.columns:
+        RSP_Response["RSP_Inspiration"] = epoch["RSP_Inspiration"].ix[0]
 
-    for i in range(0, int(event_length)-1):
-        try:
+        # Identify beginning and end
+        phase_beg = np.nan
+        phase_end = np.nan
+        for i in epoch[0:window_end].index:
             if epoch["RSP_Inspiration"].ix[i] != RSP_Response["RSP_Inspiration"]:
                 phase_end = i
                 break
-        except KeyError as error:
-            print("NeuroKit Warning: rsp_ERP(): Didn't find any phase end. Error: " + str(error))
-            phase_end = np.nan
-
-    for i in range(0, epoch.index[0]+1, -1):
-        try:
+        for i in epoch[:0].index[::-1]:
             if epoch["RSP_Inspiration"].ix[i] != RSP_Response["RSP_Inspiration"]:
                 phase_beg = i
                 break
-        except KeyError as error:
-            print("NeuroKit Warning: rsp_ERP(): Didn't find any phase beginning. Error: " + str(error))
-            phase_beg = np.nan
 
-    try:
         RSP_Response["RSP_Inspiration_Completion"] = -1*phase_beg/(phase_end - phase_beg)*100
-    except ZeroDivisionError as error:
-        print("NeuroKit Warning: rsp_ERP(): RSP_Inspiration_Completion. Error: " + str(error))
-        RSP_Response["RSP_Inspiration_Completion"] = np.nan
-    except UnboundLocalError as error:
-        print("NeuroKit Warning: rsp_ERP(): RSP_Inspiration_Completion. Error: " + str(error))
-        RSP_Response["RSP_Inspiration_Completion"] = np.nan
 
-    try:
-        baseline_phase = rsp_find_cycles(epoch["RSP_Inspiration"].ix[:0])
-        phase = rsp_find_cycles(epoch["RSP_Inspiration"].ix[0:])
-
-        RSP_Response["RSP_Cycle_Length"] = pd.Series(phase["RSP_Cycles_Length"]).mean()/sampling_rate*1000
-        RSP_Response["RSP_Cycle_Length_Baseline"] = pd.Series(baseline_phase["RSP_Cycles_Length"]).mean()/sampling_rate*1000
-        RSP_Response["RSP_Cycle_LengthDiff"] = RSP_Response["RSP_Cycle_Length"]-RSP_Response["RSP_Cycle_Length_Baseline"]
-    except IndexError:
-        RSP_Response["RSP_Cycle_Length"] = np.nan
-        RSP_Response["RSP_Cycle_Length_Baseline"] = np.nan
-        RSP_Response["RSP_Cycle_LengthDiff"] = np.nan
 
     return(RSP_Response)
