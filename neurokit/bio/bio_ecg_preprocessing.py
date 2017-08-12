@@ -154,7 +154,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     # Add R peaks
     rpeaks_signal = np.array([np.nan]*len(ecg))
     rpeaks_signal[rpeaks] = 1
-    ecg_df["ECG_R_peaks"] = rpeaks_signal
+    ecg_df["ECG_R_Peaks"] = rpeaks_signal
 
 
     # Heart Rate

@@ -492,22 +492,11 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     artifacts_indices = RRis.index[RRis.isnull()]  # get the artifacts indices
     RRis = RRis.drop(artifacts_indices)  # remove the artifacts
 
-    # Convert to continuous RR interval (RRi)
-    beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
-    beats_times -= beats_times[0]
-    beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
-    try:
-        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
-    except TypeError:
-        print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute HRV.")
-        return(hrv)
-
 
     # Rescale to 1000Hz
     RRis = RRis*1000
-    RRi = RRi*1000
     hrv["RR_Intervals"] = RRis  # Values of RRis
-    hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
+
 
     # Time Domain
     # ==================
@@ -525,21 +514,43 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         nn20 = sum(abs(np.diff(RRis)) > 20)
         hrv["pNN20"] = nn20 / len(RRis) * 100
 
-        # Geometrical Method
-        # ====================
-        # TODO: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
-        try:
-            bin_number = 32  # Initialize bin_width value
-            # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
-            for bin_number_current in range(2, 50):
-                bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
-                if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
-                    bin_number = bin_number_current
-            hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
-            hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
-        except ValueError:
-            hrv["Triang"] = np.nan
-            hrv["Shannon_h"] = np.nan
+
+
+    # Interpolation
+    # =================
+    # Convert to continuous RR interval (RRi)
+    beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
+    beats_times -= beats_times[0]
+    beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
+
+    try:
+        RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
+    except TypeError:
+        print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute interpolation. Will skip many features.")
+        return(hrv)
+
+    # Rescale to 1000Hz
+    RRi = RRi*1000
+    hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
+
+
+
+
+    # Geometrical Method (part of time domain)
+    # =========================================
+    # TODO: This part needs to be checked by an expert. Also, it would be better to have Renyi entropy (a generalization of shannon's), but I don't know how to compute it.
+    try:
+        bin_number = 32  # Initialize bin_width value
+        # find the appropriate number of bins so the class width is approximately 8 ms (Voss, 2015)
+        for bin_number_current in range(2, 50):
+            bin_width = np.diff(np.histogram(RRi, bins=bin_number_current, density=True)[1])[0]
+            if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
+                bin_number = bin_number_current
+        hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
+        hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
+    except ValueError:
+        hrv["Triang"] = np.nan
+        hrv["Shannon_h"] = np.nan
 
 
     # Frequency Domain
@@ -771,8 +782,9 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     - ***_MaxTime**: Time of signal maximum.
     - ***_Mean**: Mean signal after stimulus onset.
     - ***_MeanDiff**: Mean signal - baseline.
-    - **Cardiac_Systole**: Cardiac phase on stimulus onset (1 = systole, 0 = diastole).
-    - **Cardiac_Systole_Completion**: Percentage of cardiac phase completion on simulus onset.
+    - **ECG_Phase_Systole**: Cardiac phase on stimulus onset (1 = systole, 0 = diastole).
+    - **ECG_Phase_Systole_Completion**: Percentage of cardiac phase completion on simulus onset.
+    - **ECG_HRV_***: Time-domain HRV features. See :func:`neurokit.ecg_hrv()`.
 
 
     *Authors*
@@ -810,7 +822,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # Cardiac Phase
     # =============
     if "ECG_Systole" in epoch.columns:
-        ECG_Response["Cardiac_Systole"] = epoch["ECG_Systole"].ix[0]
+        ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"].ix[0]
 
         # Identify beginning and end
         systole_beg = np.nan
@@ -825,7 +837,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
                 break
 
         # Compute percentage
-        ECG_Response["Cardiac_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
+        ECG_Response["ECG_Phase_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
 
 
     # RR Interval
@@ -854,6 +866,15 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
         ECG_Response["ECG_RSA_Mean"] = epoch["RSA"].ix[0:window_end].mean()
         ECG_Response["ECG_RSA_MeanDiff"] = ECG_Response["ECG_RSA_Mean"] - ECG_Response["ECG_RSA_Baseline"]
 
+    # HRV
+    # ====
+    if "ECG_R_Peaks" in epoch.columns:
+        rpeaks = epoch[epoch["ECG_R_Peaks"]==1].ix[0:event_length].index*1000
+        hrv = nk.ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+
+        for key in hrv:
+            if isinstance(hrv[key], float):  # Avoid storing series or dataframes
+                ECG_Response["ECG_HRV_" + key] = hrv[key]
 
     return(ECG_Response)
 

@@ -214,8 +214,9 @@ def bio_EventRelated(epoch, event_length, window_post_ecg=0, window_post_rsp=4, 
         - ***_MaxTime**: Time of signal maximum.
         - ***_Mean**: Mean signal after stimulus onset.
         - ***_MeanDiff**: Mean signal - baseline.
-        - **Cardiac_Systole**: Cardiac phase on stimulus onset (1 = systole, 0 = diastole).
-        - **Cardiac_Systole_Completion**: Percentage of cardiac phase completion on simulus onset.
+        - **ECG_Phase_Systole**: Cardiac phase on stimulus onset (1 = systole, 0 = diastole).
+        - **ECG_Phase_Systole_Completion**: Percentage of cardiac phase completion on simulus onset.
+        - **ECG_HRV_***: Time-domain HRV features. See :func:`neurokit.ecg_hrv()`.
 
     - **Respiration Features**
 
