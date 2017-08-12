@@ -870,7 +870,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # ====
     if "ECG_R_Peaks" in epoch.columns:
         rpeaks = epoch[epoch["ECG_R_Peaks"]==1].ix[0:event_length].index*1000
-        hrv = nk.ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+        hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
 
         for key in hrv:
             if isinstance(hrv[key], float):  # Avoid storing series or dataframes
