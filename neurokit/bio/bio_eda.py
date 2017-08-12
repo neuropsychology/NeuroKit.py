@@ -546,7 +546,10 @@ def eda_EventRelated(epoch, event_length, window_post=4):
                 magnitude = amplitude
 
             risetime = peak_time - peak_onset
-            strength = magnitude/risetime
+            if risetime > 0:
+                strength = magnitude/risetime
+            else:
+                strength = np.nan
             recovery = epoch["SCR_Recoveries"][peak_time:window_end].idxmax() - peak_time
 
         else:
