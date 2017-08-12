@@ -536,7 +536,7 @@ def eda_EventRelated(epoch, event_length, window_post=4):
     if "SCR_Onsets" in epoch.columns:
         # Computation
         peak_onset = epoch["SCR_Onsets"][1:window_end].idxmax()
-        if pd.isnull(peak_onset) is False:
+        if pd.notnull(peak_onset):
             amplitude = epoch["SCR_Peaks"][peak_onset:window_end].max()
             peak_time = epoch["SCR_Peaks"][peak_onset:window_end].idxmax()
 
@@ -575,8 +575,8 @@ def eda_EventRelated(epoch, event_length, window_post=4):
     # ====================
     # TODO !!
     # Respiration artifacts
-    if "RSP_Filtered" in epoch.columns:
-        pass  # I Dunno, maybe with granger causality or something?
+#    if "RSP_Filtered" in epoch.columns:
+#        pass  # I Dunno, maybe with granger causality or something?
 
 
     return(EDA_Response)
