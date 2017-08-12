@@ -470,11 +470,6 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     # Extract RR intervals (RRis)
     RRis = np.diff(rpeaks)
 
-    # Sanity checj
-    if len(RRis) <= 1:
-        print("NeuroKit Warning: ecg_hrv(): Not enough R peaks to compute HRV :/")
-        return(hrv)
-
 
     # Basic resampling to 1Hz to standardize the scale
     RRis = RRis/sampling_rate
@@ -504,6 +499,10 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     RRis = RRis*1000
     hrv["RR_Intervals"] = RRis  # Values of RRis
 
+    # Sanity check
+    if len(RRis) <= 1:
+        print("NeuroKit Warning: ecg_hrv(): Not enough R peaks to compute HRV :/")
+        return(hrv)
 
     # Time Domain
     # ==================
