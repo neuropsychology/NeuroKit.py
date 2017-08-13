@@ -876,6 +876,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # RSA
     # ==========
     if "RSA" in epoch.columns:
+        ECG_Response = compute_features("ECG_RSA", "ECG_RSA", ECG_Response)
 
     # HRV
     # ====
