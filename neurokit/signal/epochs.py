@@ -51,12 +51,12 @@ def create_epochs(data, events_onsets, sampling_rate=1000, duration=1, onset=0, 
     - numpy
     """
     # Convert ints to arrays if needed
-    if isinstance(duration, list):
+    if isinstance(duration, list) or isinstance(duration, np.ndarray):
         duration = np.array(duration)
     else:
         duration = np.array([duration]*len(events_onsets))
 
-    if isinstance(onset, list):
+    if isinstance(onset, list) or isinstance(onset, np.ndarray):
         onset = np.array(onset)
     else:
         onset = np.array([onset]*len(events_onsets))

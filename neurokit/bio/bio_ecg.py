@@ -875,7 +875,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     if "RSA" in epoch.columns:
         ECG_Response["ECG_RSA_Baseline"] = epoch["RSA"].ix[0]
         ECG_Response["ECG_RSA_Min"] = epoch["RSA"].ix[0:window_end].min()
-        ECG_Response["ECG__RSA_MinDiff"] = ECG_Response["ECG_RSA_Min"] - ECG_Response["ECG_RSA_Baseline"]
+        ECG_Response["ECG_RSA_MinDiff"] = ECG_Response["ECG_RSA_Min"] - ECG_Response["ECG_RSA_Baseline"]
         ECG_Response["ECG_RSA_MinTime"] = epoch["RSA"].ix[0:window_end].idxmin()
         ECG_Response["ECG_RSA_Max"] = epoch["RSA"].ix[0:window_end].max()
         ECG_Response["ECG_RSA_MaxDiff"] = ECG_Response["ECG_RSA_Max"] - ECG_Response["ECG_RSA_Baseline"]
