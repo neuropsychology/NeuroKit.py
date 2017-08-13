@@ -123,7 +123,10 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     # =============
     if hrv_features is not None:
         hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate, hrv_features=hrv_features)
-        processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
+        try:
+            processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
+        except KeyError:
+            pass
         processed_ecg["ECG"]["HRV"] = hrv
         if age is not None and sex is not None and position is not None:
             processed_ecg["ECG"]["HRV_Adjusted"] = ecg_hrv_assessment(hrv, age, sex, position)
