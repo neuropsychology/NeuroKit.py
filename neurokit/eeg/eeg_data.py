@@ -314,8 +314,14 @@ def eeg_create_events(onsets, conditions=None):
     """
     event_id = {}
 
+    # Sanity check
+    if len(conditions) != len(onsets):
+        print("NeuroKit Warning: eeg_create_events(): conditions parameter of different length than onsets. Aborting.")
+        return()
+
     if conditions is None:
         conditions = ["Event"] * len(onsets)
+
 
 
     event_names = list(set(conditions))
@@ -325,7 +331,7 @@ def eeg_create_events(onsets, conditions=None):
         conditions = [event_index[i[0]] if x==i[1] else x for x in conditions]
         event_id[i[1]] = event_index[i[0]]
 
-    events = np.array([onsets, [0]*len(onsets), conditions]).T
+    events = np.array([onsets, [0]*len(onsets), conditions])
     return(events, event_id)
 
 
@@ -421,8 +427,105 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
 
 
 
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_epochs_to_dict(epochs, include="all", exclude=None, hemisphere="both", include_central=True):
+    """
+    Convert mne.Epochs object to Python dict.
+    """
+    data = {}
+    for index, epoch in enumerate(epochs.get_data()):
+        epoch = pd.DataFrame(epoch.T)
+        epoch.columns = epochs.ch_names
+
+        selection = eeg_select_sensor_area(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
+
+        data[index] = epoch[selection]
+    return()
 
 
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_select_sensor_area(include="all", exclude=None, hemisphere="both", include_central=True):
+    """
+    Returns list of electrodes names (according to a 10-20 EEG montage). This function is probably not very flexibile. Looking for help to improve it.
+
+    Parameters
+    ----------
+    include : str
+        Sensor area to include.
+    exclude : str or None
+        Sensor area to exclude.
+    hemisphere : str
+        Select both hemispheres? "both", "left" or "right".
+    include_central : bool
+        if `hemisphere != "both"`, select the central line?
+
+    Returns
+    ----------
+    sensors : list
+        List of sensors corresponding to the selected area.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> nk.eeg_select_sensor_area(include="F", exclude="C")
+
+
+    Notes
+    ----------
+    *Authors*
+
+    - Dominique Makowski (https://github.com/DominiqueMakowski)
+
+    References
+    ------------
+    - None
+    """
+    sensors = ['AF3', 'AF4', 'AF7', 'AF8', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'CP1', 'CP2', 'CP3', 'CP4', 'CP5', 'CP6', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'FC1', 'FC2', 'FC3', 'FC4', 'FC5', 'FC6', 'Fp1', 'Fp2', 'FT10', 'FT7', 'FT8', 'FT9', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Pz', 'FCz', 'T7', 'T8', 'TP10', 'TP7', 'TP8', 'TP9', 'AFz']
+
+    if include != "all":
+        sensors = [s for s in sensors if include in s]
+
+    if exclude != None:
+        if isinstance(exclude, str):
+            exclude = [exclude]
+        for to_exclude in exclude:
+            sensors = [s for s in sensors if to_exclude not in s]
+
+    if hemisphere != "both":
+        if include_central == False:
+            if hemisphere == "left":
+                sensors = [s for s in sensors if "1" in s or "3" in s or "5" in s or "7" in s or "9" in s]
+            if hemisphere == "right":
+                sensors = [s for s in sensors if "2" in s or "4" in s or "6" in s or "8" in s or "10" in s]
+        else:
+            if hemisphere == "left":
+                sensors = [s for s in sensors if "1" in s or "3" in s or "5" in s or "7" in s or "9" in s or "z" in s]
+            if hemisphere == "right":
+                sensors = [s for s in sensors if "2" in s or "4" in s or "6" in s or "8" in s or "10" in s or "z" in s]
+
+
+    return(sensors)
+
+
+
+#==============================================================================
+#==============================================================================
+#==============================================================================
+#==============================================================================
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================

@@ -821,6 +821,22 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     References
     -----------
     """
+    def compute_features(variable, prefix, response):
+        """
+        Internal function to compute features and avoid spaguetti code.
+        """
+        response[prefix + "_Baseline"] = epoch[variable][0]
+        response[prefix + "_Min"] = epoch[variable][0:window_end].min()
+        response[prefix + "_MinDiff"] = response[prefix + "_Min"] - response[prefix + "_Baseline"]
+        response[prefix + "_MinTime"] = epoch[variable][0:window_end].idxmin()
+        response[prefix + "_Max"] = epoch[variable][0:window_end].max()
+        response[prefix + "_MaxDiff"] = response[prefix + "_Max"] - response[prefix + "_Baseline"]
+        response[prefix + "_MaxTime"] = epoch[variable][0:window_end].idxmax()
+        response[prefix + "_Mean"] = epoch[variable][0:window_end].mean()
+        response[prefix + "_MeanDiff"] = response[prefix + "_Mean"] - response[prefix + "_Baseline"]
+
+        return(response)
+
     # Initialization
     ECG_Response = {}
     window_end = event_length + window_post
@@ -828,31 +844,22 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # Heart Rate
     # =============
     if "Heart_Rate" in epoch.columns:
-        ECG_Response["Heart_Rate_Baseline"] = epoch["Heart_Rate"].ix[0]
-        ECG_Response["Heart_Rate_Min"] = epoch["Heart_Rate"].ix[0:window_end].min()
-        ECG_Response["Heart_Rate_MinDiff"] = ECG_Response["Heart_Rate_Min"] - ECG_Response["Heart_Rate_Baseline"]
-        ECG_Response["Heart_Rate_MinTime"] = epoch["Heart_Rate"].ix[0:window_end].idxmin()
-        ECG_Response["Heart_Rate_Max"] = epoch["Heart_Rate"].ix[0:window_end].max()
-        ECG_Response["Heart_Rate_MaxDiff"] = ECG_Response["Heart_Rate_Max"] - ECG_Response["Heart_Rate_Baseline"]
-        ECG_Response["Heart_Rate_MaxTime"] = epoch["Heart_Rate"].ix[0:window_end].idxmax()
-        ECG_Response["Heart_Rate_Mean"] = epoch["Heart_Rate"].ix[0:window_end].mean()
-        ECG_Response["Heart_Rate_MeanDiff"] = ECG_Response["Heart_Rate_Mean"] - ECG_Response["Heart_Rate_Baseline"]
-
-
+        ECG_Response = compute_features("Heart_Rate", "ECG_Heart_Rate", ECG_Response)
+#
     # Cardiac Phase
     # =============
     if "ECG_Systole" in epoch.columns:
-        ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"].ix[0]
+        ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"][0]
 
         # Identify beginning and end
         systole_beg = np.nan
         systole_end = np.nan
         for i in epoch[0:window_end].index:
-            if epoch["ECG_Systole"].ix[i] != ECG_Response["ECG_Phase_Systole"]:
+            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
                 systole_end = i
                 break
         for i in epoch[:0].index[::-1]:
-            if epoch["ECG_Systole"].ix[i] != ECG_Response["ECG_Phase_Systole"]:
+            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
                 systole_beg = i
                 break
 
@@ -863,38 +870,62 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # RR Interval
     # ==================
     if "ECG_RR_Interval" in epoch.columns:
-        ECG_Response["ECG_RRi_Baseline"] = epoch["ECG_RR_Interval"].ix[0]
-        ECG_Response["ECG_RRi_Min"] = epoch["ECG_RR_Interval"].ix[0:window_end].min()
-        ECG_Response["ECG_RRi_MinDiff"] = ECG_Response["ECG_RRi_Min"] - ECG_Response["ECG_RRi_Baseline"]
-        ECG_Response["ECG_RRi_MinTime"] = epoch["ECG_RR_Interval"].ix[0:window_end].idxmin()
-        ECG_Response["ECG_RRi_Max"] = epoch["ECG_RR_Interval"].ix[0:window_end].max()
-        ECG_Response["ECG_RRi_MaxDiff"] = ECG_Response["ECG_RRi_Max"] - ECG_Response["ECG_RRi_Baseline"]
-        ECG_Response["ECG_RRi_MaxTime"] = epoch["ECG_RR_Interval"].ix[0:window_end].idxmax()
-        ECG_Response["ECG_RRi_Mean"] = epoch["ECG_RR_Interval"].ix[0:window_end].mean()
-        ECG_Response["ECG_RRi_MeanDiff"] = ECG_Response["ECG_RRi_Mean"] - ECG_Response["ECG_RRi_Baseline"]
+        ECG_Response = compute_features("ECG_RR_Interval", "ECG_RRi", ECG_Response)
+
 
     # RSA
     # ==========
     if "RSA" in epoch.columns:
-        ECG_Response["ECG_RSA_Baseline"] = epoch["RSA"].ix[0]
-        ECG_Response["ECG_RSA_Min"] = epoch["RSA"].ix[0:window_end].min()
-        ECG_Response["ECG_RSA_MinDiff"] = ECG_Response["ECG_RSA_Min"] - ECG_Response["ECG_RSA_Baseline"]
-        ECG_Response["ECG_RSA_MinTime"] = epoch["RSA"].ix[0:window_end].idxmin()
-        ECG_Response["ECG_RSA_Max"] = epoch["RSA"].ix[0:window_end].max()
-        ECG_Response["ECG_RSA_MaxDiff"] = ECG_Response["ECG_RSA_Max"] - ECG_Response["ECG_RSA_Baseline"]
-        ECG_Response["ECG_RSA_MaxTime"] = epoch["RSA"].ix[0:window_end].idxmax()
-        ECG_Response["ECG_RSA_Mean"] = epoch["RSA"].ix[0:window_end].mean()
-        ECG_Response["ECG_RSA_MeanDiff"] = ECG_Response["ECG_RSA_Mean"] - ECG_Response["ECG_RSA_Baseline"]
+        ECG_Response = compute_features("RSA", "ECG_RSA", ECG_Response)
 
     # HRV
     # ====
     if "ECG_R_Peaks" in epoch.columns:
-        rpeaks = epoch[epoch["ECG_R_Peaks"]==1].ix[0:event_length].index*1000
+        rpeaks = epoch[epoch["ECG_R_Peaks"]==1][0:event_length].index*1000
         hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
 
+        # HRV time domain feature computation
         for key in hrv:
             if isinstance(hrv[key], float):  # Avoid storing series or dataframes
                 ECG_Response["ECG_HRV_" + key] = hrv[key]
+
+        # Computation for baseline
+        if epoch.index[0] > -4:  # Sanity check
+            print("NeuroKit Warning: ecg_EventRelated(): your epoch starts less than 4 seconds before stimulus onset. That's too short to compute HRV baseline features.")
+        else:
+            rpeaks = epoch[epoch["ECG_R_Peaks"]==1][:0].index*1000
+            hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+
+            for key in hrv:
+                if isinstance(hrv[key], float):  # Avoid storing series or dataframes
+                    ECG_Response["ECG_HRV_" + key + "_Baseline"] = hrv[key]
+
+            # Compute differences between features and baseline
+            keys = [key for key in ECG_Response.keys() if '_Baseline' in key]  # Find keys
+            keys = [key for key in keys if 'ECG_HRV_' in key]
+            keys = [s.replace('_Baseline', '') for s in keys]  # Remove baseline part
+            for key in keys:
+                try:
+                    ECG_Response[key + "_Diff"] = ECG_Response[key] - ECG_Response[key + "_Baseline"]
+                except KeyError:
+                    ECG_Response[key + "_Diff"] = np.nan
+
+
+
+    if "ECG_HRV_VHF" in epoch.columns:
+        ECG_Response = compute_features("ECG_HRV_VHF", "ECG_HRV_VHF", ECG_Response)
+
+    if "ECG_HRV_HF" in epoch.columns:
+        ECG_Response = compute_features("ECG_HRV_HF", "ECG_HRV_HF", ECG_Response)
+
+    if "ECG_HRV_LF" in epoch.columns:
+        ECG_Response = compute_features("ECG_HRV_LF", "ECG_HRV_LF", ECG_Response)
+
+    if "ECG_HRV_VLF" in epoch.columns:
+        ECG_Response = compute_features("ECG_HRV_VLF", "ECG_HRV_VLF", ECG_Response)
+
+
+
 
     return(ECG_Response)
 
