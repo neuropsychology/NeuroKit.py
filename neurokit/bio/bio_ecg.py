@@ -825,14 +825,14 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
         """
         Internal function to compute features and avoid spaguetti code.
         """
-        response[prefix + "_Baseline"] = epoch[variable].ix[0]
-        response[prefix + "_Min"] = epoch[variable].ix[0:window_end].min()
+        response[prefix + "_Baseline"] = epoch[variable][0]
+        response[prefix + "_Min"] = epoch[variable][0:window_end].min()
         response[prefix + "_MinDiff"] = response[prefix + "_Min"] - response[prefix + "_Baseline"]
-        response[prefix + "_MinTime"] = epoch[variable].ix[0:window_end].idxmin()
-        response[prefix + "_Max"] = epoch[variable].ix[0:window_end].max()
+        response[prefix + "_MinTime"] = epoch[variable][0:window_end].idxmin()
+        response[prefix + "_Max"] = epoch[variable][0:window_end].max()
         response[prefix + "_MaxDiff"] = response[prefix + "_Max"] - response[prefix + "_Baseline"]
-        response[prefix + "_MaxTime"] = epoch[variable].ix[0:window_end].idxmax()
-        response[prefix + "_Mean"] = epoch[variable].ix[0:window_end].mean()
+        response[prefix + "_MaxTime"] = epoch[variable][0:window_end].idxmax()
+        response[prefix + "_Mean"] = epoch[variable][0:window_end].mean()
         response[prefix + "_MeanDiff"] = response[prefix + "_Mean"] - response[prefix + "_Baseline"]
 
         return(response)
@@ -849,17 +849,17 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # Cardiac Phase
     # =============
     if "ECG_Systole" in epoch.columns:
-        ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"].ix[0]
+        ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"][0]
 
         # Identify beginning and end
         systole_beg = np.nan
         systole_end = np.nan
         for i in epoch[0:window_end].index:
-            if epoch["ECG_Systole"].ix[i] != ECG_Response["ECG_Phase_Systole"]:
+            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
                 systole_end = i
                 break
         for i in epoch[:0].index[::-1]:
-            if epoch["ECG_Systole"].ix[i] != ECG_Response["ECG_Phase_Systole"]:
+            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
                 systole_beg = i
                 break
 
@@ -881,12 +881,32 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # HRV
     # ====
     if "ECG_R_Peaks" in epoch.columns:
-        rpeaks = epoch[epoch["ECG_R_Peaks"]==1].ix[0:event_length].index*1000
+        rpeaks = epoch[epoch["ECG_R_Peaks"]==1][0:event_length].index*1000
         hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
 
+        # HRV time domain feature computation
         for key in hrv:
             if isinstance(hrv[key], float):  # Avoid storing series or dataframes
                 ECG_Response["ECG_HRV_" + key] = hrv[key]
+
+        # Computation for baseline
+        if epoch.index[0] > -4:  # Sanity check
+            print("NeuroKit Warning: ecg_EventRelated(): your epoch starts less than 4 seconds before stimulus onset. That's too short to compute HRV baseline features.")
+        else:
+            rpeaks = epoch[epoch["ECG_R_Peaks"]==1][:0].index*1000
+            hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+
+            for key in hrv:
+                if isinstance(hrv[key], float):  # Avoid storing series or dataframes
+                    ECG_Response["ECG_HRV_" + key + "_Baseline"] = hrv[key]
+
+            # Compute differences between features and baseline
+            keys = [key for key in ECG_Response.keys() if '_Baseline' in key]  # Find keys
+            keys = [s.replace('_Baseline', '') for s in keys]  # Remove baseline part
+            for key in keys:
+                ECG_Response["ECG_HRV_" + key + "_Diff"] = ECG_Response[key] - ECG_Response[key + "_Baseline"]
+
+
 
     if "ECG_HRV_VHF" in epoch.columns:
         ECG_Response = compute_features("ECG_HRV_VHF", "ECG_HRV_VHF", ECG_Response)
@@ -899,6 +919,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
 
     if "ECG_HRV_VLF" in epoch.columns:
         ECG_Response = compute_features("ECG_HRV_VLF", "ECG_HRV_VLF", ECG_Response)
+
 
 
 
