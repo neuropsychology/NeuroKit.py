@@ -1,7 +1,7 @@
 """
 neurokit module.
 """
-__version__ = "0.1.94"
+__version__ = "0.1.99"
 
 from .miscellaneous import *
 from .statistics import *
