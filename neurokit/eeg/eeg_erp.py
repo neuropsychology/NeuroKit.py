@@ -6,6 +6,36 @@ import numpy as np
 import mne
 import matplotlib
 
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def plot_eeg_erp(eeg_data, colors=None, include="all", exclude=None, hemisphere="both", include_central=True):
+    """
+    """
+    all_evokeds = {}
+    for participant, epochs in eeg_data.items():
+        for cond, epoch in epochs.items():
+            all_evokeds[cond] = []
+    for participant, epochs in eeg_data.items():
+        for cond, epoch in epochs.items():
+            all_evokeds[cond].append(epoch)
+
+
+    picks = mne.pick_types(epoch.info, eeg=True, selection=eeg_select_sensor_area(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central))
+
+    plot = mne.viz.plot_compare_evokeds(all_evokeds, picks, colors=colors, title="")
+    return(plot)
+
+
+
+
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
