@@ -902,9 +902,13 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
 
             # Compute differences between features and baseline
             keys = [key for key in ECG_Response.keys() if '_Baseline' in key]  # Find keys
+            keys = [key for key in keys if 'ECG_HRV_' in key]
             keys = [s.replace('_Baseline', '') for s in keys]  # Remove baseline part
             for key in keys:
-                ECG_Response["ECG_HRV_" + key + "_Diff"] = ECG_Response[key] - ECG_Response[key + "_Baseline"]
+                try:
+                    ECG_Response["ECG_HRV_" + key + "_Diff"] = ECG_Response[key] - ECG_Response[key + "_Baseline"]
+                except KeyError:
+                    ECG_Response["ECG_HRV_" + key + "_Diff"] = np.nan
 
 
 
