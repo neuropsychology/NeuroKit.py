@@ -4,7 +4,7 @@ from ..miscellaneous import find_following_duplicates
 
 from ..signal import complexity_entropy_shannon
 
-from .eeg_data import eeg_epochs_to_dict
+from .eeg_data import eeg_to_df
 
 import mne
 import numpy as np
