@@ -312,15 +312,15 @@ def eeg_create_events(onsets, conditions=None):
     ----------
     None
     """
-    event_id = {}
+   event_id = {}
+
+    if conditions is None:
+        conditions = ["Event"] * len(onsets)
 
     # Sanity check
     if len(conditions) != len(onsets):
         print("NeuroKit Warning: eeg_create_events(): conditions parameter of different length than onsets. Aborting.")
         return()
-
-    if conditions is None:
-        conditions = ["Event"] * len(onsets)
 
 
 
@@ -331,9 +331,8 @@ def eeg_create_events(onsets, conditions=None):
         conditions = [event_index[i[0]] if x==i[1] else x for x in conditions]
         event_id[i[1]] = event_index[i[0]]
 
-    events = np.array([onsets, [0]*len(onsets), conditions])
+    events = np.array([onsets, [0]*len(onsets), conditions]).T
     return(events, event_id)
-
 
 
 
