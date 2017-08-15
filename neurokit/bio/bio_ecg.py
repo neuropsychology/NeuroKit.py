@@ -567,7 +567,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
                 if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
                     bin_number = bin_number_current
             hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
-            hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
+            hrv["Shannon_h"] = complexity_entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
         except ValueError:
             hrv["Triang"] = np.nan
             hrv["Shannon_h"] = np.nan
