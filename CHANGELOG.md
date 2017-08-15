@@ -1,10 +1,20 @@
-## NEXT : 0.2
+## CURRENT : 0.2 (Focus: EEG processing)
 
-- Focus: EEG processing
+### Breaking changes
+- Append "complexity_" to all complexity function names (e.g., `entropy_shannon` -> `complexity_entropy_shannon`) (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
+
+### New functions / parameters
+- `eeg_complexity`: First attempt to compute complexity features of epochs (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
+- `eeg_to_df`: Convert mne.Epochs to dict of dataframes (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
+
+### Major changes
+
+### Minor changes
+
 
 ---------
 
-## CURRENT : 0.1
+## 0.1
 
 ### Breaking changes
 - EventRelated functions for biosignals: complete overhaul (**since 0.1.93**) [#30](https://github.com/neuropsychology/NeuroKit.py/pull/30)

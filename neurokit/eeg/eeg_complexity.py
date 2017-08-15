@@ -2,9 +2,14 @@
 from ..miscellaneous import Time
 from ..miscellaneous import find_following_duplicates
 
+from ..signal import complexity_entropy_shannon
+
+from .eeg_data import eeg_epochs_to_dict
+
+import mne
 import numpy as np
 import pandas as pd
-import nolds  # Fractal
+import nolds
 import re
 
 
@@ -16,13 +21,34 @@ import re
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-#def eeg_complexity(epochs):
-#    """
-#    """
-#    df = epochs.to_data_frame(index=["epoch", "time", "condition"])
-#
-#    for index, epoch in enumerate(epochs):
-#        df = epoch
+def eeg_complexity(eeg_data, include="C", exclude=None, hemisphere="both", include_central=True):
+    """
+    Compute complexity indices of epochs or raw object.
+    """
+    complexity = {}
+
+    data = eeg_to_df(eeg_data, include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
+
+    # if data was Raw, make as if it was an Epoch so the following routine is only written once
+    if isinstance(data, dict) is False:
+        data = {0: data}
+
+    for index, epoch in data.items():
+        df = epoch[0:]
+
+        complexity[index] = {"complexity_entropy_shannon": [], "Entropy_SVD": []}
+        for channel in df:
+            signal = df[channel]
+
+            shannon = complexity_entropy_shannon(signal)
+            complexity[index]["complexity_entropy_shannon"].append(shannon)
+
+    # if data was Raw, remove the unnecessary higher order dict
+    if len(data) == 1:
+        data = data[0]
+
+    return(complexity)
+
 
 
 

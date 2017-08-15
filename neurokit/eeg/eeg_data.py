@@ -312,7 +312,7 @@ def eeg_create_events(onsets, conditions=None):
     ----------
     None
     """
-   event_id = {}
+    event_id = {}
 
     if conditions is None:
         conditions = ["Event"] * len(onsets)
@@ -434,19 +434,29 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_epochs_to_dict(epochs, include="all", exclude=None, hemisphere="both", include_central=True):
+def eeg_to_df(eeg_data, include="all", exclude=None, hemisphere="both", include_central=True):
     """
-    Convert mne.Epochs object to Python dict.
+    Convert mne Raw or Epochs object to dataframe or dict of dataframes.
     """
-    data = {}
-    for index, epoch in enumerate(epochs.get_data()):
-        epoch = pd.DataFrame(epoch.T)
-        epoch.columns = epochs.ch_names
+    if isinstance(eeg_data, mne.Epochs):
+        data = {}
 
-        selection = eeg_select_sensor_area(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
+        for index, epoch in enumerate(eeg_data.get_data()):
+            epoch = pd.DataFrame(epoch.T)
+            epoch.columns = eeg_data.ch_names
+            epoch.index = eeg_data.times
 
-        data[index] = epoch[selection]
-    return()
+            selection = eeg_select_sensor_area(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
+
+            data[index] = epoch[selection]
+
+    else:  # it might be a Raw object
+        data = eeg_data.get_data().T
+        data = pd.DataFrame(data)
+        data.columns = eeg_data.ch_names
+        data.index = eeg_data.times
+
+    return(data)
 
 
 # ==============================================================================
