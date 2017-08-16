@@ -2,6 +2,7 @@
 ERP analysis EEG submodule.
 """
 from .eeg_data import eeg_select_sensor_area
+from .eeg_data import eeg_to_df
 
 import numpy as np
 import pandas as pd
@@ -18,26 +19,39 @@ import matplotlib
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_erp(eeg_data, window=None, index=None, include="all", exclude=None, hemisphere="both", include_central=True, verbose=True, name="ERP"):
+def eeg_erp(eeg_data, windows=None, index=None, include="all", exclude=None, hemisphere="both", include_central=True, verbose=True, names="ERP"):
     """
     """
     erp = {}
 
     data = eeg_to_df(eeg_data, index=index, include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
 
-
+    windows = ([0.15, 0.25], [0.25, 0.35])
+    names=["A", "B"]
     for epoch_index, epoch in data.items():
         # Segment according to window
-        if isinstance(window, list):
-            df = epoch[window[0]:window[1]]
+        if isinstance(windows, list):
+            df = epoch[windows[0]:windows[1]]
+            value = df.mean().mean()
+            erp[epoch_index] = [value]
+        elif isinstance(windows, tuple):
+            values = {}
+            for window_index, window in enumerate(windows):
+                df = epoch[window[0]:window[1]]
+                value = df.mean().mean()
+                values[window_index] = value
+            erp[epoch_index] = values
         else:
             df = epoch[0:]
+            value = df.mean().mean()
+            erp[epoch_index] = [value]
 
-        value = df.mean().mean()
-        erp[epoch_index] = [value]
-
+    # Convert to dataframe
     erp = pd.DataFrame.from_dict(erp, orient="index")
-    erp.columns = [name]
+    if isinstance(names, str):
+        names = [names]
+    erp.columns = names
+
     return(erp)
 
 
