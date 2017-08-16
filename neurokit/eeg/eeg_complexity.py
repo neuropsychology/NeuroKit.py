@@ -21,29 +21,42 @@ import re
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_complexity(eeg_data, include="C", exclude=None, hemisphere="both", include_central=True):
+def eeg_complexity(eeg_data, sampling_rate=1000, index=None, include="all", exclude=None, hemisphere="both", include_central=True, verbose=True, shannon=True, sampen=True, multiscale=True, spectral=True, svd=True, correlation=True, higushi=True, petrosian=True, fisher=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False):
     """
     Compute complexity indices of epochs or raw object.
     """
     complexity = {}
 
-    data = eeg_to_df(eeg_data, include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
+    data = eeg_to_df(eeg_data, index=index, include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
 
     # if data was Raw, make as if it was an Epoch so the following routine is only written once
     if isinstance(data, dict) is False:
         data = {0: data}
 
-    for index, epoch in data.items():
+
+    # Compute complexity for each channel for each epoch
+    for epoch_index, epoch in data.items():
+        if verbose is True:
+            print("Computing complexity features... " + str(round(epoch_index/len(data.items())*100, 2)) + "%")
+
         df = epoch[0:]
 
-        complexity[index] = {"complexity_entropy_shannon": [], "Entropy_SVD": []}
+        complexity[epoch_index] = {}
         for channel in df:
-            signal = df[channel]
+            signal = df[channel].values
 
-            shannon = complexity_entropy_shannon(signal)
-            complexity[index]["complexity_entropy_shannon"].append(shannon)
+            features = complexity(signal, sampling_rate=sampling_rate, shannon=shannon, sampen=sampen, multiscale=multiscale, spectral=spectral, svd=svd, correlation=correlation, higushi=higushi, petrosian=petrosian, fisher=fisher, hurst=hurst, dfa=dfa, lyap_r=lyap_r, lyap_e=lyap_e)
 
-    # if data was Raw, remove the unnecessary higher order dict
+            for key, feature in features.items():
+                if key in complexity[epoch_index].keys():
+                    complexity[epoch_index][key].append(feature)
+                else:
+                    complexity[epoch_index][key] = [feature]
+
+    for epoch_index, epoch in complexity.items():
+        for feature in epoch:
+            complexity[epoch_index][feature] = pd.Series(complexity[epoch_index][feature]).mean()
+
     if len(data) == 1:
         data = data[0]
 
