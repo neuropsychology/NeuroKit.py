@@ -2,7 +2,7 @@
 from ..miscellaneous import Time
 from ..miscellaneous import find_following_duplicates
 
-from ..signal import complexity_entropy_shannon
+from ..signal import complexity
 
 from .eeg_data import eeg_to_df
 
@@ -35,9 +35,11 @@ def eeg_complexity(eeg_data, sampling_rate=1000, index=None, include="all", excl
 
 
     # Compute complexity for each channel for each epoch
+    index = 0
     for epoch_index, epoch in data.items():
         if verbose is True:
-            print("Computing complexity features... " + str(round(epoch_index/len(data.items())*100, 2)) + "%")
+            print("Computing complexity features... " + str(round(index/len(data.items())*100, 2)) + "%")
+        index +=1
 
         df = epoch[0:]
 
