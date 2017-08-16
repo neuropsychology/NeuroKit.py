@@ -26,8 +26,6 @@ def eeg_erp(eeg_data, windows=None, index=None, include="all", exclude=None, hem
 
     data = eeg_to_df(eeg_data, index=index, include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
 
-    windows = ([0.15, 0.25], [0.25, 0.35])
-    names=["A", "B"]
     for epoch_index, epoch in data.items():
         # Segment according to window
         if isinstance(windows, list):
