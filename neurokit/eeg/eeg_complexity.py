@@ -25,7 +25,7 @@ def eeg_complexity(eeg_data, sampling_rate=1000, index=None, include="all", excl
     """
     Compute complexity indices of epochs or raw object.
     """
-    complexity = {}
+    complexity_features = {}
 
     data = eeg_to_df(eeg_data, index=index, include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
 
@@ -43,26 +43,26 @@ def eeg_complexity(eeg_data, sampling_rate=1000, index=None, include="all", excl
 
         df = epoch[0:]
 
-        complexity[epoch_index] = {}
+        complexity_features[epoch_index] = {}
         for channel in df:
             signal = df[channel].values
 
             features = complexity(signal, sampling_rate=sampling_rate, shannon=shannon, sampen=sampen, multiscale=multiscale, spectral=spectral, svd=svd, correlation=correlation, higushi=higushi, petrosian=petrosian, fisher=fisher, hurst=hurst, dfa=dfa, lyap_r=lyap_r, lyap_e=lyap_e)
 
             for key, feature in features.items():
-                if key in complexity[epoch_index].keys():
-                    complexity[epoch_index][key].append(feature)
+                if key in complexity_features[epoch_index].keys():
+                    complexity_features[epoch_index][key].append(feature)
                 else:
-                    complexity[epoch_index][key] = [feature]
+                    complexity_features[epoch_index][key] = [feature]
 
-    for epoch_index, epoch in complexity.items():
+    for epoch_index, epoch in complexity_features.items():
         for feature in epoch:
-            complexity[epoch_index][feature] = pd.Series(complexity[epoch_index][feature]).mean()
+            complexity_features[epoch_index][feature] = pd.Series(complexity_features[epoch_index][feature]).mean()
 
-    if len(data) == 1:
-        data = data[0]
+    # Convert to dataframe
+    complexity_features = pd.DataFrame.from_dict(complexity_features, orient="index")
 
-    return(complexity)
+    return(complexity_features)
 
 
 

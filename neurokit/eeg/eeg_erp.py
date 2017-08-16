@@ -2,9 +2,43 @@
 ERP analysis EEG submodule.
 """
 from .eeg_data import eeg_select_sensor_area
+
 import numpy as np
+import pandas as pd
 import mne
 import matplotlib
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_erp(eeg_data, window=None, index=None, include="all", exclude=None, hemisphere="both", include_central=True, verbose=True, name="ERP"):
+    """
+    """
+    erp = {}
+
+    data = eeg_to_df(eeg_data, index=index, include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
+
+
+    for epoch_index, epoch in data.items():
+        # Segment according to window
+        if isinstance(window, list):
+            df = epoch[window[0]:window[1]]
+        else:
+            df = epoch[0:]
+
+        value = df.mean().mean()
+        erp[epoch_index] = [value]
+
+    erp = pd.DataFrame.from_dict(erp, orient="index")
+    erp.columns = [name]
+    return(erp)
 
 
 # ==============================================================================
