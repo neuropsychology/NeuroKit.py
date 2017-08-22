@@ -3,7 +3,7 @@ ERP analysis EEG submodule.
 """
 from .eeg_data import eeg_select_electrodes
 from .eeg_data import eeg_to_df
-
+from .eeg_data import eeg_to_all_evokeds
 import numpy as np
 import pandas as pd
 import mne
@@ -62,21 +62,23 @@ def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphe
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp(eeg, colors=None, include="all", exclude=None, hemisphere="both", central=True, title=None):
+def plot_eeg_erp(all_epochs, colors=None, include="all", exclude=None, hemisphere="both", central=True, title=None):
     """
     """
-    all_evokeds = {}
-    for participant, epochs in eeg.items():
+    all_evokeds = eeg_to_all_evokeds(all_epochs)
+
+    data = {}
+    for participant, epochs in all_evokeds.items():
         for cond, epoch in epochs.items():
-            all_evokeds[cond] = []
-    for participant, epochs in eeg.items():
+            data[cond] = []
+    for participant, epochs in all_evokeds.items():
         for cond, epoch in epochs.items():
-            all_evokeds[cond].append(epoch)
+            data[cond].append(epoch)
 
 
     picks = mne.pick_types(epoch.info, eeg=True, selection=eeg_select_electrodes(epoch, include=include, exclude=exclude, hemisphere=hemisphere, central=central))
 
-    plot = mne.viz.plot_compare_evokeds(all_evokeds, picks=picks, colors=colors, title=title)
+    plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, title=title)
     return(plot)
 
 
@@ -91,22 +93,27 @@ def plot_eeg_erp(eeg, colors=None, include="all", exclude=None, hemisphere="both
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp_topo(eeg, colors=None):
+def plot_eeg_erp_topo(all_epochs, colors=None):
     """
     Plot butterfly plot.
     """
-    all_evokeds = {}
-    for participant, epochs in eeg.items():
+    all_evokeds = eeg_to_all_evokeds(all_epochs)
+
+    data = {}
+    for participant, epochs in all_evokeds.items():
         for cond, epoch in epochs.items():
-            all_evokeds[cond] = []
-    for participant, epochs in eeg.items():
+            data[cond] = []
+    for participant, epochs in all_evokeds.items():
         for cond, epoch in epochs.items():
-            all_evokeds[cond].append(epoch)
+            data[cond].append(epoch)
 
     if colors is not None:
         color_list = []
+    else:
+        color_list = None
+
     evokeds = []
-    for condition, evoked in all_evokeds.items():
+    for condition, evoked in data.items():
         grand_average = mne.grand_average(evoked)
         grand_average.comment = condition
         evokeds += [grand_average]
