@@ -2,12 +2,12 @@
 Loading data and events submodule.
 """
 from ..signal import find_events
-#from .eeg_preprocessing import *
 
 import numpy as np
 import pandas as pd
 import mne
 import os
+import re
 
 # ==============================================================================
 # ==============================================================================
@@ -434,35 +434,36 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_to_df(eeg_data, index=None, include="all", exclude=None, hemisphere="both", include_central=True):
+def eeg_to_df(eeg, index=None, include="all", exclude=None, hemisphere="both", central=True):
     """
     Convert mne Raw or Epochs object to dataframe or dict of dataframes.
     """
-    if isinstance(eeg_data, mne.Epochs):
+    if isinstance(eeg, mne.Epochs):
         data = {}
 
         if index is None:
-            index=range(len(eeg_data))
+            index=range(len(eeg))
 
-        for epoch_index, epoch in zip(index, eeg_data.get_data()):
+        for epoch_index, epoch in zip(index, eeg.get_data()):
 
             epoch = pd.DataFrame(epoch.T)
-            epoch.columns = eeg_data.ch_names
-            epoch.index = eeg_data.times
+            epoch.columns = eeg.ch_names
+            epoch.index = eeg.times
 
-            selection = eeg_select_sensor_area(include=include, exclude=exclude, hemisphere=hemisphere, include_central=include_central)
+            selection = eeg_select_electrodes(eeg, include=include, exclude=exclude, hemisphere=hemisphere, central=central)
 
             data[epoch_index] = epoch[selection]
 
     else:  # it might be a Raw object
-        data = eeg_data.get_data().T
+        data = eeg.get_data().T
         data = pd.DataFrame(data)
-        data.columns = eeg_data.ch_names
-        data.index = eeg_data.times
+        data.columns = eeg.ch_names
+        data.index = eeg.times
 
     return(data)
 
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -471,109 +472,84 @@ def eeg_to_df(eeg_data, index=None, include="all", exclude=None, hemisphere="bot
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_select_sensor_area(include="all", exclude=None, hemisphere="both", include_central=True):
+def eeg_select_electrodes(eeg, include="all", exclude=None, hemisphere="both", central=True):
     """
-    Returns list of electrodes names (according to a 10-20 EEG montage). This function is probably not very flexibile. Looking for help to improve it.
+    Returns electrodes/sensors names of selected region (according to a 10-20 EEG montage).
 
     Parameters
     ----------
-    include : str
+    eeg : mne.Raw or mne.Epochs
+        EEG data.
+    include : str ot list
         Sensor area to include.
-    exclude : str or None
+    exclude : str or list or None
         Sensor area to exclude.
     hemisphere : str
         Select both hemispheres? "both", "left" or "right".
-    include_central : bool
-        if `hemisphere != "both"`, select the central line?
+    central : bool
+        Select the central line.
 
     Returns
     ----------
-    sensors : list
-        List of sensors corresponding to the selected area.
+    electrodes : list
+        List of electrodes/sensors corresponding to the selected area.
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> nk.eeg_select_sensor_area(include="F", exclude="C")
+    >>> nk.eeg_select_electrodes(include="F", exclude="C")
 
 
     Notes
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
-    References
-    ------------
-    - None
     """
-    sensors = ['AF3', 'AF4', 'AF7', 'AF8', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'CP1', 'CP2', 'CP3', 'CP4', 'CP5', 'CP6', 'CPz', 'Cz', 'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'FC1', 'FC2', 'FC3', 'FC4', 'FC5', 'FC6', 'Fp1', 'Fp2', 'FT10', 'FT7', 'FT8', 'FT9', 'O1', 'O2', 'Oz', 'P1', 'P2', 'P3', 'P4', 'P5', 'P6', 'P7', 'P8', 'PO3', 'PO4', 'PO7', 'PO8', 'POz', 'Pz', 'FCz', 'T7', 'T8', 'TP10', 'TP7', 'TP8', 'TP9', 'AFz']
+    # Get all channel names
+    eeg = eeg.copy().pick_types(meg=False, eeg=True)
+    channel_list = eeg.ch_names
 
-    if include != "all":
-        sensors = [s for s in sensors if include in s]
+    # Include
+    if include == "all":
+        electrodes = channel_list
+    elif isinstance(include, str):
+        electrodes = [s for s in channel_list if include in s]
+    elif isinstance(include, list):
+        electrodes = []
+        for i in include:
+            electrodes += [s for s in channel_list if i in s]
+    else:
+        print("NeuroKit Warning: eeg_select_electrodes(): 'include' parameter must be 'all', str or list.")
 
-    if exclude != None:
+    # Exclude
+    if exclude is not None:
         if isinstance(exclude, str):
-            exclude = [exclude]
-        for to_exclude in exclude:
-            sensors = [s for s in sensors if to_exclude not in s]
-
-    if hemisphere != "both":
-        if include_central == False:
-            if hemisphere == "left":
-                sensors = [s for s in sensors if "1" in s or "3" in s or "5" in s or "7" in s or "9" in s]
-            if hemisphere == "right":
-                sensors = [s for s in sensors if "2" in s or "4" in s or "6" in s or "8" in s or "10" in s]
+            to_remove = [s for s in channel_list if exclude in s]
+            electrodes = [s for s in electrodes if s not in to_remove]
+        elif isinstance(exclude, list):
+            to_remove = []
+            for i in exclude:
+                to_remove += [s for s in channel_list if i in s]
+            electrodes = [s for s in electrodes if s not in to_remove]
         else:
-            if hemisphere == "left":
-                sensors = [s for s in sensors if "1" in s or "3" in s or "5" in s or "7" in s or "9" in s or "z" in s]
-            if hemisphere == "right":
-                sensors = [s for s in sensors if "2" in s or "4" in s or "6" in s or "8" in s or "10" in s or "z" in s]
+            print("NeuroKit Warning: eeg_select_electrodes(): 'exclude' parameter must be None, str or list.")
+
+    # Laterality
+    if hemisphere != "both":
+        if hemisphere.lower() == "left" or hemisphere.lower() == "l":
+            hemi = [s for s in electrodes if len(re.findall(r'\d+', s)) > 0 and int(re.findall(r'\d+', s)[0])%2 > 0]
+        elif hemisphere.lower() == "right" or hemisphere.lower() == "r":
+            hemi = [s for s in electrodes if len(re.findall(r'\d+', s)) > 0 and int(re.findall(r'\d+', s)[0])%2 == 0]
+        else:
+            print("NeuroKit Warning: eeg_select_electrodes(): 'hemisphere' parameter must be 'both', 'left' or 'right'. Returning both.")
+
+        if central is True:
+            hemi += [s for s in electrodes if 'z' in s]
+
+        electrodes = hemi
+
+    return(electrodes)
 
 
-    return(sensors)
-
-
-
-#==============================================================================
-#==============================================================================
-#==============================================================================
-#==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-#def eeg_create_raws(filename, path, participants=None, runs=None, lowpass_filter=None, highpass_filter=None, notch_filter=False, ica_eog=False, ica_ecg=False, resample=False):
-#    """
-#    """
-#    if participants is None:
-#        participants = os.listdir(path)
-#
-#    raws = {}  # Initialize empty dic
-#    for participant in participants:
-#
-#        if runs is None:
-#            runs = os.listdir(path + "/" + participant + "/")
-#
-#        raws[participant] = {}
-#        for run in runs:
-#            # Load the participant's file into a raw object
-#            raw = eeg_load_raw(filename=filename, path=path + "/" + participant + "/" + run + "/")
-#            # Filter and downsample
-#            raw = eeg_filter(raw, lowpass=lowpass_filter, highpass=highpass_filter, notch=notch_filter)
-#
-#            # Apply ICA to remove EOG and ECG artifacts
-#            raw, ica = eeg_ica(raw, eog=ica_eog, ecg=ica_ecg)
-#
-#            # Resample to 125 points/s
-#            raw = raw.resample(resample)
-#
-#            # Add data to dict
-#            raws[participant][run] = raw
-#
-#    return(raws)
-#

@@ -1,22 +1,20 @@
-Python and stuff
+Installing Python
 #########################
 
-Installation
-=============
 
 This part focuses on how to get a working, portable distribution of python.
 
 Windows
------------------------
+=============
 
-- Easy (300mo)
+- **Easy** (300mo)
 
 1. Download a `working winpython <https://drive.google.com/file/d/0B9Wj3n7B5MAtOFdiVnk1UXQyXzA/view?usp=sharing>`_ distribution (includes **NeuroKit 0.1.0** and **Neuropsydia 1.0.3**)
 2. Unzip it
 3. Open the folder
 4. Run `Spyder.exe`
 
-- Intermediate (1.5go)
+- **Intermediate** (1.5go)
 
 1. Download a non-zero version of `Winython <http://winpython.github.io/>`_
 2. Install it somewhere (desktop's a good place). It creates a folder called `WinPython-XXbits-x.x.x.x`
@@ -25,7 +23,7 @@ Windows
 5. Run :code:`pip install https://github.com/neuropsychology/Neuropsydia.py/zipball/master`
 6. Run `Spyder.exe`
 
-- Hard (300mo)
+- **Hard** (300mo)
 
 1. Download the latest `Winython Zero <http://winpython.github.io/>`_
 2. Install it somewhere (desktop's a good place). It creates a folder called `WinPython-XXbits-x.x.x.xZero`
@@ -43,7 +41,7 @@ Windows
 14. Run `Spyder.exe`
 
 Mac OS
--------------------
+=============
 
 1. Install Anaconda
 2. Find how to install packages

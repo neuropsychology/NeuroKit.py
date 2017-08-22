@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 import nolds
 import numpy as np
+import scipy
 
 # ==============================================================================
 # ==============================================================================
@@ -245,6 +246,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     return(complexity)
 
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -299,10 +301,8 @@ def complexity_entropy_shannon(signal):
     -----------
     - None
     """
+    signal = np.array(signal)
 
-    # Check if string
-    if not isinstance(signal, str):
-        signal = list(signal)
 
     # Create a frequency data
     data_set = list(set(signal))
