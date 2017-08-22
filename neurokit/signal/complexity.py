@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import nolds
 import numpy as np
-import scipy
 
 # ==============================================================================
 # ==============================================================================
@@ -301,6 +300,10 @@ def complexity_entropy_shannon(signal):
     -----------
     - None
     """
+     # Check if string
+    if not isinstance(signal, str):
+        signal = list(signal)
+
     signal = np.array(signal)
 
 

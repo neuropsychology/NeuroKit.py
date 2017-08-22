@@ -1,7 +1,7 @@
 """
 Time-frequency submodule.
 """
-from .eeg_data import eeg_select_sensor_area
+from .eeg_data import eeg_select_electrodes
 from ..miscellaneous import Time
 
 import numpy as np
@@ -149,7 +149,7 @@ def eeg_psd(raw, sensors_include="all", sensors_exclude=None, fmin=0.016, fmax=6
     ------------
     - None
     """
-    picks = mne.pick_types(raw.info, include=eeg_select_sensor_area(include=sensors_include, exclude=sensors_exclude), exclude="bads")
+    picks = mne.pick_types(raw.info, include=eeg_select_electrodes(include=sensors_include, exclude=sensors_exclude), exclude="bads")
 
     if method == "multitaper":
         psds, freqs = mne.time_frequency.psd_multitaper(raw,
