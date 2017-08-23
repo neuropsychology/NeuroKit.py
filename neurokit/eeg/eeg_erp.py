@@ -4,10 +4,13 @@ ERP analysis EEG submodule.
 from .eeg_data import eeg_select_electrodes
 from .eeg_data import eeg_to_df
 from .eeg_data import eeg_to_all_evokeds
+
+
 import numpy as np
 import pandas as pd
 import mne
 import matplotlib
+import copy
 
 
 
@@ -65,16 +68,13 @@ def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphe
 def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", central=True, title=None, colors=None, gfp=False, ci=0.95, invert_y=False, linewidth=1, filter_hfreq=None, ci_apha=0.333):
     """
     """
-    # Preserve original
-    all_epochs_original = all_epochs.copy()
-
     # Filter using Savitzky-Golay polynomial method
     if (filter_hfreq is not None) and (isinstance(filter_hfreq, int)):
-        for participant, epochs in all_epochs_original.items():
-            all_epochs_original[participant] = epochs.savgol_filter(filter_hfreq)
+        for participant, epochs in all_epochs.items():
+            all_epochs[participant] = epochs.copy().savgol_filter(filter_hfreq)
 
     # Transform to evokeds
-    all_evokeds = eeg_to_all_evokeds(all_epochs_original)
+    all_evokeds = eeg_to_all_evokeds(all_epochs)
 
     data = {}
     for participant, epochs in all_evokeds.items():
