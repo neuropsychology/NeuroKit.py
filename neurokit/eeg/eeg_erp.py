@@ -62,9 +62,15 @@ def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphe
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", central=True, title=None, colors=None, gfp=False, ci=0.95, invert_y=False, linewidth=1):
+def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", central=True, title=None, colors=None, gfp=False, ci=0.95, invert_y=False, linewidth=1, filter_hfreq=None):
     """
     """
+    # Filter using Savitzky-Golay polynomial method
+    if (filter_hfreq is not None) and (isinstance(filter_hfreq, int)):
+        for participant, epochs in all_epochs.items():
+            all_epochs[participant] = epochs.savgol_filter(filter_hfreq)
+
+    # Transform to evokeds
     all_evokeds = eeg_to_all_evokeds(all_epochs)
 
     data = {}

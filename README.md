@@ -50,9 +50,8 @@ Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials
 This package provides a high level integration of complex statistical routines for researchers and clinicians with not much experience in programming, statistics or signal theory.
 
 - **M/EEG**
-  - **[`read_eeg()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-eeg)**: Read and convert many EEG and MEG files to an [`mne.io.Raw`](http://martinos.org/mne/stable/generated/mne.io.Raw.html#mne.io.Raw) object
-  - Preprocessing: Under development
   - ERP: Under development
+  - Complexity: Under development
   - Time/Frequency: Under development
   - Microstates: Under development
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
