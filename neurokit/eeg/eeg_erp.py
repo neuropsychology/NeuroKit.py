@@ -62,23 +62,32 @@ def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphe
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp(all_epochs, colors=None, include="all", exclude=None, hemisphere="both", central=True, title=None):
+def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", central=True, title=None, colors=None, gfp=False, ci=0.95, invert_y=False, linewidth=1):
     """
     """
     all_evokeds = eeg_to_all_evokeds(all_epochs)
 
     data = {}
     for participant, epochs in all_evokeds.items():
-        for cond, epoch in epochs.items():
-            data[cond] = []
+        for condition, epoch in epochs.items():
+            data[condition] = []
     for participant, epochs in all_evokeds.items():
-        for cond, epoch in epochs.items():
-            data[cond].append(epoch)
+        for condition, epoch in epochs.items():
+            data[condition].append(epoch)
+
+    # Modify styles
+    styles = {}
+    for condition in data.keys():
+        styles[condition] = {"linewidth": linewidth}
 
 
+    # Select electrodes
     picks = mne.pick_types(epoch.info, eeg=True, selection=eeg_select_electrodes(epoch, include=include, exclude=exclude, hemisphere=hemisphere, central=central))
 
-    plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, title=title)
+    # Plot
+    plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=title, gfp=gfp, ci=ci, invert_y=invert_y)
+
+    # Correct title, CI & None
     return(plot)
 
 
