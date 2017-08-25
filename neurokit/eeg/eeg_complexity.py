@@ -27,7 +27,7 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
     """
 
 
-    data = nk.eeg_to_df(eeg, index=index, include=include, exclude=exclude, hemisphere=hemisphere, central=central)
+    data = eeg_to_df(eeg, index=index, include=include, exclude=exclude, hemisphere=hemisphere, central=central)
 
     # if data was Raw, make as if it was an Epoch so the following routine is only written once
     if isinstance(data, dict) is False:
@@ -70,7 +70,7 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
             for channel in df:
                 signal = df[channel].values
 
-                features = nk.complexity(signal, sampling_rate=sampling_rate, shannon=shannon, sampen=sampen, multiscale=multiscale, spectral=spectral, svd=svd, correlation=correlation, higushi=higushi, petrosian=petrosian, fisher=fisher, hurst=hurst, dfa=dfa, lyap_r=lyap_r, lyap_e=lyap_e)
+                features = complexity(signal, sampling_rate=sampling_rate, shannon=shannon, sampen=sampen, multiscale=multiscale, spectral=spectral, svd=svd, correlation=correlation, higushi=higushi, petrosian=petrosian, fisher=fisher, hurst=hurst, dfa=dfa, lyap_r=lyap_r, lyap_e=lyap_e)
 
                 for key, feature in features.items():
                     if key in complexity_features[epoch_index].keys():
