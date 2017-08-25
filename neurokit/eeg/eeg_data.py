@@ -466,7 +466,7 @@ def eeg_to_df(eeg, index=None, include="all", exclude=None, hemisphere="both", c
         data = {}
 
         if index is None:
-            index=range(len(eeg))
+            index = range(len(eeg))
 
         for epoch_index, epoch in zip(index, eeg.get_data()):
 

@@ -22,7 +22,7 @@ import copy
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, names="ERP"):
+def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, names="ERP"):
     """
     """
     erp = {}
@@ -31,13 +31,21 @@ def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphe
 
     for epoch_index, epoch in data.items():
         # Segment according to window
-        if isinstance(windows, list):
-            df = epoch[windows[0]:windows[1]]
-            value = df.mean().mean()
-            erp[epoch_index] = [value]
-        elif isinstance(windows, tuple):
+        if isinstance(times, list):
+            if isinstance(times[0], list):
+                values = {}
+                for window_index, window in enumerate(times):
+                    df = epoch[window[0]:window[1]]
+                    value = df.mean().mean()
+                    values[window_index] = value
+                erp[epoch_index] = values
+            else:
+                df = epoch[times[0]:times[1]]
+                value = df.mean().mean()
+                erp[epoch_index] = [value]
+        elif isinstance(times, tuple):
             values = {}
-            for window_index, window in enumerate(windows):
+            for window_index, window in enumerate(times):
                 df = epoch[window[0]:window[1]]
                 value = df.mean().mean()
                 values[window_index] = value
@@ -65,7 +73,7 @@ def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphe
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", central=True, title=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, ci_method="parametric", invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
+def plot_eeg_erp(all_epochs, times=None, include="all", exclude=None, hemisphere="both", central=True, name=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, ci_method="parametric", invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
     """
     """
     # Preserve original
@@ -75,6 +83,12 @@ def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", cen
     if (filter_hfreq is not None) and (isinstance(filter_hfreq, int)):
         for participant, epochs in all_epochs_current.items():
             all_epochs_current[participant] = epochs.savgol_filter(filter_hfreq, copy=True)
+
+    # Crop
+    if isinstance(times, list) and len(times) == 2:
+        for participant, epochs in all_epochs_current.items():
+            all_epochs_current[participant] = epochs.copy().crop(times[0], times[1])
+
 
     # Transform to evokeds
     all_evokeds = eeg_to_all_evokeds(all_epochs_current)
@@ -125,10 +139,10 @@ def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", cen
 
     # Plot
     try:
-        plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=title, gfp=gfp, ci=ci, invert_y=invert_y, ci_alpha=ci_alpha, ci_method=ci_method)
+        plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=name, gfp=gfp, ci=ci, invert_y=invert_y, ci_alpha=ci_alpha, ci_method=ci_method)
     except TypeError:
         print("NeuroKit Warning: plot_eeg_erp(): You're using a version of mne that does not support ci_alpha or ci_method parameters. Leaving defaults.")
-        plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=title, gfp=gfp, ci=ci, invert_y=invert_y)
+        plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=name, gfp=gfp, ci=ci, invert_y=invert_y)
 
     return(plot)
 
