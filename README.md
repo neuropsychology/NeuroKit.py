@@ -32,6 +32,9 @@ Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials
 
 
 ## Contribute
+
+Want to get involved in the developpment of an open-source software an improve neuroscience practice? Join us!
+
 - You need some help? You found a bug? You would like to request a new feature? 
   Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
 - Want to add a feature? Correct a bug? You're more than welcome to contribute!

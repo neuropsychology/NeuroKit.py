@@ -55,7 +55,7 @@ def read_eeg(filename, path="", eog=('HEOG', 'VEOG'), misc="auto", reference=Non
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -167,7 +167,7 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -244,7 +244,7 @@ def eeg_select_channels(raw, channel_names):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -306,7 +306,7 @@ def eeg_create_events(onsets, conditions=None):
 
     Authors
     ----------
-    Dominique Makowski
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     Dependencies
     ----------
@@ -388,7 +388,7 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 

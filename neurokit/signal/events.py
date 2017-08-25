@@ -41,7 +41,7 @@ def binarize_signal(signal, treshold="auto", cut="higher"):
 
     Authors
     ----------
-    Dominique Makowski
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     Dependencies
     ----------
@@ -100,7 +100,7 @@ def localize_events(events_channel, treshold="auto", cut="higher", time_index=No
 
     Authors
     ----------
-    Dominique Makowski
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     Dependencies
     ----------
@@ -156,19 +156,19 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
 
     Returns
     ----------
-    events : list or tuple
-        Events onsets.
+    events : dict
+        Dict containing events onsets and durations.
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> events_onset = nk.select_events(events_channel)
+    >>> events = nk.select_events(events_channel)
 
     Notes
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 
@@ -256,7 +256,7 @@ def plot_events_in_signal(signal, events, color="red"):
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
     *Dependencies*
 

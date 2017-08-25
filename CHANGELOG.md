@@ -2,6 +2,8 @@
 
 ### Breaking changes
 - Append "complexity_" to all complexity function names (e.g., `entropy_shannon` -> `complexity_entropy_shannon`) (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
+- `read_acqknowledge` new parameter, `return_sampling_rate`. Default to False to keep old behaviour, but default will be changed to True in the future (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
+
 
 ### New functions / parameters
 - `eeg_complexity`: First attempt to compute complexity features of epochs (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)

@@ -65,7 +65,7 @@ def eeg_erp(eeg, windows=None, index=None, include="all", exclude=None, hemisphe
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", central=True, title=None, colors=None, gfp=False, ci=0.95, ci_apha=0.333, ci_method="parametric", invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
+def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", central=True, title=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, ci_method="parametric", invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
     """
     """
     # Preserve original
@@ -74,7 +74,7 @@ def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", cen
     # Filter using Savitzky-Golay polynomial method
     if (filter_hfreq is not None) and (isinstance(filter_hfreq, int)):
         for participant, epochs in all_epochs_current.items():
-            all_epochs_current[participant] = epochs.copy().savgol_filter(filter_hfreq)
+            all_epochs_current[participant] = epochs.savgol_filter(filter_hfreq, copy=True)
 
     # Transform to evokeds
     all_evokeds = eeg_to_all_evokeds(all_epochs_current)
@@ -86,6 +86,7 @@ def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", cen
     for participant, epochs in all_evokeds.items():
         for condition, epoch in epochs.items():
             data[condition].append(epoch)
+
 
     conditions = list(data.keys())
 
@@ -124,7 +125,7 @@ def plot_eeg_erp(all_epochs, include="all", exclude=None, hemisphere="both", cen
 
     # Plot
     try:
-        plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=title, gfp=gfp, ci=ci, invert_y=invert_y, ci_alpha=ci_apha, ci_method=ci_method)
+        plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=title, gfp=gfp, ci=ci, invert_y=invert_y, ci_alpha=ci_alpha, ci_method=ci_method)
     except TypeError:
         print("NeuroKit Warning: plot_eeg_erp(): You're using a version of mne that does not support ci_alpha or ci_method parameters. Leaving defaults.")
         plot = mne.viz.plot_compare_evokeds(data, picks=picks, colors=colors, styles=styles, title=title, gfp=gfp, ci=ci, invert_y=invert_y)
