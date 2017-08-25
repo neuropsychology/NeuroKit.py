@@ -7,10 +7,9 @@
 
 ### New functions / parameters
 - `eeg_complexity`: First attempt to compute complexity features of epochs (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
-- `eeg_to_df`: Convert mne.Epochs to dict of dataframes (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
+- `emg_process`: Computes linear envelope and activation (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
 
 ### Major changes
-
 ### Minor changes
 
 

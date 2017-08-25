@@ -54,7 +54,7 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
 
 
     # Iterate
-    complexity = pd.DataFrame()
+    complexity_all = pd.DataFrame()
     for time_index, time_window in enumerate(times):
         complexity_features = {}
         # Compute complexity for each channel for each epoch
@@ -87,8 +87,8 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
         complexity_features.columns = [prefix[time_index] + "_" + s for s in complexity_features.columns]
 
 
-        complexity = pd.concat([complexity, complexity_features], axis=1)
-    return(complexity)
+        complexity_all = pd.concat([complexity_all, complexity_features], axis=1)
+    return(complexity_all)
 
 
 

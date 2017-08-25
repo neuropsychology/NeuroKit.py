@@ -6,8 +6,6 @@ import biosppy
 
 
 
-# TODO: Improve with https://github.com/demotu/BMC/blob/master/notebooks/Electromyography.ipynb and https://github.com/cancui/EMG-Signal-Processing-Library
-
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================

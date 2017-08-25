@@ -76,6 +76,7 @@ This package provides a high level integration of complex statistical routines f
     - *Skin Conductance Responses (SCR) onsets, peaks, amplitudes, latencies, recovery times, ...*
   - **[`emg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#emg-process)**: Extract EMG features
     - *Pulse onsets*
+    - *Linear envelope, muscle activation*
 - **Signal**
     - **[`complexity()`](http://neurokit.readthedocs.io/en/latest/documentation.html#complexity)**: Extract complexity/chaos indices, such as values of entropy (Shannon's, Sample and Multiscale), fractal dimension, Hurst and Lyapunov exponents and more
 - **Statistics**
