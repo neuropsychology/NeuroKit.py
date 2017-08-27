@@ -433,18 +433,19 @@ def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="h
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_to_all_evokeds(all_epochs):
+def eeg_to_all_evokeds(all_epochs, conditions=None):
     """
     Convert all_epochs to all_evokeds.
     """
-    # Get event_id
-    event_id = {}
-    for participant, epochs in all_epochs.items():
-        event_id.update(epochs.event_id)
+    if conditions is None:
+        # Get event_id
+        conditions = {}
+        for participant, epochs in all_epochs.items():
+            conditions.update(epochs.event_id)
 
     all_evokeds = {}
     for participant, epochs in all_epochs.items():
-        evokeds = dict((cond, epochs[cond].average()) for cond in event_id)
+        evokeds = dict((cond, epochs[cond].average()) for cond in conditions)
         all_evokeds[participant] = evokeds
 
     return(all_evokeds)

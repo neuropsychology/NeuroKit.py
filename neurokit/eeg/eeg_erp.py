@@ -73,7 +73,7 @@ def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_eeg_erp(all_epochs, times=None, include="all", exclude=None, hemisphere="both", central=True, name=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, ci_method="parametric", invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
+def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude=None, hemisphere="both", central=True, name=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, ci_method="parametric", invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
     """
     """
     # Preserve original
@@ -91,7 +91,7 @@ def plot_eeg_erp(all_epochs, times=None, include="all", exclude=None, hemisphere
 
 
     # Transform to evokeds
-    all_evokeds = eeg_to_all_evokeds(all_epochs_current)
+    all_evokeds = eeg_to_all_evokeds(all_epochs_current, conditions=conditions)
 
     data = {}
     for participant, epochs in all_evokeds.items():
@@ -135,7 +135,7 @@ def plot_eeg_erp(all_epochs, times=None, include="all", exclude=None, hemisphere
 
 
     # Select electrodes
-    picks = mne.pick_types(epoch.info, eeg=True, selection=eeg_select_electrodes(epoch, include=include, exclude=exclude, hemisphere=hemisphere, central=central))
+    picks = mne.pick_types(epoch.info, eeg=True, selection=nk.eeg_select_electrodes(epoch, include=include, exclude=exclude, hemisphere=hemisphere, central=central))
 
     # Plot
     try:
