@@ -135,7 +135,7 @@ def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude
 
 
     # Select electrodes
-    picks = mne.pick_types(epoch.info, eeg=True, selection=nk.eeg_select_electrodes(epoch, include=include, exclude=exclude, hemisphere=hemisphere, central=central))
+    picks = mne.pick_types(epoch.info, eeg=True, selection=eeg_select_electrodes(epoch, include=include, exclude=exclude, hemisphere=hemisphere, central=central))
 
     # Plot
     try:
