@@ -57,7 +57,7 @@ def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", ex
     complexity_all = pd.DataFrame()
     for time_index, time_window in enumerate(times):
         if len(times) > 1 and verbose is True:
-            print("Computing complexity features... window " + str(index) + "/" + str(len(times)))
+            print("Computing complexity features... window " + str(time_window) + "/" + str(len(times)))
 
         complexity_features = {}
         # Compute complexity for each channel for each epoch

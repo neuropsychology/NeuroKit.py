@@ -445,7 +445,12 @@ def eeg_to_all_evokeds(all_epochs, conditions=None):
 
     all_evokeds = {}
     for participant, epochs in all_epochs.items():
-        evokeds = dict((cond, epochs[cond].average()) for cond in conditions)
+        evokeds = {}
+        for cond in conditions:
+            try:
+                evokeds[cond] = epochs[cond].average()
+            except KeyError:
+                pass
         all_evokeds[participant] = evokeds
 
     return(all_evokeds)
