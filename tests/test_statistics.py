@@ -1,5 +1,5 @@
-import unittest
 import nose
+import doctest
 import numpy as np
 import pandas as pd
 import neurokit as nk
@@ -38,6 +38,25 @@ def test_compute_BMI():
 
 def test_compute_interoceptive_accuracy():
     nose.tools.eq_(nk.compute_interoceptive_accuracy(5, 3), 0.5)
+
+#==============================================================================
+# Plots
+#==============================================================================
+#def test_plot_polarbar():
+#    fig = nk.plot_polarbar([1, 2, 3])
+#    nose.tools.assert_is_instance(fig, matplotlib.figure.Figure)
+
+
+
+if __name__ == '__main__':
+    nose.run(defaultTest=__name__)
+    doctest.testmod()
+
+
+
+
+
+
 
 
 
@@ -84,6 +103,3 @@ def test_compute_interoceptive_accuracy():
 
 #if __name__ == '__main__':
 #    unittest.main()
-
-if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
