@@ -1,10 +1,6 @@
-import unittest
-
-from .test_bio import *
-from .test_statistics import *
-from .test_miscellaneous import *
+import nose
+import matplotlib
 
 
-
-if __name__ == '__main__':
-    unittest.main()
+def test_mad():
+    nose.tools.assert_equals(nk.mad([1, 2, 3, 4, 5, 6, 7]), 2.0)
