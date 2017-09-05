@@ -42,7 +42,7 @@ class TestStatistics(unittest.TestCase):
 # Plots
 #==============================================================================
     def test_plot_polarbar(self):
-        fig = nk.plot_polarbar([1, 2, 3], show=False)
+        fig = nk.plot_polarbar([1, 2, 3])
         self.assertIsInstance(fig, matplotlib.figure.Figure)
         
 if __name__ == '__main__':
