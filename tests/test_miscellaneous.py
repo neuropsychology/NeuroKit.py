@@ -45,3 +45,6 @@ class TestMiscellaenous(unittest.TestCase):
     def test_find_closest_in_list(self):
         closest = nk.find_closest_in_list(1.8, [3, 5, 6, 1, 2])
         self.assertEqual(closest, 2)
+
+#if __name__ == '__main__':
+#    nose.run(defaultTest=__name__)
