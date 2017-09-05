@@ -6,11 +6,9 @@ from ..signal import complexity
 
 from .eeg_data import eeg_to_df
 
-import mne
+
 import numpy as np
 import pandas as pd
-import nolds
-import re
 
 
 # ==============================================================================
@@ -24,6 +22,8 @@ import re
 def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, shannon=True, sampen=True, multiscale=True, spectral=True, svd=True, correlation=True, higushi=True, petrosian=True, fisher=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False, names="Complexity"):
     """
     Compute complexity indices of epochs or raw object.
+
+    DOCS INCOMPLETE :(
     """
 
 

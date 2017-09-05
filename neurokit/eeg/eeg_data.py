@@ -6,7 +6,6 @@ from ..signal import find_events
 import numpy as np
 import pandas as pd
 import mne
-import os
 import re
 
 
@@ -21,9 +20,9 @@ import re
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channel_type=None, channel_name=None):
+def eeg_add_channel(raw, channel, sync_index_eeg=0, sync_index_channel=0, channel_type=None, channel_name=None):
     """
-    Add a channel to a raw m/eeg file.
+    Add a channel to a mne's Raw m/eeg file. It will basically synchronize the channel to the eeg data following a particular index and add it.
 
     Parameters
     ----------
@@ -31,10 +30,10 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
         Raw EEG data.
     channel : list or numpy.array
         The channel to be added.
-    sync_index_raw : int or list
-        The index by which to align the two inputs.
+    sync_index_eeg : int or list
+        An index, in the raw data, by which to align the two inputs.
     sync_index_channel : int or list
-        The index by which to align the two inputs.
+        An index, in the channel to add, by which to align the two inputs.
     channel_type : str
         Channel type. Currently supported fields are 'ecg', 'bio', 'stim', 'eog', 'misc', 'seeg', 'ecog', 'mag', 'eeg', 'ref_meg', 'grad', 'emg', 'hbr' or 'hbo'.
 
@@ -46,7 +45,9 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
     Example
     ----------
     >>> import neurokit as nk
-    >>> raw = nk.eeg_add_channel(raw, ecg, channel_type="ecg")
+    >>> event_index_in_eeg = 42
+    >>> event_index_in_ecg = 666
+    >>> raw = nk.eeg_add_channel(raw, ecg, sync_index_raw=event_index_in_eeg, sync_index_channel=event_index_in_ecg, channel_type="ecg")
 
     Notes
     ----------
@@ -72,7 +73,7 @@ def eeg_add_channel(raw, channel, sync_index_raw=0, sync_index_channel=0, channe
             channel_name = "Added_Channel"
 
     # Compute the distance between the two signals
-    diff = sync_index_channel - sync_index_raw
+    diff = sync_index_channel - sync_index_eeg
     if diff > 0:
         channel = list(channel)[diff:len(channel)]
         channel = channel + [np.nan]*diff
@@ -154,228 +155,6 @@ def eeg_select_channels(raw, channel_names):
 
 
 
-
-
-
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_create_events(onsets, conditions=None):
-    """
-    Create MNE compatible events.
-
-    Parameters
-    ----------
-    onsets : list or array
-        Events onsets.
-    conditions : list
-        A list of equal length containing the stimuli types/conditions.
-
-
-    Returns
-    ----------
-    (events, event_id) : tuple
-        MNE-formated events and a dictionary with event's names.
-
-    Example
-    ----------
-    >>> import neurokit as nk
-    >>> events, event_id = nk.create_mne_events(events_onset, trigger_list)
-
-    Authors
-    ----------
-    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
-
-    Dependencies
-    ----------
-    None
-    """
-    event_id = {}
-
-    if conditions is None:
-        conditions = ["Event"] * len(onsets)
-
-    # Sanity check
-    if len(conditions) != len(onsets):
-        print("NeuroKit Warning: eeg_create_events(): conditions parameter of different length than onsets. Aborting.")
-        return()
-
-
-
-    event_names = list(set(conditions))
-#    event_index = [1, 2, 3, 4, 5, 32, 64, 128]
-    event_index = list(range(len(event_names)))
-    for i in enumerate(event_names):
-        conditions = [event_index[i[0]] if x==i[1] else x for x in conditions]
-        event_id[i[1]] = event_index[i[0]]
-
-    events = np.array([onsets, [0]*len(onsets), conditions]).T
-    return(events, event_id)
-
-
-
-
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
-    """
-    Create MNE compatible events.
-
-    Parameters
-    ----------
-    raw : mne.io.Raw
-        Raw EEG data.
-    events_channel : str or array
-        Name of the trigger channel if in the raw, or array of equal length if externally supplied.
-    conditions : list
-        List containing the stimuli types/conditions.
-    treshold : float
-        The treshold value by which to select the events. If "auto", takes the value between the max and the min.
-    cut : str
-        "higher" or "lower", define the events as above or under the treshold. For photosensors, a white screen corresponds usually to higher values. Therefore, if your events were signalled by a black colour, events values would be the lower ones, and you should set the cut to "lower".
-        Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
-    number : str or int
-        How many events should it select.
-    after : int
-        If number different than "all", then at what time should it start selecting the events.
-    before : int
-        If number different than "all", before what time should it select the events.
-    min_duration : int
-        The minimum duration of an event (in timepoints).
-
-    Returns
-    ----------
-    (raw, events, event_id) : tuple
-        The raw file with events, the mne-formatted events and event_id.
-
-    Example
-    ----------
-    >>> import neurokit as nk
-    >>>
-    >>> raw, events, event_id = nk.eeg_add_events(raw, events_channel, conditions)
-
-    Notes
-    ----------
-    *Authors*
-
-    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
-
-    *Dependencies*
-
-    - pandas
-
-    *See Also*
-
-    - mne: http://martinos.org/mne/dev/index.html
-
-
-    References
-    -----------
-    - None
-    """
-    # Extract the events_channel from raw if needed
-    if isinstance(events_channel, str):
-        try:
-            events_channel = eeg_select_channels(raw, events_channel)
-        except:
-            print("NeuroKit error: eeg_add_events(): Wrong events_channel name provided.")
-
-    # Find event onsets
-    events = find_events(events_channel, treshold=treshold, cut=cut, time_index=time_index, number=number, after=after, before=before, min_duration=min_duration)
-
-    # Create mne compatible events
-    events, event_id = eeg_create_events(events["onsets"], conditions)
-
-    # Add them
-    raw.add_events(events)
-
-    return(raw, events, event_id)
-
-
-
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_to_all_evokeds(all_epochs, conditions=None):
-    """
-    Convert all_epochs to all_evokeds.
-    """
-    if conditions is None:
-        # Get event_id
-        conditions = {}
-        for participant, epochs in all_epochs.items():
-            conditions.update(epochs.event_id)
-
-    all_evokeds = {}
-    for participant, epochs in all_epochs.items():
-        evokeds = {}
-        for cond in conditions:
-            try:
-                evokeds[cond] = epochs[cond].average()
-            except KeyError:
-                pass
-        all_evokeds[participant] = evokeds
-
-    return(all_evokeds)
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_to_df(eeg, index=None, include="all", exclude=None, hemisphere="both", central=True):
-    """
-    Convert mne Raw or Epochs object to dataframe or dict of dataframes.
-    """
-    if isinstance(eeg, mne.Epochs):
-        data = {}
-
-        if index is None:
-            index = range(len(eeg))
-
-        for epoch_index, epoch in zip(index, eeg.get_data()):
-
-            epoch = pd.DataFrame(epoch.T)
-            epoch.columns = eeg.ch_names
-            epoch.index = eeg.times
-
-            selection = eeg_select_electrodes(eeg, include=include, exclude=exclude, hemisphere=hemisphere, central=central)
-
-            data[epoch_index] = epoch[selection]
-
-    else:  # it might be a Raw object
-        data = eeg.get_data().T
-        data = pd.DataFrame(data)
-        data.columns = eeg.ch_names
-        data.index = eeg.times
-
-    return(data)
 
 
 
@@ -466,5 +245,228 @@ def eeg_select_electrodes(eeg, include="all", exclude=None, hemisphere="both", c
         electrodes = hemi
 
     return(electrodes)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_create_mne_events(onsets, conditions=None):
+    """
+    Create MNE compatible events.
+
+    Parameters
+    ----------
+    onsets : list or array
+        Events onsets.
+    conditions : list
+        A list of equal length containing the stimuli types/conditions.
+
+
+    Returns
+    ----------
+    (events, event_id) : tuple
+        MNE-formated events and a dictionary with event's names.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> events, event_id = nk.eeg_create_mne_events(events_onset, conditions)
+
+    Authors
+    ----------
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    """
+    event_id = {}
+
+    if conditions is None:
+        conditions = ["Event"] * len(onsets)
+
+    # Sanity check
+    if len(conditions) != len(onsets):
+        print("NeuroKit Warning: eeg_create_events(): conditions parameter of different length than onsets. Aborting.")
+        return()
+
+
+
+    event_names = list(set(conditions))
+#    event_index = [1, 2, 3, 4, 5, 32, 64, 128]
+    event_index = list(range(len(event_names)))
+    for i in enumerate(event_names):
+        conditions = [event_index[i[0]] if x==i[1] else x for x in conditions]
+        event_id[i[1]] = event_index[i[0]]
+
+    events = np.array([onsets, [0]*len(onsets), conditions]).T
+    return(events, event_id)
+
+
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_add_events(raw, events_channel, conditions=None, treshold="auto", cut="higher", time_index=None, number="all", after=0, before=None, min_duration=1):
+    """
+    Find events on a channel, convert them into an MNE compatible format, and add them to the raw data.
+
+    Parameters
+    ----------
+    raw : mne.io.Raw
+        Raw EEG data.
+    events_channel : str or array
+        Name of the trigger channel if in the raw, or array of equal length if externally supplied.
+    conditions : list
+        List containing the stimuli types/conditions.
+    treshold : float
+        The treshold value by which to select the events. If "auto", takes the value between the max and the min.
+    cut : str
+        "higher" or "lower", define the events as above or under the treshold. For photosensors, a white screen corresponds usually to higher values. Therefore, if your events were signalled by a black colour, events values would be the lower ones, and you should set the cut to "lower".
+        Add a corresponding datetime index, will return an addional array with the onsets as datetimes.
+    number : str or int
+        How many events should it select.
+    after : int
+        If number different than "all", then at what time should it start selecting the events.
+    before : int
+        If number different than "all", before what time should it select the events.
+    min_duration : int
+        The minimum duration of an event (in timepoints).
+
+    Returns
+    ----------
+    (raw, events, event_id) : tuple
+        The raw file with events, the mne-formatted events and event_id.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>>
+    >>> raw, events, event_id = nk.eeg_add_events(raw, events_channel, conditions)
+
+    Notes
+    ----------
+    *Authors*
+
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
+    - pandas
+
+    *See Also*
+
+    - mne: http://martinos.org/mne/dev/index.html
+
+
+    References
+    -----------
+    - None
+    """
+    # Extract the events_channel from raw if needed
+    if isinstance(events_channel, str):
+        try:
+            events_channel = eeg_select_channels(raw, events_channel)
+        except:
+            print("NeuroKit error: eeg_add_events(): Wrong events_channel name provided.")
+
+    # Find event onsets
+    events = find_events(events_channel, treshold=treshold, cut=cut, time_index=time_index, number=number, after=after, before=before, min_duration=min_duration)
+
+    # Create mne compatible events
+    events, event_id = eeg_create_mne_events(events["onsets"], conditions)
+
+    # Add them
+    raw.add_events(events)
+
+    return(raw, events, event_id)
+
+
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_to_all_evokeds(all_epochs, conditions=None):
+    """
+    Convert all_epochs to all_evokeds.
+
+    DOCS INCOMPLETE :(
+    """
+    if conditions is None:
+        # Get event_id
+        conditions = {}
+        for participant, epochs in all_epochs.items():
+            conditions.update(epochs.event_id)
+
+    all_evokeds = {}
+    for participant, epochs in all_epochs.items():
+        evokeds = {}
+        for cond in conditions:
+            try:
+                evokeds[cond] = epochs[cond].average()
+            except KeyError:
+                pass
+        all_evokeds[participant] = evokeds
+
+    return(all_evokeds)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def eeg_to_df(eeg, index=None, include="all", exclude=None, hemisphere="both", central=True):
+    """
+    Convert mne Raw or Epochs object to dataframe or dict of dataframes.
+
+    DOCS INCOMPLETE :(
+    """
+    if isinstance(eeg, mne.Epochs):
+        data = {}
+
+        if index is None:
+            index = range(len(eeg))
+
+        for epoch_index, epoch in zip(index, eeg.get_data()):
+
+            epoch = pd.DataFrame(epoch.T)
+            epoch.columns = eeg.ch_names
+            epoch.index = eeg.times
+
+            selection = eeg_select_electrodes(eeg, include=include, exclude=exclude, hemisphere=hemisphere, central=central)
+
+            data[epoch_index] = epoch[selection]
+
+    else:  # it might be a Raw object
+        data = eeg.get_data().T
+        data = pd.DataFrame(data)
+        data.columns = eeg.ch_names
+        data.index = eeg.times
+
+    return(data)
+
+
+
 
 

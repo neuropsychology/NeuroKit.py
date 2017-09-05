@@ -9,8 +9,7 @@ from .eeg_data import eeg_to_all_evokeds
 import numpy as np
 import pandas as pd
 import mne
-import matplotlib
-import copy
+
 
 
 
@@ -24,6 +23,7 @@ import copy
 # ==============================================================================
 def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, names="ERP"):
     """
+    DOCS INCOMPLETE :(
     """
     erp = {}
 
@@ -75,6 +75,7 @@ def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere
 # ==============================================================================
 def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude=None, hemisphere="both", central=True, name=None, colors=None, gfp=False, ci=0.95, ci_alpha=0.333, invert_y=False, linewidth=1, linestyle="-", filter_hfreq=None):
     """
+    DOCS INCOMPLETE :(
     """
     # Preserve original
     all_epochs_current = all_epochs.copy()
@@ -161,6 +162,8 @@ def plot_eeg_erp(all_epochs, conditions=None, times=None, include="all", exclude
 def plot_eeg_erp_topo(all_epochs, colors=None):
     """
     Plot butterfly plot.
+
+    DOCS INCOMPLETE :(
     """
     all_evokeds = eeg_to_all_evokeds(all_epochs)
 
