@@ -14,7 +14,7 @@ import scipy.stats
 # ==============================================================================
 def mad(var, constant=1):
     """
-    Median Absolute Deviation: a "Robust" version of standard deviation.
+    Median Absolute Deviation: a "robust" version of standard deviation.
 
     Parameters
     ----------
@@ -33,12 +33,14 @@ def mad(var, constant=1):
     >>> import neurokit as nk
     >>> hrv = nk.mad([2, 8, 7, 5, 4, 12, 5, 1])
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
     - numpy
 
     References
@@ -71,7 +73,7 @@ def z_score(raw_scores, center=True, scale=True):
 
     Parameters
     ----------
-    raw_scores : list, numpy.array or pandas.Series
+    raw_scores : list, ndarray or pandas.Series
         ECG signal array.
     centered : bool
         Center the array (mean = 0).
@@ -81,7 +83,7 @@ def z_score(raw_scores, center=True, scale=True):
     Returns
     ----------
     z_scores : pandas.DataFrame
-        The Z scores.
+        The normalized scores.
 
 
     Example
@@ -99,7 +101,6 @@ def z_score(raw_scores, center=True, scale=True):
     *Dependencies*
 
     - pandas
-
     """
     df = pd.DataFrame(raw_scores)
 
@@ -123,14 +124,14 @@ def z_score(raw_scores, center=True, scale=True):
 # ==============================================================================
 def find_outliers(data, treshold=2.58):
     """
-    Identify outliers (abnormal values).
+    Identify outliers (abnormal values) using the standart deviation.
 
     Parameters
     ----------
     data : list or ndarray
         Data array
     treshold : float
-        Maximum deviation (in terms of standart deviation). Following a gaussian distribution, 2.58 = rejecting 1%, 2.33 = rejecting 2%, 1.96 = 5% and 1.28 = rejecting 10%.
+        Maximum deviation (in terms of standart deviation). Rule of thumb of a gaussian distribution: 2.58 = rejecting 1%, 2.33 = rejecting 2%, 1.96 = 5% and 1.28 = rejecting 10%.
 
     Returns
     ----------
@@ -178,29 +179,28 @@ def find_outliers(data, treshold=2.58):
 # ==============================================================================
 def normal_range(mean, sd, treshold=1.28):
     """
-    Returns a bottom and a top limit based on a treshold.
+    Returns a bottom and a top limit on a normal distribution portion based on a treshold.
 
     Parameters
     ----------
     treshold : float
-        maximum deviation (in terms of standart deviation). Following a gaussian distribution, 2.58 = keeping 99%, 2.33 = keeping 98%, 1.96 = 95% and 1.28 = keeping 90%.
+        maximum deviation (in terms of standart deviation). Rule of thumb of a gaussian distribution: 2.58 = keeping 99%, 2.33 = keeping 98%, 1.96 = 95% and 1.28 = keeping 90%.
 
     Returns
     ----------
-    NA
+    (bottom, top) : tuple
+        Lower and higher range.
 
     Example
     ----------
-    NA
+    import neurokit as nk
+    bottom, top = nk.normal_range(mean=100, sd=15, treshold=2)
 
-    Authors
+    Notes
     ----------
+    *Authors*
+
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
-
-
-    Dependencies
-    ----------
-    - numpy
     """
     bottom = mean - sd*treshold
     top = mean + sd*treshold

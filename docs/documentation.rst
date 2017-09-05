@@ -146,37 +146,59 @@ complexity
 
 
 
+
+
+
+
+
 Statistics
 =====================
+
+
+mad
+---------------
+
+.. autofunction:: neurokit.mad
+
 
 z_score
 ---------------
 
 .. autofunction:: neurokit.z_score
 
-dprime
----------------
 
-.. autofunction:: neurokit.dprime
 
 find_outliers
 ---------------
 
 .. autofunction:: neurokit.find_outliers
 
-Miscellaneous
-=====================
 
-BMI
+normal_range
 ---------------
 
-.. autofunction:: neurokit.BMI
+.. autofunction:: neurokit.normal_range
 
 
-find_closest_in_list
----------------------
 
-.. autofunction:: neurokit.find_closest_in_list
+
+
+
+
+
+Routines
+=====================
+
+compute_dprime
+---------------
+
+.. autofunction:: neurokit.compute_dprime
+
+
+compute_BMI
+---------------
+
+.. autofunction:: neurokit.compute_BMI
 
 
 
@@ -186,3 +208,14 @@ compute_interoceptive_accuracy
 .. autofunction:: neurokit.compute_interoceptive_accuracy
 
 
+
+
+
+
+Plot
+=====================
+
+plot_polarbar
+---------------
+
+.. autofunction:: neurokit.plot_polarbar
