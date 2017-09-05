@@ -55,8 +55,8 @@ This package provides a high level integration of complex statistical routines f
 - **M/EEG**
   - ERP: Under development
   - Complexity: Under development
-  - Time/Frequency: Under development
-  - Microstates: Under development
+  - Time/Frequency: SOON™
+  - Microstates: SOON™
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
   - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a dataframe
   - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG features
