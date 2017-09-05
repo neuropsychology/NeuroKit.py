@@ -9,5 +9,6 @@ nolds
 biosppy
 Pillow
 cvxopt
-nose2
-nose-cov
+nose
+doctest
+coverage
