@@ -10,5 +10,4 @@ biosppy
 Pillow
 cvxopt
 nose
-doctest
 coverage

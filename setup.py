@@ -42,7 +42,6 @@ url = "https://github.com/neuropsychology/NeuroKit.py",
 download_url = 'https://github.com/neuropsychology/NeuroKit.py/tarball/master',
 test_suite="nose.collector",
 tests_require=[
-        'doctest',
         'nose',
         'coverage'],
 classifiers = [
