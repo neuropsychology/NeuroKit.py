@@ -219,3 +219,46 @@ plot_polarbar
 ---------------
 
 .. autofunction:: neurokit.plot_polarbar
+
+
+
+
+Miscellaneous
+=====================
+
+
+find_following_duplicates
+----------------------
+
+.. autofunction:: neurokit.find_following_duplicates
+
+
+find_closest_in_list
+----------------------
+
+.. autofunction:: neurokit.find_closest_in_list
+
+
+Time
+----------------------
+
+.. autoclass:: neurokit.Time
+
+Data
+=====================
+
+
+find_creation_date
+----------------------
+
+.. autofunction:: neurokit.find_creation_date
+
+save_nk_object
+----------------------
+
+.. autofunction:: neurokit.save_nk_object
+
+read_nk_object
+----------------------
+
+.. autofunction:: neurokit.read_nk_object

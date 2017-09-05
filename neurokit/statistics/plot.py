@@ -46,8 +46,9 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
 
     Example
     ----------
-    fig = nk.plot_polarbar(scores=[1, 2, 3, 4, 5], labels=["A", "B", "C", "D", "E"], distribution_means=3, distribution_sds=1)
-    fig.show()
+    >>> import neurokit as nk
+    >>> fig = nk.plot_polarbar(scores=[1, 2, 3, 4, 5], labels=["A", "B", "C", "D", "E"], distribution_means=3, distribution_sds=1)
+    >>> fig.show()
 
     Notes
     ----------

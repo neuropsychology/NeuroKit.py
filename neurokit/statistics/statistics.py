@@ -193,8 +193,8 @@ def normal_range(mean, sd, treshold=1.28):
 
     Example
     ----------
-    import neurokit as nk
-    bottom, top = nk.normal_range(mean=100, sd=15, treshold=2)
+    >>> import neurokit as nk
+    >>> bottom, top = nk.normal_range(mean=100, sd=15, treshold=2)
 
     Notes
     ----------

@@ -6,7 +6,7 @@ import neurokit as nk
 
 #from test_bio import *
 from test_statistics import *
-
+from test_miscellaneous import *
 
 
 

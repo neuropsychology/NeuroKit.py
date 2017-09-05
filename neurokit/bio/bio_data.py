@@ -5,7 +5,7 @@ import os
 import datetime
 import bioread
 
-from ..miscellaneous import get_creation_date
+from ..miscellaneous import find_creation_date
 
 
 
@@ -80,7 +80,7 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", 
         return()
 
     # Convert creation date
-    creation_date = get_creation_date(file)
+    creation_date = find_creation_date(file)
     creation_date = datetime.datetime.fromtimestamp(creation_date)
 
 

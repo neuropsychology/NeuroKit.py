@@ -44,21 +44,3 @@ class TestStatistics(unittest.TestCase):
     def test_plot_polarbar(self):
         fig = nk.plot_polarbar([1, 2, 3], show=False)
         self.assertIsInstance(fig, matplotlib.figure.Figure)
-
-
-
-
-
-#    def test_find_following_duplicates(self):
-#        array = ["a","a","b","a","a","a","c","c","b","b"]
-#        first = nk.find_following_duplicates(array)[0]
-#        self.assertEqual(first, True)
-#
-#    def test_find_closest_in_list(self):
-#        closest = nk.find_closest_in_list(1.8, [3, 5, 6, 1, 2])
-#        self.assertEqual(closest, 2)
-#
-#    def test_Time(self):
-#        clock = nk.Time()
-#        time_passed = clock.get()
-#        self.assertEqual(isinstance(time_passed, float), True)
