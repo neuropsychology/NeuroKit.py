@@ -6,8 +6,6 @@ from ..signal import complexity
 
 from .eeg_data import eeg_to_df
 
-
-import numpy as np
 import pandas as pd
 
 

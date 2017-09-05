@@ -13,6 +13,7 @@
 ## Code
 - Authors of code contribution will be added within the [**contributor**](http://neurokit.readthedocs.io/en/latest/about.html#contributors) section within the documentation.
 - Authors of code contribution are invited to follow the [PEP 8](https://www.python.org/dev/peps/pep-0008/) style sheet to write some nice (and readable) python.
+- Contrary to Python recommandations, I prefer some nicely nested loops, rather than a one-liner ["that" for s if h in i for t in range("don't") if "understand" is False].
 - Please document and comment your code, so that the purpose of each step (or code line) is stated in a clear and understandable way.
 - Avoid unnecessary function splitting into smaller bits: it makes testing and reading of the code more difficult (as one must jump between functions and files to understand what's happening).
 - Avoid unnecessary use of "magic" functions (preceded by underscores, `_foo()`). I don't know I don't find them elegant. But it's personal. I might be wrong.
