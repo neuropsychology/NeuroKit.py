@@ -11,3 +11,4 @@ Pillow
 cvxopt
 nose
 coverage
+pytest

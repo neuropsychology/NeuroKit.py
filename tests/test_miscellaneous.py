@@ -1,4 +1,4 @@
-import nose
+import pytest
 import doctest
 import numpy as np
 import pandas as pd
@@ -27,8 +27,8 @@ def test_get_creation_date():
     else:
         data_path = "data/test_bio_data.acq"  # If running in local
 
-    creation_date = nk.get_creation_date(data_path)
-    nose.tools.assert_is_instance(creation_date, float)
+    creation_date = nk.find_creation_date(data_path)
+    assert isinstance(creation_date, float)
 
 #==============================================================================
 # miscellaenous
@@ -36,25 +36,25 @@ def test_get_creation_date():
 def test_find_following_duplicates():
     array = ["a","a","b","a","a","a","c","c","b","b"]
     first = nk.find_following_duplicates(array)[0]
-    nose.tools.eq_(first, True)
+    assert first == True
 
 def test_Time():
     clock = nk.Time()
     time_passed = clock.get()
-    nose.tools.assert_is_instance(time_passed, float)
+    assert isinstance(time_passed, float)
 
 def test_find_closest_in_list():
     closest = nk.find_closest_in_list(1.8, [3, 5, 6, 1, 2])
-    nose.tools.eq_(closest, 2)
+    assert closest ==  2
 
 
 
 
 
 if __name__ == '__main__':
-    nose.run(defaultTest=__name__)
+#    nose.run(defaultTest=__name__)
     doctest.testmod()
-
+    pytest.main()
 
 
 #if __name__ == '__main__':
