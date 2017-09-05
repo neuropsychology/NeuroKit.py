@@ -1,7 +1,7 @@
 About
 #####
 
-NeuroKit is looking for devs, support and pretty much everything. Join the team by `contributing <https://github.com/neuropsychology/NeuroKit.py/blob/master/CONTRIBUTING.md>`_ :)
+NeuroKit is looking for developers, support and pretty much everything. Join the team by `contributing <https://github.com/neuropsychology/NeuroKit.py/blob/master/CONTRIBUTING.md>`_ :)
 
 Core Team
 ==========
@@ -13,7 +13,7 @@ Contributors
 
 - `Rhenan Bartels Ferreira <https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil): HRV, Testing, RSP, RSA.
 - `Nate Vack <https://github.com/njvack>`_ (USA): Acqknowledge files reading.
-- `Vassilios Vonikakis <https://github.com/bbonik>`_ (USA): HRV preprocessing.
+- `Vassilios Vonikakis <https://github.com/bbonik>`_ (USA): HRV.
 
 Support
 ========
@@ -29,7 +29,7 @@ Credits
 
 Credits go to the authors of NeuroKit's dependencies.
 
-Publications using it
+Featured in
 =======================
 
 NeuroKit has been used in the following publications:

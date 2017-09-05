@@ -2,10 +2,11 @@
 from ..miscellaneous import Time
 from ..miscellaneous import find_following_duplicates
 
-import numpy as np
+from ..signal import complexity
+
+from .eeg_data import eeg_to_df
+
 import pandas as pd
-import nolds  # Fractal
-import re
 
 
 # ==============================================================================
@@ -16,112 +17,80 @@ import re
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-#def eeg_complexity(epochs):
-#    """
-#    """
-#    df = epochs.to_data_frame(index=["epoch", "time", "condition"])
-#
-#    for index, epoch in enumerate(epochs):
-#        df = epoch
-
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def eeg_fractal_dim(epochs, entropy=True, hurst=True, dfa=False, lyap_r=False, lyap_e=False):
+def eeg_complexity(eeg, sampling_rate, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, shannon=True, sampen=True, multiscale=True, spectral=True, svd=True, correlation=True, higushi=True, petrosian=True, fisher=True, hurst=True, dfa=True, lyap_r=False, lyap_e=False, names="Complexity"):
     """
+    Compute complexity indices of epochs or raw object.
+
+    DOCS INCOMPLETE :(
     """
-    clock = Time()
-
-    df = epochs.to_data_frame(index=["epoch", "time", "condition"])
-
-    # Separate indexes
-    index = df.index.tolist()
-    epochs = []
-    times = []
-    events = []
-    for i in index:
-        epochs.append(i[0])
-        times.append(i[1])
-        events.append(i[2])
 
 
+    data = eeg_to_df(eeg, index=index, include=include, exclude=exclude, hemisphere=hemisphere, central=central)
 
-    data = {}
-    if entropy == True:
-        data["Entropy"] = {}
-    if hurst == True:
-        data["Hurst"] = {}
-    if dfa == True:
-        data["DFA"] = {}
-    if lyap_r == True:
-        data["Lyapunov_R"] = {}
-    if lyap_e == True:
-        data["Lyapunov_E"] = {}
+    # if data was Raw, make as if it was an Epoch so the following routine is only written once
+    if isinstance(data, dict) is False:
+        data = {0: data}
 
-
-    clock.reset()
-    for epoch in set(epochs):
-        subset = df.loc[epoch]
-
-        if entropy == True:
-            data["Entropy"][epoch] = []
-        if hurst == True:
-            data["Hurst"][epoch] = []
-        if dfa == True:
-            data["DFA"][epoch] = []
-        if lyap_r == True:
-            data["Lyapunov_R"][epoch] = []
-        if lyap_e == True:
-            data["Lyapunov_E"][epoch] = []
+    # Create time windows
+    if isinstance(times, tuple):
+        times = list(times)
+    if isinstance(times, list):
+        if isinstance(times[0], list) is False:
+            times = [times]
+    else:
+        times = [[0, None]]
 
 
-
-        for channel in subset:
-            if entropy == True:
-                data["Entropy"][epoch].append(nolds.sampen(subset[channel]))
-            if hurst == True:
-                data["Hurst"][epoch].append(nolds.hurst_rs(subset[channel]))
-            if dfa == True:
-                data["DFA"][epoch].append(nolds.dfa(subset[channel]))
-            if lyap_r == True:
-                data["Lyapunov_R"][epoch].append(nolds.lyap_r(subset[channel]))
-            if lyap_e == True:
-                data["Lyapunov_E"][epoch].append(nolds.lyap_e(subset[channel]))
-
-        if entropy == True:
-            data["Entropy"][epoch] = np.mean(data["Entropy"][epoch])
-        if hurst == True:
-            data["Hurst"][epoch] = np.mean(data["Hurst"][epoch])
-        if dfa == True:
-            data["DFA"][epoch] = np.mean(data["DFA"][epoch])
-        if lyap_r == True:
-            data["Lyapunov_R"][epoch] = np.mean(data["Lyapunov_R"][epoch])
-        if lyap_e == True:
-            data["Lyapunov_E"][epoch] = np.mean(data["Lyapunov_E"][epoch])
+    # Deal with names
+    if isinstance(names, str):
+        prefix = [names] * len(times)
+        if len(times) > 1:
+            for time_index, time_window in enumerate(times):
+                prefix[time_index] = prefix[time_index] + "_%.2f_%.2f" %(time_window[0], time_window[1])
+    else:
+        prefix = names
 
 
-        time = clock.get(reset=False)/1000
-        time = time/(epoch+1)
-        time = (time * (len(set(epochs))-epoch))/60
-        print(str(round((epoch+1)/len(set(epochs))*100,2)) + "% complete, remaining time: " + str(round(time, 2)) + 'min')
+    # Iterate
+    complexity_all = pd.DataFrame()
+    for time_index, time_window in enumerate(times):
+        if len(times) > 1 and verbose is True:
+            print("Computing complexity features... window " + str(time_window) + "/" + str(len(times)))
 
-    df = pd.DataFrame.from_dict(data)
+        complexity_features = {}
+        # Compute complexity for each channel for each epoch
+        index = 0
+        for epoch_index, epoch in data.items():
+            if len(times) == 1 and verbose is True:
+                print("Computing complexity features... " + str(round(index/len(data.items())*100, 2)) + "%")
+            index +=1
 
-    list_events = []
-    for i in range(len(events)):
-        list_events.append(events[i] + "_" + str(epochs[i]))
+            df = epoch[time_window[0]:time_window[1]].copy()
 
-    list_events = list_events[np.where(find_following_duplicates(list_events))]
-    list_events = [re.sub('_\d+', '', i) for i in list_events]
-    df["Epoch"] = list_events
-    return(df)
+            complexity_features[epoch_index] = {}
+            for channel in df:
+                signal = df[channel].values
+
+                features = complexity(signal, sampling_rate=sampling_rate, shannon=shannon, sampen=sampen, multiscale=multiscale, spectral=spectral, svd=svd, correlation=correlation, higushi=higushi, petrosian=petrosian, fisher=fisher, hurst=hurst, dfa=dfa, lyap_r=lyap_r, lyap_e=lyap_e)
+
+                for key, feature in features.items():
+                    if key in complexity_features[epoch_index].keys():
+                        complexity_features[epoch_index][key].append(feature)
+                    else:
+                        complexity_features[epoch_index][key] = [feature]
+
+        for epoch_index, epoch in complexity_features.items():
+            for feature in epoch:
+                complexity_features[epoch_index][feature] = pd.Series(complexity_features[epoch_index][feature]).mean()
+
+        # Convert to dataframe
+        complexity_features = pd.DataFrame.from_dict(complexity_features, orient="index")
+        complexity_features.columns = [prefix[time_index] + "_" + s for s in complexity_features.columns]
+
+
+        complexity_all = pd.concat([complexity_all, complexity_features], axis=1)
+    return(complexity_all)
+
 
 
 

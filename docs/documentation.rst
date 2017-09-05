@@ -66,13 +66,9 @@ read_acqknowledge
 .. autofunction:: neurokit.read_acqknowledge
 
 
-EEG Processing
+EEG
 =====================
 
-read_eeg
---------------------
-
-.. autofunction:: neurokit.read_eeg
 
 
 eeg_add_channel
@@ -81,42 +77,51 @@ eeg_add_channel
 .. autofunction:: neurokit.eeg_add_channel
 
 
+eeg_select_channels
+--------------------
+
+.. autofunction:: neurokit.eeg_select_channels
+
+
+eeg_select_electrodes
+-----------------------
+
+.. autofunction:: neurokit.eeg_select_electrodes
+
+
+eeg_create_mne_events
+-------------------------
+
+.. autofunction:: neurokit.eeg_create_mne_events
 
 eeg_add_events
---------------------
+-------------------------
 
 .. autofunction:: neurokit.eeg_add_events
 
 
-
-eeg_select_sensor_area
+eeg_complexity
 -------------------------
 
-.. autofunction:: neurokit.eeg_select_sensor_area
+.. autofunction:: neurokit.eeg_complexity
 
 
+eeg_erp
+-------------------------
 
-eeg_filter
---------------------
-
-.. autofunction:: neurokit.eeg_filter
-
-eeg_ica
---------------------
-
-.. autofunction:: neurokit.eeg_ica
+.. autofunction:: neurokit.eeg_erp
 
 
-eeg_name_frequencies
------------------------
+plot_eeg_erp
+-------------------------
 
-.. autofunction:: neurokit.eeg_name_frequencies
+.. autofunction:: neurokit.plot_eeg_erp
 
-eeg_psd
----------------
 
-.. autofunction:: neurokit.eeg_psd
+plot_eeg_erp_topo
+-------------------------
 
+.. autofunction:: neurokit.plot_eeg_erp_topo
 
 
 Signal
@@ -128,10 +133,10 @@ find_events
 
 .. autofunction:: neurokit.find_events
 
-visually_check_events_in_signal
+plot_events_in_signal
 -----------------------------------
 
-.. autofunction:: neurokit.visually_check_events_in_signal
+.. autofunction:: neurokit.plot_events_in_signal
 
 create_epochs
 ---------------
@@ -146,37 +151,59 @@ complexity
 
 
 
+
+
+
+
+
 Statistics
 =====================
+
+
+mad
+---------------
+
+.. autofunction:: neurokit.mad
+
 
 z_score
 ---------------
 
 .. autofunction:: neurokit.z_score
 
-dprime
----------------
 
-.. autofunction:: neurokit.dprime
 
 find_outliers
 ---------------
 
 .. autofunction:: neurokit.find_outliers
 
-Miscellaneous
-=====================
 
-BMI
+normal_range
 ---------------
 
-.. autofunction:: neurokit.BMI
+.. autofunction:: neurokit.normal_range
 
 
-find_closest_in_list
----------------------
 
-.. autofunction:: neurokit.find_closest_in_list
+
+
+
+
+
+Routines
+=====================
+
+compute_dprime
+---------------
+
+.. autofunction:: neurokit.compute_dprime
+
+
+compute_BMI
+---------------
+
+.. autofunction:: neurokit.compute_BMI
 
 
 
@@ -186,3 +213,57 @@ compute_interoceptive_accuracy
 .. autofunction:: neurokit.compute_interoceptive_accuracy
 
 
+
+
+
+
+Plot
+=====================
+
+plot_polarbar
+---------------
+
+.. autofunction:: neurokit.plot_polarbar
+
+
+
+
+Miscellaneous
+=====================
+
+
+find_following_duplicates
+----------------------
+
+.. autofunction:: neurokit.find_following_duplicates
+
+
+find_closest_in_list
+----------------------
+
+.. autofunction:: neurokit.find_closest_in_list
+
+
+Time
+----------------------
+
+.. autoclass:: neurokit.Time
+
+Data
+=====================
+
+
+find_creation_date
+----------------------
+
+.. autofunction:: neurokit.find_creation_date
+
+save_nk_object
+----------------------
+
+.. autofunction:: neurokit.save_nk_object
+
+read_nk_object
+----------------------
+
+.. autofunction:: neurokit.read_nk_object

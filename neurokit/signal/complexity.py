@@ -134,7 +134,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # Shannon
     if shannon is True:
         try:
-            complexity["Entropy_Shannon"] = entropy_shannon(signal)
+            complexity["Entropy_Shannon"] = complexity_entropy_shannon(signal)
         except:
             print("NeuroKit warning: complexity(): Failed to compute Shannon entropy.")
             complexity["Entropy_Shannon"] = np.nan
@@ -151,7 +151,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # multiscale
     if multiscale is True:
         try:
-            complexity["Entropy_Multiscale"] = entropy_multiscale(signal, emb_dim, tolerance)
+            complexity["Entropy_Multiscale"] = complexity_entropy_multiscale(signal, emb_dim, tolerance)
         except:
             print("NeuroKit warning: complexity(): Failed to compute Multiscale Entropy (MSE).")
             complexity["Entropy_Multiscale"] = np.nan
@@ -159,7 +159,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # spectral
     if spectral is True:
         try:
-            complexity["Entropy_Spectral"] = entropy_spectral(signal, sampling_rate=sampling_rate, bands=bands)
+            complexity["Entropy_Spectral"] = complexity_entropy_spectral(signal, sampling_rate=sampling_rate, bands=bands)
         except:
             print("NeuroKit warning: complexity(): Failed to compute Spectral Entropy.")
             complexity["Entropy_Spectral"] = np.nan
@@ -167,7 +167,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # SVD
     if svd is True:
         try:
-            complexity["Entropy_SVD"] = entropy_svd(signal, tau=tau, emb_dim=emb_dim)
+            complexity["Entropy_SVD"] = complexity_entropy_svd(signal, tau=tau, emb_dim=emb_dim)
         except:
             print("NeuroKit warning: complexity(): Failed to compute SVD Entropy.")
             complexity["Entropy_SVD"] = np.nan
@@ -184,7 +184,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # higushi
     if higushi is True:
         try:
-            complexity["Fractal_Dimension_Higushi"] = fd_higushi(signal, k_max)
+            complexity["Fractal_Dimension_Higushi"] = complexity_fd_higushi(signal, k_max)
         except:
             print("NeuroKit warning: complexity(): Failed to compute higushi.")
             complexity["Fractal_Dimension_Higushi"] = np.nan
@@ -192,7 +192,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # petrosian
     if petrosian is True:
         try:
-            complexity["Fractal_Dimension_Petrosian"] = fd_petrosian(signal)
+            complexity["Fractal_Dimension_Petrosian"] = complexity_fd_petrosian(signal)
         except:
             print("NeuroKit warning: complexity(): Failed to compute petrosian.")
             complexity["Fractal_Dimension_Petrosian"] = np.nan
@@ -202,7 +202,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     # Fisher
     if fisher is True:
         try:
-            complexity["Fisher_Information"] = fisher_info(signal, tau=tau, emb_dim=emb_dim)
+            complexity["Fisher_Information"] = complexity_fisher_info(signal, tau=tau, emb_dim=emb_dim)
         except:
             print("NeuroKit warning: complexity(): Failed to compute Fisher Information.")
             complexity["Fisher_Information"] = np.nan
@@ -245,6 +245,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
     return(complexity)
 
 
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -253,7 +254,7 @@ def complexity(signal, sampling_rate=1000, shannon=True, sampen=True, multiscale
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def entropy_shannon(signal):
+def complexity_entropy_shannon(signal):
     """
     Computes the shannon entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo.
 
@@ -274,7 +275,7 @@ def entropy_shannon(signal):
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> shannon_entropy = nk.entropy_shannon(signal)
+    >>> shannon_entropy = nk.complexity_entropy_shannon(signal)
 
     Notes
     ----------
@@ -299,10 +300,12 @@ def entropy_shannon(signal):
     -----------
     - None
     """
-
-    # Check if string
+     # Check if string
     if not isinstance(signal, str):
         signal = list(signal)
+
+    signal = np.array(signal)
+
 
     # Create a frequency data
     data_set = list(set(signal))
@@ -333,7 +336,7 @@ def entropy_shannon(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def entropy_multiscale(signal, emb_dim=2, tolerance="default"):
+def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
     """
     Computes the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo. Uses sample entropy with 'chebychev' distance.
 
@@ -357,7 +360,7 @@ def entropy_multiscale(signal, emb_dim=2, tolerance="default"):
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> multiscale_entropy = nk.entropy_multiscale(signal)
+    >>> multiscale_entropy = nk.complexity_entropy_multiscale(signal)
 
     Notes
     ----------
@@ -424,7 +427,7 @@ def entropy_multiscale(signal, emb_dim=2, tolerance="default"):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def fd_higushi(signal, k_max):
+def complexity_fd_higushi(signal, k_max):
     """
     Computes Higuchi Fractal Dimension of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
@@ -446,7 +449,7 @@ def fd_higushi(signal, k_max):
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> fd_higushi = nk.fd_higushi(signal, 8)
+    >>> fd_higushi = nk.complexity_fd_higushi(signal, 8)
 
     Notes
     ----------
@@ -509,7 +512,7 @@ def fd_higushi(signal, k_max):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def entropy_spectral(signal, sampling_rate, bands=None):
+def complexity_entropy_spectral(signal, sampling_rate, bands=None):
     """
     Computes Spectral Entropy of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann. The power spectrum is computed through fft. Then, it is normalised and assimilated to a probability density function.
 
@@ -533,7 +536,7 @@ def entropy_spectral(signal, sampling_rate, bands=None):
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> entropy_spectral = nk.entropy_spectral(signal, 1000)
+    >>> spectral_entropy = nk.complexity_entropy_spectral(signal, 1000)
 
     Notes
     ----------
@@ -609,7 +612,7 @@ def _embed_seq(signal, tau, emb_dim):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def entropy_svd(signal, tau=1, emb_dim=2):
+def complexity_entropy_svd(signal, tau=1, emb_dim=2):
     """
     Computes the Singular Value Decomposition (SVD) entropy of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
@@ -633,7 +636,7 @@ def entropy_svd(signal, tau=1, emb_dim=2):
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> entropy_svd = nk.entropy_svd(signal, 1, 2)
+    >>> entropy_svd = nk.complexity_entropy_svd(signal, 1, 2)
 
     Notes
     ----------
@@ -670,7 +673,7 @@ def entropy_svd(signal, tau=1, emb_dim=2):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def fd_petrosian(signal):
+def complexity_fd_petrosian(signal):
     """
     Computes the Petrosian Fractal Dimension of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
@@ -690,7 +693,7 @@ def fd_petrosian(signal):
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> fd_petrosian = nk.fd_petrosian(signal, 1, 2)
+    >>> fd_petrosian = nk.complexity_fd_petrosian(signal, 1, 2)
 
     Notes
     ----------
@@ -730,7 +733,7 @@ def fd_petrosian(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def fisher_info(signal, tau=1, emb_dim=2):
+def complexity_fisher_info(signal, tau=1, emb_dim=2):
     """
     Computes the Fisher information of a signal. Based on the `pyrem <https://github.com/gilestrolab/pyrem>`_ repo by Quentin Geissmann.
 
@@ -754,7 +757,7 @@ def fisher_info(signal, tau=1, emb_dim=2):
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> fisher_info = nk.fisher_info(signal, 1, 2)
+    >>> fisher_info = nk.complexity_fisher_info(signal, 1, 2)
 
     Notes
     ----------

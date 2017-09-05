@@ -15,6 +15,7 @@ import numpy as np
 class Time():
     """
     A class object to get time.
+
     Its methods (functions) are:
         - reset()
         - get()
@@ -36,12 +37,14 @@ class Time():
     >>> myclock.reset()
     >>> time_passed_since_reset = myclock.get()
 
-    Authors
+    Notes
     ----------
+    *Authors*
+
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
-    Dependencies
-    ----------
+    *Dependencies*
+
     - time
     """
     def __init__(self):
@@ -66,12 +69,14 @@ class Time():
         >>> nk.time.reset()
         >>> time_passed_since_reset = nk.time.get()
 
-        Authors
+        Notes
         ----------
+        *Authors*
+
         - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
-        Dependencies
-        ----------
+        *Dependencies*
+
         - time
         """
         self.clock = builtin_time.clock()
@@ -97,12 +102,14 @@ class Time():
         >>> nk.time.reset()
         >>> time_passed_since_reset = nk.time.get()
 
-        Authors
+        Notes
         ----------
+        *Authors*
+
         - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
-        Dependencies
-        ----------
+        *Dependencies*
+
         - time
         """
         t = (builtin_time.clock()-self.clock)*1000
@@ -127,26 +134,29 @@ def find_following_duplicates(array):
 
     Parameters
     ----------
-    array :  list or array
-        A list containig duplicates.
+    array :  list or ndarray
+        A list containing duplicates.
 
     Returns
     ----------
-    list
+    uniques : list
         A list containing True for each unique and False for following duplicates.
 
     Example
     ----------
     >>> import neurokit as nk
     >>> mylist = ["a","a","b","a","a","a","c","c","b","b"]
-    >>> nk.find_following_duplicates(mylist)
+    >>> uniques = nk.find_following_duplicates(mylist)
+    >>> indices = np.where(uniques)  # Find indices of uniques
 
-    Authors
+    Notes
     ----------
+    *Authors*
+
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
-    Dependencies
-    ----------
+    *Dependencies*
+
     - numpy
     """
     array = array.copy()
@@ -161,10 +171,6 @@ def find_following_duplicates(array):
                 uniques.append(False)
             else:
                 uniques.append(True)
-
-
-    # Find index of uniques
-    indices = np.where(uniques)
 
     return(uniques)
 
@@ -186,7 +192,7 @@ def find_closest_in_list(number, array, direction="both", strictly=False):
 
     Parameters
     ----------
-    number :  float
+    number : float
         The number.
     array : list
         The list to look in.
@@ -197,16 +203,20 @@ def find_closest_in_list(number, array, direction="both", strictly=False):
 
     Returns
     ----------
-    closest = int
+    closest : int
+        The closest number in the array.
 
     Example
     ----------
     >>> import neurokit as nk
     >>> nk.find_closest_in_list(1.8, [3, 5, 6, 1, 2])
 
-    Authors
+    Notes
     ----------
+    *Authors*
+
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
     """
     if direction == "both":
         closest = min(array, key=lambda x:abs(x-number))

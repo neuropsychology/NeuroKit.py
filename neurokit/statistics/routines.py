@@ -15,7 +15,7 @@ import scipy.stats
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
+def compute_dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
     """
     Computes the d', beta, aprime, b''d and c parameters based on the signal detection theory (SDT). **Feel free to help me expand the documentation of this function with details and interpretation guides.**
 
@@ -39,7 +39,7 @@ def dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
     ----------
     >>> import neurokit as nk
     >>>
-    >>> nk.dprime(n_Hit=7, n_Miss=4, n_FA=6, n_CR=6)
+    >>> nk.compute_dprime(n_Hit=7, n_Miss=4, n_FA=6, n_CR=6)
 
 
     Notes
@@ -120,7 +120,7 @@ def dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def BMI(height, weight, age, sex):
+def compute_BMI(height, weight, age, sex):
     """
     Returns the traditional BMI, the 'new' Body Mass Index and estimates the Body Fat Percentage (BFP; Deurenberg et al., 1991).
 
@@ -144,7 +144,7 @@ def BMI(height, weight, age, sex):
     ----------
     >>> import neurokit as nk
     >>>
-    >>> nk.BMI(height=166, weight=54, age=22, sex="f")
+    >>> nk.compute_BMI(height=166, weight=54, age=22, sex="f")
 
     Notes
     ----------
@@ -242,7 +242,7 @@ def BMI(height, weight, age, sex):
 # ==============================================================================
 def compute_interoceptive_accuracy(nbeats_real, nbeats_reported):
     """
-    Computes interoceptive accuracy according to Garfinkel (2015).
+    Computes interoceptive accuracy according to Garfinkel et al., (2015).
 
     Parameters
     ----------
@@ -254,7 +254,7 @@ def compute_interoceptive_accuracy(nbeats_real, nbeats_reported):
     Returns
     ----------
     accuracy : float or list
-        Objective accuracy in detecting internal bodily sensations. It is the central construct underpinning other interoceptive measures (Garfinkel, 2015).
+        Objective accuracy in detecting internal bodily sensations. It is the central construct underpinning other interoceptive measures (Garfinkel et al., 2015).
 
     Example
     ----------
@@ -263,13 +263,19 @@ def compute_interoceptive_accuracy(nbeats_real, nbeats_reported):
     >>> nk.compute_interoceptive_accuracy(5, 3)
 
 
-    Authors
+    Notes
     ----------
+    *Authors*
+
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
-    Dependencies
-    ----------
+    *Dependencies*
+
     - numpy
+
+    References
+    -----------
+    - Garfinkel, S. N., Seth, A. K., Barrett, A. B., Suzuki, K., & Critchley, H. D. (2015). Knowing your own heart: distinguishing interoceptive accuracy from interoceptive awareness. Biological psychology, 104, 65-74.
     """
     # Convert to array if list
     if isinstance(nbeats_real, list):

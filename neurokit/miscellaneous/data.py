@@ -8,6 +8,9 @@ import os
 import pickle
 import gzip
 
+
+
+
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -16,165 +19,49 @@ import gzip
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def read_data(filename, extension="", participant_id="", path="", localization="US", print_warning=True):
+def save_nk_object(obj, filename="file", path="", extension="nk", compress=False, compatibility=-1):
     """
-    Load the datafile into a pandas' dataframe.
+    Save whatever python object to a pickled file.
 
     Parameters
     ----------
-    NA
+    file : object
+        Whatever python thing (list, dict, ...).
+    filename : str
+        File's name.
+    path : str
+        File's path.
+    extension : str
+        File's extension. Default "nk" but can be whatever.
+    compress: bool
+        Enable compression using gzip.
+    compatibility : int
+        See :func:`pickle.dump`.
 
-    Returns
-    ----------
-    NA
 
     Example
     ----------
-    NA
+    >>> import neurokit as nk
+    >>> obj = [1, 2]
+    >>> nk.save_nk_object(obj, filename="myobject")
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
-    - pandas
-    """
-    # Find a corresponding file
-    file = filename
-    if os.path.isfile(file) is False:
-        file = path + filename + extension
-    if os.path.isfile(file) is False:
-        file = path + filename + ".xlsx"
-    if os.path.isfile(file) is False:
-        file = path + filename + ".csv"
-    if os.path.isfile(file) is False:
-        file = path + participant_id + filename + extension
-    if os.path.isfile(file) is False:
-        if ".csv" in file:
-            file = path + "/csv/" + participant_id + "_" + filename + extension
-        elif ".xlsx" in file:
-            file = path + "/excel/" + participant_id + "_" + filename + extension
-        else:
-            extension = ".xlsx"
-    if os.path.isfile(file) is False:
-        if print_warning is True:
-            print("NeuroKit Error: read_data(): file's path " + file + " not found!")
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
 
-    if localization == "FR" or localization == "FRA" or localization == "French" or localization == "France":
-        sep = ";"
-        decimal = ","
-    else:
-        sep = ","
-        decimal = "."
+    *Dependencies*
 
-    if ".csv" in file:
-        try:
-            df = pd.read_csv(file, sep=sep, decimal=decimal, encoding="utf-8")
-        except UnicodeDecodeError:
-            df = pd.read_csv(file, sep=sep, decimal=decimal, encoding="cp1125")
-    elif ".xls" in file or ".xlsx" in file:
-        df = pd.read_excel(file, encoding="utf-8")
-    else:
-        if print_warning is True:
-            print("NeuroKit Error: read_data(): wrong extension of the datafile.")
-    return(df)
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def save_data(df, filename="data", extension="all", participant_id="", path="", localization="US", index=False, print_warning=True, index_label=None):
-    """
-    Save the datafile into a pandas' dataframe.
-
-    Parameters
-    ----------
-    NA
-
-    Returns
-    ----------
-    NA
-
-    Example
-    ----------
-    NA
-
-    Authors
-    ----------
-    Dominique Makowski
-
-    Dependencies
-    ----------
-    - pandas
-    """
-    if localization == "FR" or localization == "FRA" or localization == "French" or localization == "France":
-        sep = ";"
-        decimal = ","
-    else:
-        sep = ","
-        decimal = "."
-
-    if extension == "all":
-        extension = [".csv", ".xlsx"]
-
-    for ext in list(extension):
-        if ext == ".csv":
-            if os.path.exists(path + "/csv/") is False:
-                os.makedirs(path + "/csv/")
-            df.to_csv(path + "/csv/" + participant_id + "_" + filename + ext, sep=sep, index=index, index_label=index_label, decimal=decimal, encoding="utf-8")
-        elif ext == ".xlsx":
-            if os.path.exists(path + "/excel/") is False:
-                os.makedirs(path + "/excel/")
-            df.to_excel(path + "/excel/" + participant_id + "_" + filename + ext, index=index, index_label=index_label, encoding="utf-8")
-        else:
-            if print_warning is True:
-                print("NeuroKit Error: save_data(): wrong extension specified.")
-
-
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def save_nk_object(file, filename="file", path="", extension="nk", compress=False, compatibility=-1):
-    """
-    Save an object to a pickled file.
-
-    Parameters
-    ----------
-    NA
-
-    Returns
-    ----------
-    NA
-
-    Example
-    ----------
-    NA
-
-    Authors
-    ----------
-    Dominique Makowski
-
-    Dependencies
-    ----------
     - pickle
+    - gzip
     """
     if compress is True:
         with gzip.open(path + filename + "." + extension, 'wb') as name:
-            pickle.dump(file, name, protocol=compatibility)
+            pickle.dump(obj, name, protocol=compatibility)
     else:
         with open(path + filename + "." + extension, 'wb') as name:
-            pickle.dump(file, name, protocol=compatibility)
+            pickle.dump(obj, name, protocol=compatibility)
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
@@ -189,23 +76,28 @@ def read_nk_object(filename, path=""):
 
     Parameters
     ----------
-    NA
-
-    Returns
-    ----------
-    NA
+    filename : str
+        Full file's name (with extension).
+    path : str
+        File's path.
 
     Example
     ----------
-    NA
+    >>> import neurokit as nk
+    >>> obj = [1, 2]
+    >>> nk.save_nk_object(obj, filename="myobject")
+    >>> loaded_obj = nk.read_nk_object("myobject.nk")
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
     - pickle
+    - gzip
     """
     try:
         with open(filename, 'rb') as name:
@@ -223,10 +115,9 @@ def read_nk_object(filename, path=""):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def get_creation_date(path):
+def find_creation_date(path):
     """
-    Try to get the date that a file was created, falling back to when it was last modified if that not possible.
-    See  for explanation.
+    Try to get the date that a file was created, falling back to when it was last modified if that's not possible.
 
     Parameters
     ----------
@@ -242,14 +133,16 @@ def get_creation_date(path):
     Example
     ----------
     >>> import neurokit as nk
+    >>> import datetime
     >>>
-    >>> date = nk.get_creation_date(file)
+    >>> creation_date = nk.find_creation_date(file)
+    >>> creation_date = datetime.datetime.fromtimestamp(creation_date)
 
     Notes
     ----------
     *Authors*
 
-    - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
     - Mark Amery
 
     *Dependencies*

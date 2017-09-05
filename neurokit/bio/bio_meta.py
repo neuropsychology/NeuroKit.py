@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], eda_alpha=8e-4, eda_gamma=1e-2, scr_method="makowski", scr_treshold=0.1, add=None, emg_names=None):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, add=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], eda_alpha=8e-4, eda_gamma=1e-2, scr_method="makowski", scr_treshold=0.1, emg_names=None, emg_envelope_freqs=[10, 400], emg_envelope_lfreq=4, emg_activation_treshold="default", emg_activation_n_above=0.25, emg_activation_n_below=1):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 
@@ -30,6 +30,8 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
         EDA signal array.
     emg :  list, array or DataFrame
         EMG signal array. Can include multiple channels.
+    add : pandas.DataFrame
+        Dataframe or channels to add by concatenation to the processed dataframe.
     sampling_rate : int
         Sampling rate (samples/second).
     age : float
@@ -58,8 +60,6 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
         SCR extraction algorithm. "makowski" (default), "kim" (biosPPy's default; See Kim et al., 2004) or "gamboa" (Gamboa, 2004).
     scr_treshold : float
         SCR minimum treshold (in terms of signal standart deviation).
-    add : pandas.DataFrame
-        Dataframe or channels to add by concatenation to the processed dataframe.
     emg_names : list
         List of EMG channel names.
 
@@ -142,7 +142,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, sampling_rate=1000, age=
 
     # EMG
     if emg is not None:
-        emg = emg_process(emg=emg, sampling_rate=sampling_rate, emg_names=emg_names)
+        emg = emg_process(emg=emg, sampling_rate=sampling_rate, emg_names=emg_names, envelope_freqs=emg_envelope_freqs, envelope_lfreq=emg_envelope_lfreq, activation_treshold=emg_activation_treshold, activation_n_above=emg_activation_n_above, activation_n_below=emg_activation_n_below)
         bio_df = pd.concat([bio_df, emg.pop("df")], axis=1)
         for i in emg:
             processed_bio[i] = emg[i]

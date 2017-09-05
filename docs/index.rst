@@ -2,7 +2,7 @@ Home
 ====
 
 
-**NeuroKit** is a Python module that provides high-level integrative functions with good and flexible defaults, to allow users to focus on what's important.
+**NeuroKit** is a Python module that provides high-level integrative functions with good and flexible defaults, allowing users to focus on what's important.
 
 
 **Contents:**
@@ -30,7 +30,7 @@ Installation can be easily done using ``pip``:
 
 .. note::
 
-   A fully working python distribution (including NeuroKit) can be downloaded `here <http://neurokit.readthedocs.io/en/latest/tutorials/Python.html#installation>`_.
+   Starting from scratch? Note that a ready-to-go python distribution (that includes NeuroKit) can be downloaded `here <http://neurokit.readthedocs.io/en/latest/tutorials/Python.html#installation>`_.
 
 
 Questions? Help? Movie Recommendations?

@@ -3,63 +3,6 @@ import pandas as pd
 import numpy as np
 import scipy
 
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-# ==============================================================================
-def extract_peak(channel_data, value="max", size=0):
-    """
-    Extract the peak (max or min) of one or several channels.
-
-    Parameters
-    ----------
-    channel_data = pandas.DataFrame
-        Use the `to_data_frame()` method for evoked nme data.
-    value = str
-        "max" or "min".
-    size = int
-        Return an averaged peak from how many points before and after.
-
-    Returns
-    ----------
-    tuple
-        (peak, time_peak)
-
-    Example
-    ----------
-    >>> channel_data = evoked.pick_channels(["C1", "C2"]).to_data_frame()
-    >>> peak, time_peak = nk.extract_peak(channel_data, size=2)
-
-    Authors
-    ----------
-    Dominique Makowski
-
-    Dependencies
-    ----------
-    - numpy
-    - pandas
-    """
-    data = channel_data.mean(axis=1)
-    data.plot()
-    if value == "max":
-        peak = np.max(data)
-        time_peak = np.argmax(data)
-    if value == "min":
-        peak = np.min(data)
-        time_peak = np.argmin(data)
-    if size > 0:
-        peak_list = [peak]
-        peak_index = list(data.index).index(time_peak)
-        data = data.reset_index(drop=True)
-        for i in range(size):
-            peak_list.append(data[peak_index+int(i+1)])
-            peak_list.append(data[peak_index-int(i-1)])
-        peak = np.mean(peak_list)
-    return(peak, time_peak)
 
 
 
@@ -99,12 +42,14 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     >>> signal = discrete_to_continuous([4, 5, 1, 2], [1, 2, 3, 4], sampling_rate=1000)
     >>> pd.Series(signal).plot()
 
-    Authors
+    Notes
     ----------
-    Dominique Makowski
+    *Authors*
 
-    Dependencies
-    ----------
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
     - scipy
     - pandas
     """

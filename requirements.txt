@@ -9,3 +9,6 @@ nolds
 biosppy
 Pillow
 cvxopt
+nose
+coverage
+pytest

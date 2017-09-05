@@ -567,7 +567,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
                 if abs(8 - bin_width) < abs(8 - np.diff(np.histogram(RRi, bins=bin_number, density=True)[1])[0]):
                     bin_number = bin_number_current
             hrv["Triang"] = len(RRis)/np.max(np.histogram(RRi, bins=bin_number, density=True)[0])
-            hrv["Shannon_h"] = entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
+            hrv["Shannon_h"] = complexity_entropy_shannon(np.histogram(RRi, bins=bin_number, density=True)[0])
         except ValueError:
             hrv["Triang"] = np.nan
             hrv["Shannon_h"] = np.nan
@@ -630,25 +630,25 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
             hrv["DFA_1"] = nolds.dfa(RRis, range(4, 17))
         if len(RRis) > 66:
             hrv["DFA_2"] = nolds.dfa(RRis, range(16, 66))
-        hrv["Shannon"] = entropy_shannon(RRis)
+        hrv["Shannon"] = complexity_entropy_shannon(RRis)
         hrv["Sample_Entropy"] = nolds.sampen(RRis, emb_dim=2)
         try:
             hrv["Correlation_Dimension"] = nolds.corr_dim(RRis, emb_dim=2)
         except AssertionError as error:
             print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
             hrv["Correlation_Dimension"] = np.nan
-        hrv["Entropy_Multiscale"] = entropy_multiscale(RRis, emb_dim=2)
-        hrv["Entropy_SVD"] = entropy_svd(RRis, emb_dim=2)
-        hrv["Entropy_Spectral_VLF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
-        hrv["Entropy_Spectral_LF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
-        hrv["Entropy_Spectral_HF"] = entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
-        hrv["Fisher_Info"] = fisher_info(RRis, tau=1, emb_dim=2)
+        hrv["Entropy_Multiscale"] = complexity_entropy_multiscale(RRis, emb_dim=2)
+        hrv["Entropy_SVD"] = complexity_entropy_svd(RRis, emb_dim=2)
+        hrv["Entropy_Spectral_VLF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
+        hrv["Entropy_Spectral_LF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
+        hrv["Entropy_Spectral_HF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
+        hrv["Fisher_Info"] = complexity_fisher_info(RRis, tau=1, emb_dim=2)
         try:  # Otherwise travis errors for some reasons :(
             hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
         except Exception:
             hrv["Lyapunov"] = np.nan
-        hrv["FD_Petrosian"] = fd_petrosian(RRis)
-        hrv["FD_Higushi"] = fd_higushi(RRis, k_max=16)
+        hrv["FD_Petrosian"] = complexity_fd_petrosian(RRis)
+        hrv["FD_Higushi"] = complexity_fd_higushi(RRis, k_max=16)
 
     # TO DO:
     # Include many others (see Voss 2015)
