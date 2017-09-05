@@ -19,6 +19,7 @@ script:
   - coverage run tests/test_statistics.py
   - coverage run tests/test_miscellaneous.py
   - coverage run tests/test_bio.py
+  - coverage run tests/tests.py
 
 after_success:
   - codecov
