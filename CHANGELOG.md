@@ -10,7 +10,7 @@
 - Many!!!
 - `eeg_complexity`: First attempt to compute complexity features of epochs (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
 - `emg_process`: Computes linear envelope and activation (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
-- `ecg_signal_quality`: Added rpeak parameter and returns an interpolated array of signal quality
+- `ecg_signal_quality`: Added rpeak parameter and returns an interpolated array of signal quality [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 
 
 ### Major changes
@@ -18,7 +18,10 @@
 
 ### Minor changes
 - Many!!!
-- Fixed ecg_process for sampling rate superior to 1000 Hz
+- Fixed ecg_process for sampling rate superior to 1000 Hz [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
+- Added [scripts](https://github.com/neuropsychology/NeuroKit.py/tree/master/utils/ecg_signal_quality_model_creation) for ECG signal quality model creation [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
+- Started documenting ECG signal quality in docs [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
+- Taking interest in BVP
 
 ---------
 
