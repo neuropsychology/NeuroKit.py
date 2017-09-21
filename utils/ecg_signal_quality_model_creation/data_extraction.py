@@ -6,9 +6,6 @@ import numpy as np
 import pandas as pd
 import wfdb
 import neurokit as nk
-import seaborn as sns
-import matplotlib.pyplot as plt
-
 
 #==============================================================================
 # Setup
