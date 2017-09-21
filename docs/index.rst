@@ -11,6 +11,7 @@ Home
    :maxdepth: 1
 
    tutorials/index
+   features/index
    documentation
    about
    

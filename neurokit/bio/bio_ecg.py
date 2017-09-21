@@ -74,7 +74,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     - **HRV**: Heart-Rate Variability (HRV) is a finely tuned measure of heart-brain communication, as well as a strong predictor of morbidity and death (Zohar et al., 2013). It describes the complex variation of beat-to-beat intervals mainly controlled by the autonomic nervous system (ANS) through the interplay of sympathetic and parasympathetic neural activity at the sinus node. In healthy subjects, the dynamic cardiovascular control system is characterized by its ability to adapt to physiologic perturbations and changing conditions maintaining the cardiovascular homeostasis (Voss, 2015). In general, the HRV is influenced by many several factors like chemical, hormonal and neural modulations, circadian changes, exercise, emotions, posture and preload. There are several procedures to perform HRV analysis, usually classified into three categories: time domain methods, frequency domain methods and non-linear methods. See :func:`neurokit.ecg_hrv()` for a description of indices.
     - **Adjusted HRV**: The raw HRV features are normalized :math:`(raw - Mcluster) / sd` according to the participant's age and gender. In data from Voss et al. (2015), HRV analysis was performed on 5-min ECG recordings (lead II and lead V2 simultaneously, 500 Hz sample rate) obtained in supine position after a 5–10 minutes resting phase. The cohort of healthy subjects consisted of 782 women and 1124 men between the ages of 25 and 74 years, clustered into 4 groups: YF (Female, Age = [25-49], n=571), YM (Male, Age = [25-49], n=744), EF (Female, Age = [50-74], n=211) and EM (Male, Age = [50-74], n=571).
     - **Systole/Diastole**: One prominent channel of body and brain communication is that conveyed by baroreceptors, pressure and stretch-sensitive receptors within the heart and surrounding arteries. Within each cardiac cycle, bursts of baroreceptor afferent activity encoding the strength and timing of each heartbeat are carried via the vagus and glossopharyngeal nerve afferents to the nucleus of the solitary tract. This is the principal route that communicates to the brain the dynamic state of the heart, enabling the representation of cardiovascular arousal within viscerosensory brain regions, and influence ascending neuromodulator systems implicated in emotional and motivational behaviour. Because arterial baroreceptors are activated by the arterial pulse pressure wave, their phasic discharge is maximal during and immediately after the cardiac systole, that is, when the blood is ejected from the heart, and minimal during cardiac diastole, that is, between heartbeats (Azevedo, 2017).
-    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
+    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality). See the utils folder on NeuroKit's github.
 
     *Authors*
 
@@ -115,9 +115,9 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     # Signal quality
     # ===============
     if quality_model is not None:
-        quality = ecg_signal_quality(processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate, quality_model=quality_model)
+        quality = ecg_signal_quality(cardiac_cycles=processed_ecg["ECG"]["Cardiac_Cycles"], sampling_rate=sampling_rate, rpeaks=processed_ecg["ECG"]["R_Peaks"], quality_model=quality_model)
         processed_ecg["ECG"].update(quality)
-
+        processed_ecg["df"] = pd.concat([processed_ecg["df"], quality["ECG_Signal_Quality"]], axis=1)
 
     # HRV
     # =============
@@ -295,14 +295,18 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
+def ecg_signal_quality(cardiac_cycles, sampling_rate, rpeaks=None, quality_model="default"):
     """
-    Attempt to find the recording lead and the overall and individual quality of hearbeats signal.
+    Attempt to find the recording lead and the overall and individual quality of hearbeats signal. Altough used as a routine, note that this is experimental.
 
     Parameters
     ----------
     cardiac_cycles : pd.DataFrame
         DataFrame containing heartbeats. Computed by :function:`neurokit.ecg_process`.
+    sampling_rate : int
+        Sampling rate (samples/second).
+    rpeaks : None or ndarray
+        R-peak location indices. Used for computing an interpolated signal of quality.
     quality_model : str
         Path to model used to check signal quality. "default" uses the builtin model.
 
@@ -320,7 +324,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     ----------
     *Details*
 
-    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality).
+    - **ECG Signal Quality**: Using the PTB-Diagnostic dataset available from PhysioNet, we extracted all the ECG signals from the healthy participants, that contained 15 recording leads/subject. We extracted all cardiac cycles, for each lead, and downsampled them from 600 to 200 datapoints. Note that we dropped the 8 first values that were NaNs. Then, we fitted a neural network model on 2/3 of the dataset (that contains 134392 cardiac cycles) to predict the lead. Model evaluation was done on the remaining 1/3. The model show good performances in predicting the correct recording lead (accuracy=0.91, precision=0.91). In this function, this model is fitted on each cardiac cycle of the provided ECG signal. It returns the probable recording lead (the most common predicted lead), the signal quality of each cardiac cycle (the probability of belonging to the probable recording lead) and the overall signal quality (the mean of signal quality). See the utils folder on NeuroKit's github.
 
     *Authors*
 
@@ -365,6 +369,13 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, quality_model="default"):
     predict.columns = model.classes_
     quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
     quality["Average_Signal_Quality"] = predict[lead].mean()
+
+    # Interpolate to get a continuous signal
+    if rpeaks is not None:
+        signal = quality["Cardiac_Cycles_Signal_Quality"]
+        signal = discrete_to_continuous(signal, rpeaks, sampling_rate)  # Interpolation using 3rd order spline
+        signal.name = "ECG_Signal_Quality"
+        quality["ECG_Signal_Quality"] = signal
 
     return(quality)
 

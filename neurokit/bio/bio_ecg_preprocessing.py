@@ -75,6 +75,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     References
     -----------
+    - Hamilton, P. (2002, September). Open source ECG analysis. In Computers in Cardiology, 2002 (pp. 101-104). IEEE.
     - Kathirvel, P., Manikandan, M. S., Prasanna, S. R. M., & Soman, K. P. (2011). An efficient R-peak detection based on new nonlinear transformation and first-order Gaussian differentiator. Cardiovascular Engineering and Technology, 2(4), 408-425.
     - Canento, F., Lourenço, A., Silva, H., & Fred, A. (2013). Review and Comparison of Real Time Electrocardiogram Segmentation Algorithms for Biometric Applications. In Proceedings of the 6th Int’l Conference on Health Informatics (HEALTHINF).
     - Christov, I. I. (2004). Real time electrocardiogram QRS detection using combined adaptive threshold. Biomedical engineering online, 3(1), 28.
@@ -175,7 +176,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     # Heartbeats
     heartbeats = pd.DataFrame(cardiac_cycles).T
-    heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000/sampling_rate)) + "L")
+    heartbeats.index = pd.date_range(pd.datetime.today(), periods=len(heartbeats), freq=str(int(1000000/sampling_rate)) + "us")
     processed_ecg["ECG"]["Cardiac_Cycles"] = heartbeats
 
     # Waves
