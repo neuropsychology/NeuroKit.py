@@ -21,7 +21,7 @@ import mne
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, names="ERP"):
+def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere="both", central=True, verbose=True, names="ERP", method="mean"):
     """
     DOCS INCOMPLETE :(
     """
@@ -47,7 +47,12 @@ def eeg_erp(eeg, times=None, index=None, include="all", exclude=None, hemisphere
             values = {}
             for window_index, window in enumerate(times):
                 df = epoch[window[0]:window[1]]
-                value = df.mean().mean()
+                if method == "max":
+                    value = df.mean().max()
+                elif method == "min":
+                    value = df.mean().min()
+                else:
+                    value = df.mean().mean()
                 values[window_index] = value
             erp[epoch_index] = values
         else:
