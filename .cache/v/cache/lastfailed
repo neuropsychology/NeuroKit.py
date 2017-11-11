@@ -1,0 +1,5 @@
+{
+  "tests/test_bio.py::test_bio_process": true,
+  "tests/test_bio.py::test_read_acqknowledge": true,
+  "tests/test_miscellaneous.py::test_get_creation_date": true
+}

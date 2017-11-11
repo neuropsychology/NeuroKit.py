@@ -17,11 +17,12 @@
 - Many!!!
 
 ### Minor changes
-- Many!!!
+- Fixed a line in ecg_hrv so that it works if the provided rpeaks are array instead of list [#36](https://github.com/neuropsychology/NeuroKit.py/pull/36)
+- Taking interest in BVP
 - Fixed ecg_process for sampling rate superior to 1000 Hz [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 - Added [scripts](https://github.com/neuropsychology/NeuroKit.py/tree/master/utils/ecg_signal_quality_model_creation) for ECG signal quality model creation [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 - Started documenting ECG signal quality in docs [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
-- Taking interest in BVP
+- Many!!!
 
 ---------
 
