@@ -46,7 +46,10 @@ def test_compute_interoceptive_accuracy():
 # Plots
 #==============================================================================
 def test_plot_polarbar():
-    fig = nk.plot_polarbar([1, 2, 3])
+    fig = nk.plot_polarbar([1, 2, 3],
+                           labels=["A", "B", "C"],
+                           distribution_means=[1.5, 1.5, 1.5],
+                           distribution_sds=[0.5, 0.25, 0.65])
     assert isinstance(fig, matplotlib.figure.Figure)
 
 

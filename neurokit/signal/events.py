@@ -232,7 +232,7 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_events_in_signal(signal, events, color="red"):
+def plot_events_in_signal(signal, events_onsets, color="red"):
     """
     Plot events in signal.
 
@@ -240,7 +240,7 @@ def plot_events_in_signal(signal, events, color="red"):
     ----------
     signal : array or DataFrame
         Signal array (can be a dataframe with many signals).
-    events : list or ndarray
+    events_onsets : list or ndarray
         Events location.
     color : int or list
         Marker color.
@@ -250,7 +250,7 @@ def plot_events_in_signal(signal, events, color="red"):
     >>> import neurokit as nk
     >>> df = nk.bio_process(ecg=signal, sampling_rate=1000)
     >>> events = df["ECG"]["R_Peaks"]
-    >>> plot_events_in_signal(signal, events)
+    >>> plot_events_in_signal(signal, events_onsets)
 
     Notes
     ----------
@@ -266,17 +266,17 @@ def plot_events_in_signal(signal, events, color="red"):
     signal = pd.DataFrame(signal)
     signal.plot()
 
-    events = np.array(events)
+    events_onsets = np.array(events_onsets)
     try:
-        len(events[0])
-        for index, dim in enumerate(events):
+        len(events_onsets[0])
+        for index, dim in enumerate(events_onsets):
             for event in dim:
                 if isinstance(color, list):
                     plt.axvline(x=event, color=color[index])
                 else:
                     plt.axvline(x=event, color=color)
     except TypeError:
-        for event in events:
+        for event in events_onsets:
             if isinstance(color, list):
                 plt.axvline(x=event, color=color[0])
             else:
