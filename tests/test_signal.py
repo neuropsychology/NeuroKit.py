@@ -38,7 +38,6 @@ def test_create_epochs(df):
 
 
 if __name__ == '__main__':
-#    nose.run(defaultTest=__name__)
-    doctest.testmod()
     pytest.main()
+    doctest.testmod()
 
