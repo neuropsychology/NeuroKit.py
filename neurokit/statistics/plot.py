@@ -118,7 +118,7 @@ def plot_polarbar(scores, labels=None, labels_size=15, colors="default", distrib
         # TODO: add convertion if those parameter are dict
 
 
-        bottoms, tops = nk.normal_range(np.array(distribution_means), np.array(distribution_sds), treshold=treshold)
+        bottoms, tops = normal_range(np.array(distribution_means), np.array(distribution_sds), treshold=treshold)
         tops = tops - bottoms
 
         layer2 = plot.add_subplot(111, polar=True)

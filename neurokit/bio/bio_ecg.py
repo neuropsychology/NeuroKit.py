@@ -552,8 +552,8 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         # =================
         # Convert to continuous RR interval (RRi)
         beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
-        beats_times -= beats_times[0]
-        beats_times = np.delete(beats_times, artifacts_indices)  # delete also the artifact beat moments
+        beats_times -= list(beats_times)[0]  # So it starts at 0
+        beats_times = np.delete(list(beats_times), artifacts_indices)  # delete also the artifact beat moments
 
         try:
             RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
@@ -603,7 +603,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
             filtered, sampling_rate, params = biosppy.signals.tools.filter_signal(signal=RRi, ftype='butter', band='bandpass', order=1, frequency=freqs, sampling_rate=sampling_rate)
             # Apply Hilbert transform
             amplitude, phase = biosppy.signals.tools.analytic_signal(filtered)
-            # Extract Amplitude of Envolope (power)
+            # Extract Amplitude of Envelope (power)
             freq_powers["ECG_HRV_" + band] = amplitude
 
         freq_powers = pd.DataFrame.from_dict(freq_powers)
@@ -654,10 +654,9 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
         hrv["Entropy_Spectral_LF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
         hrv["Entropy_Spectral_HF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.15, 0.40, 0.001))
         hrv["Fisher_Info"] = complexity_fisher_info(RRis, tau=1, emb_dim=2)
-        try:  # Otherwise travis errors for some reasons :(
-            hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
-        except Exception:
-            hrv["Lyapunov"] = np.nan
+#        lyap exp doesn't work for some reasons
+#        hrv["Lyapunov"] = np.max(nolds.lyap_e(RRis, emb_dim=58, matrix_dim=4))
+
         hrv["FD_Petrosian"] = complexity_fd_petrosian(RRis)
         hrv["FD_Higushi"] = complexity_fd_higushi(RRis, k_max=16)
 
