@@ -1,22 +1,22 @@
 ## CURRENT : 0.2
 
 ### Breaking changes
-- Many!!!
 - Append "complexity_" to all complexity function names (e.g., `entropy_shannon` -> `complexity_entropy_shannon`) (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
 - `read_acqknowledge` new parameter, `return_sampling_rate`. Default to False to keep old behaviour, but default will be changed to True in the future (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
-
+- Many!!!
 
 ### New functions / parameters
-- Many!!!
+- `ecg_signal_quality`: Added rpeak parameter and returns an interpolated array of signal quality [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 - `eeg_complexity`: First attempt to compute complexity features of epochs (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
 - `emg_process`: Computes linear envelope and activation (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
-- `ecg_signal_quality`: Added rpeak parameter and returns an interpolated array of signal quality [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
-
+- Many!!!
 
 ### Major changes
 - Many!!!
 
 ### Minor changes
+- Refactor testing structure [#41](https://github.com/neuropsychology/NeuroKit.py/pull/41)
+- `plot_events_in_signal`: Changed `events` parameter to `events_onsets` [#41](https://github.com/neuropsychology/NeuroKit.py/pull/41)
 - Fixed a line in ecg_hrv so that it works if the provided rpeaks are array instead of list [#36](https://github.com/neuropsychology/NeuroKit.py/pull/36)
 - Taking interest in BVP
 - Fixed ecg_process for sampling rate superior to 1000 Hz [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
