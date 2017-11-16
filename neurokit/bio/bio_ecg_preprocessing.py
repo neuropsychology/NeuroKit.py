@@ -113,7 +113,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     elif segmenter == "pekkanen":
         rpeaks = segmenter_pekkanen(ecg=filtered, sampling_rate=sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.0)
     else:
-        rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
+        raise ValueError("Unknown segmenter: %s." % segmenter)
 
 
     # Correct R-peak locations
