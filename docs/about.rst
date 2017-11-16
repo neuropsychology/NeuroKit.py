@@ -12,7 +12,7 @@ Contributors
 ============
 
 
-- `Julien Lamour <https://github.com/lamourj>`_ (Brazil): ECG.
+- `Julien Lamour <https://github.com/lamourj>`_ (Switzerland): ECG.
 - `Rhenan Bartels Ferreira <https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil): HRV, Testing, RSP, RSA.
 - `Nate Vack <https://github.com/njvack>`_ (USA): Acqknowledge files reading.
 - `Vassilios Vonikakis <https://github.com/bbonik>`_ (USA): HRV.
