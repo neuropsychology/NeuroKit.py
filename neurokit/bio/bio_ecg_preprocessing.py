@@ -87,8 +87,6 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     # Transform to array
     ecg = np.array(ecg)
 
-    sampling_rate = float(sampling_rate)
-
     # Filter signal
     if filter_type in ["FIR", "butter", "cheby1", "cheby2", "ellip", "bessel"]:
         order = int(filter_order * sampling_rate)
@@ -113,9 +111,9 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     elif segmenter == "ssf":
         rpeaks, = biosppy.ecg.ssf_segmenter(signal=filtered, sampling_rate=sampling_rate, threshold=20, before=0.03, after=0.01)
     elif segmenter == "pekkanen":
-        rpeaks = segmenter_pekkanen(signal=filtered, sampling_rate=sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.0)
+        rpeaks = segmenter_pekkanen(ecg=filtered, sampling_rate=sampling_rate, window_size=5.0, lfreq=5.0, hfreq=15.0)
     else:
-        rpeaks, = biosppy.ecg.hamilton_segmenter(signal=filtered, sampling_rate=sampling_rate)
+        raise ValueError("Unknown segmenter: %s." % segmenter)
 
 
     # Correct R-peak locations
@@ -139,7 +137,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     # Get time indices
     length = len(ecg)
-    T = (length - 1) / sampling_rate
+    T = (length - 1) / float(sampling_rate)
     ts = np.linspace(0, T, length, endpoint=False)
     heart_rate_times = ts[heart_rate_idx]
     heart_rate_times = np.round(heart_rate_times*sampling_rate).astype(int)  # Convert heart rate times to timepoints
