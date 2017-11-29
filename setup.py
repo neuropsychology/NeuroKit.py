@@ -25,7 +25,7 @@ package_data = {
         "neurokit.materials":["*.model"]},
 install_requires = [
         'numpy',
-        'pandas',
+        'pandas >= 0.18.0',
         'scipy',
         'sklearn',
         'matplotlib',

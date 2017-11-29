@@ -99,12 +99,19 @@ def read_nk_object(filename, path=""):
     - pickle
     - gzip
     """
+    filename = path + filename
+    
     try:
         with open(filename, 'rb') as name:
             file = pickle.load(name)
     except pickle.UnpicklingError:
         with gzip.open(filename, 'rb') as name:
             file = pickle.load(name)
+    except ModuleNotFoundError:  # In case you're trying to unpickle a dataframe made with pandas < 0.17
+        try:
+            file = pd.read_pickle(filename)
+        except:
+            pass
     return(file)
 
 # ==============================================================================
