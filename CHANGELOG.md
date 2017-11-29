@@ -15,6 +15,7 @@
 - Many!!!
 
 ### Minor changes
+- Fix bug when unpickling, througk `read_nk_object`, a dataframe built with pandas < 0.17 [#42](https://github.com/neuropsychology/NeuroKit.py/pull/42)
 - Refactor testing structure [#41](https://github.com/neuropsychology/NeuroKit.py/pull/41)
 - `plot_events_in_signal`: Changed `events` parameter to `events_onsets` [#41](https://github.com/neuropsychology/NeuroKit.py/pull/41)
 - Fixed a line in ecg_hrv so that it works if the provided rpeaks are array instead of list [#36](https://github.com/neuropsychology/NeuroKit.py/pull/36)
