@@ -122,7 +122,7 @@ def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_ban
     # HRV
     # =============
     if hrv_features is not None:
-        hrv = ecg_hrv(processed_ecg["ECG"]["R_Peaks"], sampling_rate, hrv_features=hrv_features)
+        hrv = ecg_hrv(rpeaks=processed_ecg["ECG"]["R_Peaks"], sampling_rate=sampling_rate, hrv_features=hrv_features)
         try:
             processed_ecg["df"] = pd.concat([processed_ecg["df"], hrv.pop("df")], axis=1)
         except KeyError:
@@ -389,7 +389,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, rpeaks=None, quality_model
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonlinear"]):
+def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "frequency", "nonlinear"]):
     """
     Computes the Heart-Rate Variability (HRV). Shamelessly stolen from the `hrv <https://github.com/rhenanbartels/hrv/blob/develop/hrv>`_ package by Rhenan Bartels. All credits go to him.
 
@@ -397,6 +397,8 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     ----------
     rpeaks : list or ndarray
         R-peak location indices.
+    rri: list or ndarray
+        RR intervals in the signal. If this argument is passed, rpeaks should not be passed.
     sampling_rate : int
         Sampling rate (samples/second).
     hrv_features : list
@@ -411,7 +413,7 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     ----------
     >>> import neurokit as nk
     >>> sampling_rate = 1000
-    >>> hrv = nk.bio_ecg.ecg_hrv(rpeaks, sampling_rate)
+    >>> hrv = nk.bio_ecg.ecg_hrv(rpeaks=rpeaks, sampling_rate=sampling_rate)
 
     Notes
     ----------
@@ -477,13 +479,25 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     - Lippman, N. E. A. L., Stein, K. M., & Lerman, B. B. (1994). Comparison of methods for removal of ectopy in measurement of heart rate variability. American Journal of Physiology-Heart and Circulatory Physiology, 267(1), H411-H418.
     - Peltola, M. A. (2012). Role of editing of R–R intervals in the analysis of heart rate variability. Frontiers in physiology, 3.
     """
+    # Check arguments: exactly one of rpeaks or rri has to be given as input
+    if rpeaks is None and rri is None:
+        raise ValueError("rpeaks or rri needs to be given.")
+
+    if rpeaks is not None and rri is not None:
+        raise ValueError("Either rpeaks or RRI should be given but not both.")
+
     # Initialize empty dict
     hrv = {}
 
     # Preprocessing
     # ==================
     # Extract RR intervals (RRis)
-    RRis = np.diff(rpeaks)
+    if rpeaks is not None:
+        # Rpeaks is given, RRis need to be computed
+        RRis = np.diff(rpeaks)
+    else:
+        # Case where RRis are already given:
+        RRis = rri
 
 
     # Basic resampling to 1Hz to standardize the scale
@@ -701,7 +715,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
     Example
     ----------
     >>> import neurokit as nk
-    >>> hrv = nk.bio_ecg.ecg_hrv(rpeaks)
+    >>> hrv = nk.bio_ecg.ecg_hrv(rpeaks=rpeaks)
     >>> ecg_hrv_assessment = nk.bio_ecg.ecg_hrv_assessment(hrv)
 
     Notes
@@ -893,7 +907,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
     # ====
     if "ECG_R_Peaks" in epoch.columns:
         rpeaks = epoch[epoch["ECG_R_Peaks"]==1][0:event_length].index*1000
-        hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+        hrv = ecg_hrv(rpeaks=rpeaks, sampling_rate=1000, hrv_features=["time"])
 
         # HRV time domain feature computation
         for key in hrv:
@@ -905,7 +919,7 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
             print("NeuroKit Warning: ecg_EventRelated(): your epoch starts less than 4 seconds before stimulus onset. That's too short to compute HRV baseline features.")
         else:
             rpeaks = epoch[epoch["ECG_R_Peaks"]==1][:0].index*1000
-            hrv = ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time"])
+            hrv = ecg_hrv(rpeaks=rpeaks, sampling_rate=1000, hrv_features=["time"])
 
             for key in hrv:
                 if isinstance(hrv[key], float):  # Avoid storing series or dataframes
