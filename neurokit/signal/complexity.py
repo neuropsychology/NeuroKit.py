@@ -522,7 +522,7 @@ def complexity_entropy_spectral(signal, sampling_rate, bands=None):
         List or array of values.
     sampling_rate : int
         Sampling rate (samples/second).
-    bands : int
+    bands : list or array
         A list of numbers delimiting the bins of the frequency bands. If None the entropy is computed over the whole range of the DFT (from 0 to `f_s/2`).
 
     Returns
