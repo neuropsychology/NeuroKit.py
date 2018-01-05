@@ -3,16 +3,16 @@
 ### Breaking changes
 - Append "complexity_" to all complexity function names (e.g., `entropy_shannon` -> `complexity_entropy_shannon`) (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
 - `read_acqknowledge` new parameter, `return_sampling_rate`. Default to False to keep old behaviour, but default will be changed to True in the future (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
-- Many!!!
+
 
 ### New functions / parameters
 - `ecg_signal_quality`: Added rpeak parameter and returns an interpolated array of signal quality [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 - `eeg_complexity`: First attempt to compute complexity features of epochs (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
 - `emg_process`: Computes linear envelope and activation (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
-- Many!!!
+
 
 ### Major changes
-- Many!!!
+
 
 ### Minor changes
 - Fix bug when unpickling, througk `read_nk_object`, a dataframe built with pandas < 0.17 [#42](https://github.com/neuropsychology/NeuroKit.py/pull/42)
@@ -23,7 +23,7 @@
 - Fixed ecg_process for sampling rate superior to 1000 Hz [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 - Added [scripts](https://github.com/neuropsychology/NeuroKit.py/tree/master/utils/ecg_signal_quality_model_creation) for ECG signal quality model creation [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 - Started documenting ECG signal quality in docs [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
-- Many!!!
+- Fixed bug in `ecg_hrv`
 
 ---------
 
