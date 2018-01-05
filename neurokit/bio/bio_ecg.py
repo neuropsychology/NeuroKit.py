@@ -297,7 +297,7 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
 # ==============================================================================
 def ecg_signal_quality(cardiac_cycles, sampling_rate, rpeaks=None, quality_model="default"):
     """
-    Attempt to find the recording lead and the overall and individual quality of hearbeats signal. Altough used as a routine, this feature is experimental.
+    Attempt to find the recording lead and the overall and individual quality of heartbeats signal. Although used as a routine, this feature is experimental.
 
     Parameters
     ----------
@@ -410,7 +410,8 @@ def ecg_hrv(rpeaks, sampling_rate=1000, hrv_features=["time", "frequency", "nonl
     Example
     ----------
     >>> import neurokit as nk
-    >>> hrv = nk.hrv(rri, 1000)
+    >>> sampling_rate = 1000
+    >>> hrv = nk.bio_ecg.ecg_hrv(rpeaks, sampling_rate)
 
     Notes
     ----------
@@ -700,8 +701,8 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
     Example
     ----------
     >>> import neurokit as nk
-    >>> hrv = nk.ecg_hrv(rri)
-    >>> ecg_hrv_assessment = nk.ecg_hrv(hrv)
+    >>> hrv = nk.bio_ecg.ecg_hrv(rpeaks)
+    >>> ecg_hrv_assessment = nk.bio_ecg.ecg_hrv_assessment(hrv)
 
     Notes
     ----------
