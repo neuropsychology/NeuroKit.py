@@ -4,6 +4,7 @@
 ## How to submit a change? 
 - Check [this page](http://ecole-de-neuropsychologie.readthedocs.io/en/latest/Contributing/Contribute/) to see how to make a commit.
 - You don't know how much about code? You can contribute to [documentation](https://github.com/neuropsychology/NeuroKit.py/tree/master/docs) by creating tutorials, help and info!
+- The master branch is [protected](https://help.github.com/articles/about-pull-request-reviews/): you should first start to create a new branch in your git clone, called for example "bugfix-readdata" or "feature-readeeg". Then, you add your commits to this branch, push it and create a pull request to merge it to master. In other words, avoid modifications from master to master.
 
 ## Structure
 - NeuroKit is currently organized into 5 major sections: Biosignals, M/EEG, statistics, miscellaneous and implementation of several statistical procedures used in psychology/neuroscience. However, this structure might be changed in order to be clarified or expanded (MRI processing, eye tracking, ...).

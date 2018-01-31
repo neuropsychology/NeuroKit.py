@@ -566,7 +566,7 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
         # Interpolation
         # =================
         # Convert to continuous RR interval (RRi)
-        beats_times = rpeaks[1:]  # the time at which each beat occured starting from the 2nd beat
+        beats_times = rpeaks[1:].copy()  # the time at which each beat occured starting from the 2nd beat
         beats_times -= list(beats_times)[0]  # So it starts at 0
         beats_times = np.delete(list(beats_times), artifacts_indices)  # delete also the artifact beat moments
 
