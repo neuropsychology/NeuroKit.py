@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from ..miscellaneous import Time
-from ..miscellaneous import find_following_duplicates
+from ..statistics import find_following_duplicates
 
 from ..signal import complexity
 

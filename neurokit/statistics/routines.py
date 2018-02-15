@@ -1,8 +1,17 @@
 # -*- coding: utf-8 -*-
+from .statistics import normal_range
+from .statistics import find_following_duplicates
+from .statistics import find_closest_in_list
+
+from sklearn.linear_model import LogisticRegression
+
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import scipy
 import scipy.stats
+
+
 
 
 
@@ -286,3 +295,192 @@ def compute_interoceptive_accuracy(nbeats_real, nbeats_reported):
 
     return(accuracy)
 
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+class staircase:
+    def __init__(self, signal=[0, 100], treshold=0.50, burn=5, stop_n_inversions=False, prior_signal=[], prior_response=[]):
+    """
+    Staircase procedure handler to find a treshold. For now, using a GLM - likelihood method.
+
+    Parameters
+    ----------
+    signal : list
+        Either list with min or max or range of possible signal values.
+    treshold : int or list
+        Treshold (between 0 and 1) to look for.
+    burn : int or list
+        Signal values to try at the beginning. If int, then it computes n equally spaced values.
+    stop_n_inversions : False or int
+        Stop generating new signal values after n inversions.
+    prior_signal : int or list
+        Range of signal values used as prior.
+    prior_response : int or list
+        Range of response values used as prior.
+
+
+
+    Example
+    ----------
+    >>> # Let's imagine a perception task designed to find the treshold of
+    >>> # signal at which the participant detect the stimulus at 50% chance.
+    >>> # The signal ranges from 0 to 100. We set priors that at 100, the
+    >>> # stim is detected (1) and at 0, not detected (0).
+    >>>
+    >>> import neurokit as nk
+    >>> staircase = staircase_glm(signal=np.linspace(0, 100, 25),
+    >>>                      treshold=0.50,
+    >>>                      burn=5,
+    >>>                      stop_n_inversions=False,
+    >>>                      prior_signal=[0, 100],
+    >>>                      prior_response=[0, 1])
+    >>>
+    >>>
+    >>>
+    >>> # Run the experiment
+    >>> for trial in range(50):
+    >>> signal = staircase.predict_next_value()
+    >>> if signal != "stop":
+    >>>     if signal > 50:
+    >>>         response = 1
+    >>>     else:
+    >>>         response = 0
+    >>>     staircase.add_response(response=response, value=signal)
+    >>>
+    >>> # Get data
+    >>> staircase.diagnostic_plot()
+    >>> data = staircase.get_data()
+    >>>
+
+
+    Notes
+    ----------
+    *Authors*
+
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
+    - numpy
+    - pandas
+    - sklearn
+    """
+        self.treshold = treshold
+        self.signal_min = np.min(signal)
+        self.signal_max = np.max(signal)
+        self.signal_range = self.signal_max - self.signal_min
+        if len(signal == 2):
+            self.signal = pd.DataFrame({"Signal":np.linspace(self.signal_min, self.signal_max, 1000)})
+        else:
+            self.signal = signal
+        self.next_value = np.nan
+        self.data = np.nan
+        self.stop_n_inversions = stop_n_inversions
+        self.prior_signal = prior_signal
+        self.prior_response = prior_response
+
+        if isinstance(burn, int):
+            self.burn_n = burn
+            self.burn = list(np.round(np.linspace(0, 100, burn), 2))
+        else:
+            self.burn_n = len(burn)
+            self.burn = burn
+
+        self.X = pd.DataFrame({"Signal":prior_signal})
+        self.y = np.array(prior_response)
+        self.model = np.nan
+
+    def fit_model(self, X, y):
+        model = LogisticRegression(C=1)
+        model = model.fit(X , y)
+        return(model)
+
+    def predict_next_value(self):
+        if len(self.burn) > 0:
+            value = np.random.choice(self.burn)
+            self.burn.remove(value)
+            self.next_value = value
+
+        elif len(set(list(self.y))) <= 1:
+            self.next_value = np.random.uniform(self.signal_min, self.signal_max)
+
+        else:
+            if self.stop_n_inversions is not False:
+                if isinstance(self.stop_n_inversions, int):
+                    inversions = find_following_duplicates(self.y[self.burn_n:])
+                    n_inversions = np.sum(inversions)
+                    if n_inversions > self.stop_n_inversions:
+                        self.next_value = "stop"
+
+            else:
+                probs = self.model.predict_proba(self.signal)
+                probs = pd.concat([pd.DataFrame(probs), self.signal], axis=1)
+                next_value = probs[probs[1]==find_closest_in_list(self.treshold, probs[1])]
+                self.next_value = next_value["Signal"].values[0]
+
+        return(self.next_value)
+
+    def add_response(self, response, value):
+        """
+        Add response to staircase.
+
+        Parameters
+        ----------
+        response : int or bool
+            0 or 1.
+        value : int or float
+            Signal corresponding to response.
+        """
+        if value != "stop":
+            self.X = pd.concat([self.X, pd.DataFrame({"Signal":[value]})])
+            self.y = np.array(list(self.y) + [response])
+            if len(set(list(self.y))) > 1:
+                self.model = self.fit_model(self.X , self.y)
+
+
+    def diagnostic_plot(self):
+        fig, axes = plt.subplots(nrows=2, ncols=2)
+
+        data = self.get_data()
+        X = pd.DataFrame(data["Signal"])
+        y = data["Response"].values
+        model = self.fit_model(X , y)
+        probs = model.predict_proba(self.signal)
+        probs = pd.concat([pd.DataFrame(probs), self.signal], axis=1)
+
+        data["Signal"].plot(ax=axes[0,0], color="black")
+        colors = {0:'red', 1:'green'}
+        data.plot.scatter(x='Trial', y="Signal", c=data['Response'].apply(lambda x: colors[x]), ax=axes[0,0], zorder=3)
+        axes[0, 0].set(xlabel="Trial Order", ylabel="Signal")
+        axes[0, 0].set_title('Signal Staircase')
+
+        probs.plot(legend=False, x='Signal', y=1, color="blue", ax=axes[0,1])
+        axes[0, 1].set(ylabel="Probability")
+        axes[0, 1].set_title('Probability Link')
+
+        data.plot(legend=False, x="Trial", y="Treshold_Mean", color="orange", ax=axes[1,0])
+        axes[1, 0].fill_between(data["Trial"], data["Treshold_Mean"]+data["Treshold_SD"], data["Treshold_Mean"]-data["Treshold_SD"], color="#009688")
+        axes[1, 0].set(ylabel="Signal")
+        axes[1, 0].set_title('Cumulative Treshold Mean')
+
+        return(data)
+
+
+    def get_data(self):
+        self.data = pd.concat([self.X.reset_index(drop=True), pd.DataFrame({"Response":self.y})], axis=1)
+        self.data["Trial"] = self.data.index
+        self.data["Inversion"] = find_following_duplicates(self.data["Response"])
+        self.data["Treshold_Mean"] = self.data['Signal'].expanding().mean()
+        self.data["Treshold_SD"] = self.data['Signal'].expanding().std()
+
+        return(self.data)
+
+    def get_treshold(self):
+        return(self.predict_next_value())
