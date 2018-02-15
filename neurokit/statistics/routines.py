@@ -335,7 +335,7 @@ class staircase:
     >>> # stim is detected (1) and at 0, not detected (0).
     >>>
     >>> import neurokit as nk
-    >>> staircase = staircase_glm(signal=np.linspace(0, 100, 25),
+    >>> staircase = staircase(signal=np.linspace(0, 100, 25),
     >>>                      treshold=0.50,
     >>>                      burn=5,
     >>>                      stop_n_inversions=False,
@@ -348,6 +348,7 @@ class staircase:
     >>> for trial in range(50):
     >>> signal = staircase.predict_next_value()
     >>> if signal != "stop":
+    >>> # Simulate response
     >>>     if signal > 50:
     >>>         response = 1
     >>>     else:
