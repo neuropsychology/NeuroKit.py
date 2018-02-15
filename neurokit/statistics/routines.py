@@ -307,72 +307,72 @@ def compute_interoceptive_accuracy(nbeats_real, nbeats_reported):
 # ==============================================================================
 class staircase:
     def __init__(self, signal=[0, 100], treshold=0.50, burn=5, stop_n_inversions=False, prior_signal=[], prior_response=[]):
-    """
-    Staircase procedure handler to find a treshold. For now, using a GLM - likelihood method.
+        """
+        Staircase procedure handler to find a treshold. For now, using a GLM - likelihood method.
 
-    Parameters
-    ----------
-    signal : list
-        Either list with min or max or range of possible signal values.
-    treshold : int or list
-        Treshold (between 0 and 1) to look for.
-    burn : int or list
-        Signal values to try at the beginning. If int, then it computes n equally spaced values.
-    stop_n_inversions : False or int
-        Stop generating new signal values after n inversions.
-    prior_signal : int or list
-        Range of signal values used as prior.
-    prior_response : int or list
-        Range of response values used as prior.
-
-
-
-    Example
-    ----------
-    >>> # Let's imagine a perception task designed to find the treshold of
-    >>> # signal at which the participant detect the stimulus at 50% chance.
-    >>> # The signal ranges from 0 to 100. We set priors that at 100, the
-    >>> # stim is detected (1) and at 0, not detected (0).
-    >>>
-    >>> import neurokit as nk
-    >>> staircase = staircase(signal=np.linspace(0, 100, 25),
-    >>>                      treshold=0.50,
-    >>>                      burn=5,
-    >>>                      stop_n_inversions=False,
-    >>>                      prior_signal=[0, 100],
-    >>>                      prior_response=[0, 1])
-    >>>
-    >>>
-    >>>
-    >>> # Run the experiment
-    >>> for trial in range(50):
-    >>> signal = staircase.predict_next_value()
-    >>> if signal != "stop":
-    >>> # Simulate response
-    >>>     if signal > 50:
-    >>>         response = 1
-    >>>     else:
-    >>>         response = 0
-    >>>     staircase.add_response(response=response, value=signal)
-    >>>
-    >>> # Get data
-    >>> staircase.diagnostic_plot()
-    >>> data = staircase.get_data()
-    >>>
+        Parameters
+        ----------
+        signal : list
+            Either list with min or max or range of possible signal values.
+        treshold : int or list
+            Treshold (between 0 and 1) to look for.
+        burn : int or list
+            Signal values to try at the beginning. If int, then it computes n equally spaced values.
+        stop_n_inversions : False or int
+            Stop generating new signal values after n inversions.
+        prior_signal : int or list
+            Range of signal values used as prior.
+        prior_response : int or list
+            Range of response values used as prior.
 
 
-    Notes
-    ----------
-    *Authors*
 
-    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+        Example
+        ----------
+        >>> # Let's imagine a perception task designed to find the treshold of
+        >>> # signal at which the participant detect the stimulus at 50% chance.
+        >>> # The signal ranges from 0 to 100. We set priors that at 100, the
+        >>> # stim is detected (1) and at 0, not detected (0).
+        >>>
+        >>> import neurokit as nk
+        >>> staircase = staircase(signal=np.linspace(0, 100, 25),
+        >>>                      treshold=0.50,
+        >>>                      burn=5,
+        >>>                      stop_n_inversions=False,
+        >>>                      prior_signal=[0, 100],
+        >>>                      prior_response=[0, 1])
+        >>>
+        >>>
+        >>>
+        >>> # Run the experiment
+        >>> for trial in range(50):
+        >>> signal = staircase.predict_next_value()
+        >>> if signal != "stop":
+        >>> # Simulate response
+        >>>     if signal > 50:
+        >>>         response = 1
+        >>>     else:
+        >>>         response = 0
+        >>>     staircase.add_response(response=response, value=signal)
+        >>>
+        >>> # Get data
+        >>> staircase.diagnostic_plot()
+        >>> data = staircase.get_data()
+        >>>
 
-    *Dependencies*
 
-    - numpy
-    - pandas
-    - sklearn
-    """
+        Notes
+        ----------
+        *Authors*
+
+        - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+        *Dependencies*
+
+        - numpy
+        - pandas
+        - sklearn
+        """
         self.treshold = treshold
         self.signal_min = np.min(signal)
         self.signal_max = np.max(signal)
