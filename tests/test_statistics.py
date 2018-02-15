@@ -41,20 +41,17 @@ def test_compute_BMI():
 def test_compute_interoceptive_accuracy():
     assert nk.compute_interoceptive_accuracy(5, 3) == 0.5
     assert list(nk.compute_interoceptive_accuracy([5,3], [3, 5])) == [0.5, 0.5]
-#def test_staircase():
-#    staircase = nk.staircase()
-#    for trial in range(50):
-#        >>> signal = staircase.predict_next_value()
-#        >>> if signal != "stop":
-#        >>> # Simulate response
-#        >>>     if signal > 50:
-#        >>>         response = 1
-#        >>>     else:
-#        >>>         response = 0
-#        >>>     staircase.add_response(response=response, value=signal)
-    
-    
-    assert list(nk.compute_interoceptive_accuracy([5,3], [3, 5])) == [0.5, 0.5]
+def test_staircase():
+    staircase = nk.staircase()
+    for trial in range(200):
+        signal = staircase.predict_next_value()
+        if signal > 50:
+            response = 1
+        else:
+            response = 0
+        staircase.add_response(response=response, value=signal)
+    treshold = staircase.get_treshold()
+    assert 49 <= treshold <= 51
 #==============================================================================
 # Plots
 #==============================================================================
