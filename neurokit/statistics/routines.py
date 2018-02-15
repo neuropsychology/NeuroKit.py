@@ -380,7 +380,7 @@ class staircase:
         if len(signal) == 2:
             self.signal = pd.DataFrame({"Signal":np.linspace(self.signal_min, self.signal_max, 1000)})
         else:
-            self.signal = signal
+            self.signal = pd.DataFrame({"Signal": signal})
         self.next_value = np.nan
         self.data = np.nan
         self.stop_n_inversions = stop_n_inversions
