@@ -8,7 +8,7 @@ import cvxopt as cv
 import cvxopt.solvers
 
 from ..statistics import z_score
-from ..miscellaneous import find_closest_in_list
+from ..statistics import find_closest_in_list
 
 
 
