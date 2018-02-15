@@ -392,7 +392,7 @@ class staircase:
             self.burn = list(np.round(np.linspace(0, 100, burn), 2))
         else:
             self.burn_n = len(burn)
-            self.burn = burn
+            self.burn = list(burn)
 
         self.X = pd.DataFrame({"Signal":prior_signal})
         self.y = np.array(prior_response)
