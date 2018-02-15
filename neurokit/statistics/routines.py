@@ -476,6 +476,8 @@ class staircase:
 
     def get_data(self):
         self.data = pd.concat([self.X.reset_index(drop=True), pd.DataFrame({"Response":self.y})], axis=1)
+        self.data = self.data[len(self.prior_response):]
+        self.data = self.data.reset_index(drop=True)
         self.data["Trial"] = self.data.index
         self.data["Inversion"] = find_following_duplicates(self.data["Response"])
         self.data["Treshold_Mean"] = self.data['Signal'].expanding().mean()
