@@ -41,6 +41,7 @@ Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials
 
 
 ## Contribute
+[![Maintainability](https://api.codeclimate.com/v1/badges/e4ac002d93a655bf61c1/maintainability)](https://codeclimate.com/github/neuropsychology/NeuroKit.py/maintainability)
 
 Want to get involved in the developpment of an open-source software and improve neuroscience practice? **Join us!**
 
