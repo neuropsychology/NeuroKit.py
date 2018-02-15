@@ -377,7 +377,7 @@ class staircase:
         self.signal_min = np.min(signal)
         self.signal_max = np.max(signal)
         self.signal_range = self.signal_max - self.signal_min
-        if len(signal == 2):
+        if len(signal) == 2:
             self.signal = pd.DataFrame({"Signal":np.linspace(self.signal_min, self.signal_max, 1000)})
         else:
             self.signal = signal
