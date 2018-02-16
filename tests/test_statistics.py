@@ -52,6 +52,13 @@ def test_staircase():
         staircase.add_response(response=response, value=signal)
     treshold = staircase.get_treshold()
     assert 49 <= treshold <= 51
+
+    data = staircase.get_data()
+    assert len(data) == 200
+
+    data_fig = staircase.diagnostic_plot()
+    assert len(data_fig) == 200
+
 #==============================================================================
 # Plots
 #==============================================================================

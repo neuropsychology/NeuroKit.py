@@ -51,6 +51,7 @@ MOCK_MODULES = [
         "sklearn.decomposition",
         "sklearn.cluster",
         "sklearn.metrics",
+        "sklearn.linear_model",
         "matplotlib",
         "matplotlib.pyplot",
         'mne',

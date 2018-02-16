@@ -213,7 +213,10 @@ compute_interoceptive_accuracy
 .. autofunction:: neurokit.compute_interoceptive_accuracy
 
 
+staircase
+---------------------------------
 
+.. autofunction:: neurokit.staircase
 
 
 
