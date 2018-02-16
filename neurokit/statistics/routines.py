@@ -484,7 +484,7 @@ class staircase:
         self.data["Treshold_Mean"] = self.data['Signal'].expanding().mean()
         self.data["Treshold_SD"] = self.data['Signal'].expanding().std()
         self.data["Coef"] = self.get_coef()
-        
+
         # Cross validation
         y_pred = self.model.predict(pd.DataFrame(self.data["Signal"]))
         y_test = self.data["Response"]
@@ -494,7 +494,7 @@ class staircase:
 
     def get_treshold(self):
         return(self.predict_next_value())
-        
+
     def get_coef(self):
         coef = self.model.coef_[0][0]
         return(coef)
