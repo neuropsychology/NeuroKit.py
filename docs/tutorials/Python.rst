@@ -43,6 +43,9 @@ Windows
 Mac OS
 =============
 
-1. Install Anaconda
-2. Find how to install packages
-3. Buy a PC
+1. Install `Anaconda <https://www.anaconda.com/download/>`_
+2. Open the `terminal <https://www.youtube.com/watch?time_continue=59&v=gk2CgkURkgY>`_
+3. Run :code:`source activate root`
+3. Run :code:`pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master`
+4. Run :code:`pip install https://github.com/neuropsychology/Neuropsydia.py/zipball/master`
+5. Run `Spyder`
