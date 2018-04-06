@@ -336,7 +336,7 @@ def complexity_entropy_shannon(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
+def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance="default", return_coarse_results=False):
     """
     Computes the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo. Uses sample entropy with 'chebychev' distance.
 
@@ -348,6 +348,11 @@ def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
         The embedding dimension (*m*, the length of vectors to compare).
     tolerance : float
         Distance *r* threshold for two template vectors to be considered equal. Default is 0.2*std(signal).
+    max_scale_factor: int
+        The max length of coarse-grained time series analyzed. Will analyze scales for all integers from 1:max_scale_factor. 
+        The scale factor is equivalent to tau in the original Costa 2002 paper. 
+    return_coarse_results: boolean
+        Used to allow output of the sample entropy from each time scale. 
 
     Returns
     ----------
@@ -391,9 +396,9 @@ def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
         tolerance = 0.2*np.std(signal)
 
     n = len(signal)
-    mse = np.zeros((1, emb_dim))
+    mse = np.zeros((1, max_scale_factor))
 
-    for i in range(emb_dim):
+    for i in range(max_scale_factor):
 
         b = int(np.fix(n / (i + 1)))
         temp_ts = [0] * int(b)
@@ -405,17 +410,37 @@ def complexity_entropy_multiscale(signal, emb_dim=2, tolerance="default"):
         # Replaced the sample entropy computation with nolds' one...
 #        se = sample_entropy(temp_ts, 1, tolerance)
 
-        try:
-            se = nolds.sampen(temp_ts, 1, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
-        except:
-            se = nolds.sampen(temp_ts, 1, tolerance, dist="euler", debug_plot=False, plot_file=None)
+        # Replaced with nolds command for dist - string inputs are deprecated. 
+#        try:
+#            se = nolds.sampen(temp_ts, emb_dim, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
+#        except:
+#            se = nolds.sampen(temp_ts, emb_dim, tolerance, dist="euler", debug_plot=False, plot_file=None)
+        se = nolds.sampen(temp_ts, emb_dim, tolerance, nolds.measures.rowwise_euclidean, debug_plot=False, plot_file=None)
 
 
         mse[0, i] = se
 
-    multiscale_entropy = mse[0][emb_dim-1]
+    multiscale_entropy = mse[0][max_scale_factor-1]
+    """
+    Unless I am missing something, I think there is an error with the calc of multiscale_entropy. 
+    MSE entropy from the original costa paper (refed in this fx)shows comparisons of the entropy 
+    for each scale factor. Recent implementations have condensed this into a single measurement. 
+    This single measurement seems to typically be the area under a curve, where the curve is 
+    created by the points from the individual scale factors. In contrast, the current 
+    implementaiton seems to just take the last value in the array - so only taking a single time 
+    scale measurement, and the last one. I think that if this is the desired output, it could simply 
+    be done by forgoing the entire for loop and replacing i with the scale_factor. 
+    
+    Here is a potential method to get the area: 
 
-    return (multiscale_entropy)
+    multiscale_entropy= numpy.trapz(multiscale_entropy)
+    """
+
+    if return_coarse_results==False:
+        return (multiscale_entropy)
+
+    elif return_coarse_results==True:
+        return(mse)
 
 
 
