@@ -336,9 +336,10 @@ def complexity_entropy_shannon(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance="default", return_coarse_results=False):
+def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance="default"):
     """
-    Computes the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo. Uses sample entropy with 'chebychev' distance.
+    Computes the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo. 
+    Uses sample entropy with 'chebychev' distance.
 
     Parameters
     ----------
@@ -351,13 +352,13 @@ def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance
     max_scale_factor: int
         The max length of coarse-grained time series analyzed. Will analyze scales for all integers from 1:max_scale_factor. 
         The scale factor is equivalent to tau in the original Costa 2002 paper. 
-    return_coarse_results: boolean
-        Used to allow output of the sample entropy from each time scale. 
 
     Returns
     ----------
-    multiscale_entropy : float
-        The Multiscale Entropy as float value.
+    per_scale_entropy_values: array of length max_scale_factor
+        The sample entropy for each scale_factor upto the max_scale_factor
+    auc: float
+        The area under the coarse_values curve
 
 
     Example
@@ -365,13 +366,16 @@ def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> multiscale_entropy = nk.complexity_entropy_multiscale(signal)
+    >>> per_scale_entropy_values, auc = nk.complexity_entropy_multiscale(signal)
 
     Notes
     ----------
     *Details*
 
-    - **multiscale entropy**: Entropy is a measure of unpredictability of the state, or equivalently, of its average information content. Multiscale entropy (MSE) analysis is a new method of measuring the complexity of finite length time series.
+    - **multiscale entropy**: Entropy is a measure of unpredictability of the state, or equivalently, 
+    of its average information content. Multiscale entropy (MSE) analysis is a new method of measuring 
+    the complexity of coarse grained versions of the original data, where coarse graining is at all 
+    scale factors from 1:max_scale_factor. 
 
 
     *Authors*
@@ -389,14 +393,16 @@ def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance
 
     References
     -----------
-    - Richman, J. S., & Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy and sample entropy. American Journal of Physiology-Heart and Circulatory Physiology, 278(6), H2039-H2049.
-    - Costa, M., Goldberger, A. L., & Peng, C. K. (2005). Multiscale entropy analysis of biological signals. Physical review E, 71(2), 021906.
+    - Richman, J. S., & Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy 
+        and sample entropy. American Journal of Physiology-Heart and Circulatory Physiology, 278(6), H2039-H2049.
+    - Costa, M., Goldberger, A. L., & Peng, C. K. (2005). Multiscale entropy analysis of biological signals. 
+        Physical review E, 71(2), 021906.
     """
     if tolerance == "default":
         tolerance = 0.2*np.std(signal)
 
     n = len(signal)
-    mse = np.zeros((1, max_scale_factor))
+    per_scale_entropy_values = np.zeros(max_scale_factor)
 
     for i in range(max_scale_factor):
 
@@ -418,30 +424,11 @@ def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance
         se = nolds.sampen(temp_ts, emb_dim, tolerance, nolds.measures.rowwise_euclidean, debug_plot=False, plot_file=None)
 
 
-        mse[0, i] = se
+        per_scale_entropy_values[i] = se
 
-    multiscale_entropy = mse[0][max_scale_factor-1]
-    """
-    Unless I am missing something, I think there is an error with the calc of multiscale_entropy. 
-    MSE entropy from the original costa paper (refed in this fx)shows comparisons of the entropy 
-    for each scale factor. Recent implementations have condensed this into a single measurement. 
-    This single measurement seems to typically be the area under a curve, where the curve is 
-    created by the points from the individual scale factors. In contrast, the current 
-    implementaiton seems to just take the last value in the array - so only taking a single time 
-    scale measurement, and the last one. I think that if this is the desired output, it could simply 
-    be done by forgoing the entire for loop and replacing i with the scale_factor. 
-    
-    Here is a potential method to get the area: 
+    auc = np.trapz(per_scale_entropy_values)
 
-    multiscale_entropy= numpy.trapz(multiscale_entropy)
-    """
-
-    if return_coarse_results==False:
-        return (multiscale_entropy)
-
-    elif return_coarse_results==True:
-        return(mse)
-
+    return (per_scale_entropy_values, auc)
 
 
 # ==============================================================================
