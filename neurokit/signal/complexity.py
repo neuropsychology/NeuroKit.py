@@ -413,15 +413,8 @@ def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance
             num = sum(signal[j * (i + 1): (j + 1) * (i + 1)])
             den = i + 1
             temp_ts[j] = float(num) / float(den)
-        # Replaced the sample entropy computation with nolds' one...
-#        se = sample_entropy(temp_ts, 1, tolerance)
 
-        # Replaced with nolds command for dist - string inputs are deprecated. 
-#        try:
-#            se = nolds.sampen(temp_ts, emb_dim, tolerance, dist="euclidean", debug_plot=False, plot_file=None)
-#        except:
-#            se = nolds.sampen(temp_ts, emb_dim, tolerance, dist="euler", debug_plot=False, plot_file=None)
-        se = nolds.sampen(temp_ts, emb_dim, tolerance, nolds.measures.rowwise_euclidean, debug_plot=False, plot_file=None)
+        se = nolds.sampen(temp_ts, emb_dim, tolerance, nolds.measures.rowwise_chebyshev, debug_plot=False, plot_file=None)
 
 
         per_scale_entropy_values[i] = se
