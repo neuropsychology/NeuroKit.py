@@ -16,6 +16,7 @@ Contributors
 - `Rhenan Bartels Ferreira <https://www.researchgate.net/profile/Rhenan_Ferreira>`_ (Brazil): HRV, Testing, RSP, RSA.
 - `Nate Vack <https://github.com/njvack>`_ (USA): Acqknowledge files reading.
 - `Vassilios Vonikakis <https://github.com/bbonik>`_ (USA): HRV.
+- `Anthony Gatti <https://github.com/gattia>`_ (Canada): Multi scale entropy.
 
 Support
 ========

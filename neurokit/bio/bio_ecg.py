@@ -663,7 +663,8 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
         except AssertionError as error:
             print("NeuroKit Warning: ecg_hrv(): Correlation Dimension. Error: " + str(error))
             hrv["Correlation_Dimension"] = np.nan
-        hrv["Entropy_Multiscale"] = complexity_entropy_multiscale(RRis, emb_dim=2)
+        mse = complexity_entropy_multiscale(RRis, max_scale_factor=20, m=2)
+        hrv["Entropy_Multiscale_AUC"] = mse["MSE_AUC"]
         hrv["Entropy_SVD"] = complexity_entropy_svd(RRis, emb_dim=2)
         hrv["Entropy_Spectral_VLF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.0033, 0.04, 0.001))
         hrv["Entropy_Spectral_LF"] = complexity_entropy_spectral(RRis, sampling_rate, bands=np.arange(0.04, 0.15, 0.001))
