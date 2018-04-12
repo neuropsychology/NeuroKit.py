@@ -336,56 +336,55 @@ def complexity_entropy_shannon(signal):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance="default"):
+def complexity_entropy_multiscale(signal, max_scale_factor=20, m=2, r="default"):
     """
-    Computes the Multiscale Entropy. Copied from the `pyEntropy <https://github.com/nikdon/pyEntropy>`_ repo by tjugo. 
-    Uses sample entropy with 'chebychev' distance.
+    Computes the Multiscale Entropy. Uses sample entropy with 'chebychev' distance.
 
     Parameters
     ----------
     signal : list or array
         List or array of values.
-    emb_dim : int
-        The embedding dimension (*m*, the length of vectors to compare).
-    tolerance : float
-        Distance *r* threshold for two template vectors to be considered equal. Default is 0.2*std(signal).
     max_scale_factor: int
-        The max length of coarse-grained time series analyzed. Will analyze scales for all integers from 1:max_scale_factor. 
-        The scale factor is equivalent to tau in the original Costa 2002 paper. 
+        Max scale factor (*tau*). The max length of coarse-grained time series analyzed. Will analyze scales for all integers from 1:max_scale_factor.
+        See Costa (2005).
+    m : int
+        The embedding dimension (*m*, the length of vectors to compare).
+    r : float
+        Similarity factor *r*. Distance threshold for two template vectors to be considered equal. Default is 0.15*std(signal).
 
     Returns
     ----------
-    per_scale_entropy_values: array of length max_scale_factor
-        The sample entropy for each scale_factor upto the max_scale_factor
-    auc: float
-        The area under the coarse_values curve
-
+    mse: dict
+        A dict containing "MSE_Parameters" (a dict with the actual max_scale_factor, m and r), "MSE_Values" (an array with the sample entropy for each scale_factor up to the max_scale_factor), "MSE_AUC" (A float: The area under the MSE_Values curve. A point-estimate of mse) and "MSE_Sum" (A float: The sum of MSE_Values curve. Another point-estimate of mse; Norris, 2008).
 
     Example
     ----------
     >>> import neurokit as nk
     >>>
     >>> signal = np.sin(np.log(np.random.sample(666)))
-    >>> per_scale_entropy_values, auc = nk.complexity_entropy_multiscale(signal)
+    >>> mse = nk.complexity_entropy_multiscale(signal)
+    >>> mse_values = mse["MSE_Values"]
 
     Notes
     ----------
     *Details*
 
-    - **multiscale entropy**: Entropy is a measure of unpredictability of the state, or equivalently, 
-    of its average information content. Multiscale entropy (MSE) analysis is a new method of measuring 
-    the complexity of coarse grained versions of the original data, where coarse graining is at all 
-    scale factors from 1:max_scale_factor. 
+    - **multiscale entropy**: Entropy is a measure of unpredictability of the state, or equivalently,
+    of its average information content. Multiscale entropy (MSE) analysis is a new method of measuring
+    the complexity of coarse grained versions of the original data, where coarse graining is at all
+    scale factors from 1:max_scale_factor.
 
 
     *Authors*
 
     - tjugo (https://github.com/nikdon)
     - Dominique Makowski (https://github.com/DominiqueMakowski)
+    - Anthony Gatti (https://github.com/gattia)
 
     *Dependencies*
 
     - numpy
+    - nolds
 
     *See Also*
 
@@ -393,17 +392,22 @@ def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance
 
     References
     -----------
-    - Richman, J. S., & Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy 
+    - Richman, J. S., & Moorman, J. R. (2000). Physiological time-series analysis using approximate entropy
         and sample entropy. American Journal of Physiology-Heart and Circulatory Physiology, 278(6), H2039-H2049.
-    - Costa, M., Goldberger, A. L., & Peng, C. K. (2005). Multiscale entropy analysis of biological signals. 
+    - Costa, M., Goldberger, A. L., & Peng, C. K. (2005). Multiscale entropy analysis of biological signals.
         Physical review E, 71(2), 021906.
+    - Gow, B. J., Peng, C. K., Wayne, P. M., & Ahn, A. C. (2015). Multiscale entropy analysis of center-of-pressure
+        dynamics in human postural control: methodological considerations. Entropy, 17(12), 7926-7947.
+    - Norris, P. R., Anderson, S. M., Jenkins, J. M., Williams, A. E., & Morris Jr, J. A. (2008).
+        Heart rate multiscale entropy at three hours predicts hospital mortality in 3,154 trauma patients. Shock, 30(1), 17-22.
     """
-    if tolerance == "default":
-        tolerance = 0.2*np.std(signal)
+    if r == "default":
+        r = 0.15*np.std(signal)
 
     n = len(signal)
     per_scale_entropy_values = np.zeros(max_scale_factor)
 
+    # Compute SampEn for all scale factors
     for i in range(max_scale_factor):
 
         b = int(np.fix(n / (i + 1)))
@@ -414,14 +418,29 @@ def complexity_entropy_multiscale(signal, max_scale_factor, emb_dim=2, tolerance
             den = i + 1
             temp_ts[j] = float(num) / float(den)
 
-        se = nolds.sampen(temp_ts, emb_dim, tolerance, nolds.measures.rowwise_chebyshev, debug_plot=False, plot_file=None)
+        se = nolds.sampen(temp_ts, m, r, nolds.measures.rowwise_chebyshev, debug_plot=False, plot_file=None)
+
+        if np.isinf(se):
+            print("NeuroKit warning: complexity_entropy_multiscale(): Signal might be to short to compute SampEn for scale factors > " + str(i) + ". Setting max_scale_factor to " + str(i) + ".")
+            max_scale_factor = i
+            break
+        else:
+            per_scale_entropy_values[i] = se
+
+    all_entropy_values = per_scale_entropy_values[0:max_scale_factor]
+
+    # Compute final indices
+    parameters = {"max_scale_factor": max_scale_factor,
+                  "r": r,
+                  "m": m}
+
+    mse = {"MSE_Parameters": parameters,
+           "MSE_Values" : all_entropy_values,
+           "MSE_AUC": np.trapz(all_entropy_values),
+           "MSE_Sum": np.sum(all_entropy_values)}
 
 
-        per_scale_entropy_values[i] = se
-
-    auc = np.trapz(per_scale_entropy_values)
-
-    return (per_scale_entropy_values, auc)
+    return (mse)
 
 
 # ==============================================================================
@@ -547,7 +566,7 @@ def complexity_entropy_spectral(signal, sampling_rate, bands=None):
     ----------
     *Details*
 
-    - **Higushi Fractal Dimension**: Higuchi proposed in 1988 an efficient algorithm for measuring the FD of discrete time sequences. As the reconstruction of the attractor phase space is not necessary, this algorithm is simpler and faster than D2 and other classical measures derived from chaos theory. FD can be used to quantify the complexity and self-similarity of a signal. HFD has already been used to analyse the complexity of brain recordings and other biological signals.
+    - **Spectral Entropy**: Entropy for different frequency bands.
 
 
     *Authors*

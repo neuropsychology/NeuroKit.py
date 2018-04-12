@@ -50,7 +50,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     Example
     ----------
     >>> import neurokit as
-    >>> Rpeaks = nk.ecg_find_peaks(signal)
+    >>> ecg_preprocessed = nk.ecg_preprocess(signal)
 
     Notes
     ----------
