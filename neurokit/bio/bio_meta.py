@@ -16,7 +16,7 @@ from .bio_emg import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_process(ecg=None, rsp=None, eda=None, emg=None, add=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency", "nonlinear"], eda_alpha=8e-4, eda_gamma=1e-2, scr_method="makowski", scr_treshold=0.1, emg_names=None, emg_envelope_freqs=[10, 400], emg_envelope_lfreq=4, emg_activation_treshold="default", emg_activation_n_above=0.25, emg_activation_n_below=1):
+def bio_process(ecg=None, rsp=None, eda=None, emg=None, add=None, sampling_rate=1000, age=None, sex=None, position=None, ecg_filter_type="FIR", ecg_filter_band="bandpass", ecg_filter_frequency=[3, 45], ecg_segmenter="hamilton", ecg_quality_model="default", ecg_hrv_features=["time", "frequency"], eda_alpha=8e-4, eda_gamma=1e-2, scr_method="makowski", scr_treshold=0.1, emg_names=None, emg_envelope_freqs=[10, 400], emg_envelope_lfreq=4, emg_activation_treshold="default", emg_activation_n_above=0.25, emg_activation_n_below=1):
     """
     Automated processing of bio signals. Wrapper for other bio processing functions.
 

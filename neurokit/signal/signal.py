@@ -18,7 +18,7 @@ import scipy
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def discrete_to_continuous(values, value_times, sampling_rate=1000):
+def interpolate(values, value_times, sampling_rate=1000):
     """
     3rd order spline interpolation.
 
@@ -39,7 +39,7 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     Example
     ----------
     >>> import neurokit as nk
-    >>> signal = discrete_to_continuous([800, 900, 700, 500], [1000, 2000, 3000, 4000], sampling_rate=1000)
+    >>> signal = interpolate([800, 900, 700, 500], [1000, 2000, 3000, 4000], sampling_rate=1000)
     >>> pd.Series(signal).plot()
 
     Notes

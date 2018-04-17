@@ -158,7 +158,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     # Heart Rate
     try:
-        heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
+        heart_rate = interpolate(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
         ecg_df["Heart_Rate"] = heart_rate
     except TypeError:
         print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
