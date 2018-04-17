@@ -1019,7 +1019,7 @@ def ecg_simulate(duration=10, sampling_rate=1000, bpm=60, noise=0.01):
     ecg = np.tile(cardiac , num_heart_beats)
 
     # Add random (gaussian distributed) noise
-    noise = numpy.random.normal(0, noise, len(ecg))
+    noise = np.random.normal(0, noise, len(ecg))
     ecg = noise + ecg
 
     # Resample

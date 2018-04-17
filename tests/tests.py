@@ -1,4 +1,4 @@
-import pytest
+import unittest
 import doctest
 import numpy as np
 import pandas as pd
@@ -6,11 +6,10 @@ import neurokit as nk
 import matplotlib
 import os
 
-run_tests_in_local = False
-
+import test_ecg
 
 if __name__ == '__main__':
-    pytest.main()
+    unittest.main()
     doctest.testmod()
 
 
