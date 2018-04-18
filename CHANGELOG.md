@@ -7,6 +7,7 @@
 ### New functions / parameters
 - Added "ecg_simulate"
 ### Major changes
+- Cleaned testing suite
 
 
 
