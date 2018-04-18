@@ -1,6 +1,7 @@
 ## Dev 
 
 ### Breaking changes
+- `read_acqknowledge` returns sampling rate by default
 - Change name of `discrete_to_continuous` to `interpolate`
 - Remove "nonlinear" from `ecg_hrv_features` from `ecg_process` and `bio_process`
 ### New functions / parameters
