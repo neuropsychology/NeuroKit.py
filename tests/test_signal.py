@@ -10,7 +10,7 @@ class TestComplexity(unittest.TestCase):
 
     def test_complexity_entropy_shannon(self):
         shannon = nk.complexity_entropy_shannon(self.signal)
-        self.assertAlmostEqual(shannon, 8.80, places=1)
+        self.assertAlmostEqual(shannon, 8.81, places=2)
 
     def test_entropy_multiscale(self):
         mse = nk.complexity_entropy_multiscale(self.signal)
@@ -18,5 +18,3 @@ class TestComplexity(unittest.TestCase):
 
     def tearDown(self):
         pass
-
-
