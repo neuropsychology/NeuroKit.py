@@ -576,8 +576,7 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
             print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute interpolation. Will skip many features.")
             return(hrv)
 
-        # Rescale to 1000Hz
-        RRi = RRi*1000
+
         hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
 
 
