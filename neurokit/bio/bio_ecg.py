@@ -533,7 +533,7 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
     RRis = RRis*1000
     hrv["RR_Intervals"] = RRis  # Values of RRis
 
-    # Sanity check fater artifact removal
+    # Sanity check after artifact removal
     if len(RRis) <= 1:
         print("NeuroKit Warning: ecg_hrv(): Not enough normal R peaks to compute HRV :/")
         return(hrv)
