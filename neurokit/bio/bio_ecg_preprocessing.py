@@ -182,7 +182,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     processed_ecg["ECG"].update(waves)
 
     # Systole
-    processed_ecg["df"]["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
+    processed_ecg["df"]["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves_Ends"])
 
 
     return(processed_ecg)
@@ -296,7 +296,7 @@ def ecg_wave_detector(ecg, rpeaks):
     t_waves = []
     t_waves_starts = []
     t_waves_ends = []
-    for index, rpeak in enumerate(rpeaks):
+    for index, rpeak in enumerate(rpeaks[:-3]):
 
         try:
             epoch_before = np.array(ecg)[int(rpeaks[index-1]):int(rpeak)]
@@ -313,7 +313,7 @@ def ecg_wave_detector(ecg, rpeaks):
             q_start_index = find_closest_in_list(len(inter_pq_derivative)/2, find_peaks(inter_pq_derivative))
             q_start = q_wave - q_start_index
 
-            q_waves.append(p_wave)
+            q_waves.append(q_wave)
             p_waves.append(p_wave)
             q_waves_starts.append(q_start)
         except ValueError:
@@ -346,7 +346,7 @@ def ecg_wave_detector(ecg, rpeaks):
         except IndexError:
             pass
 
-# pd.Series(epoch_after).plot()
+# pd.Series(epoch_before).plot()
 #    t_waves = []
 #    for index, rpeak in enumerate(rpeaks[0:-1]):
 #
@@ -414,7 +414,7 @@ def ecg_wave_detector(ecg, rpeaks):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_systole(ecg, rpeaks, t_waves):
+def ecg_systole(ecg, rpeaks, t_waves_ends):
     """
     Returns the localization of systoles and diastoles.
 
@@ -424,7 +424,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
         ECG signal (preferably filtered).
     rpeaks : list or ndarray
         R peaks localization.
-    t_waves : list or ndarray
+    t_waves_ends : list or ndarray
         T waves localization.
 
     Returns
@@ -435,7 +435,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
     Example
     ----------
     >>> import neurokit as nk
-    >>> systole = nk.ecg_systole(ecg, rpeaks, t_waves)
+    >>> systole = nk.ecg_systole(ecg, rpeaks, t_waves_ends)
 
     Notes
     ----------
@@ -455,7 +455,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
     """
     waves = np.array([""]*len(ecg))
     waves[rpeaks] = "R"
-    waves[t_waves] = "T"
+    waves[t_waves_ends] = "T"
 
     systole = [0]
     current = 0

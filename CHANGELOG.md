@@ -1,6 +1,7 @@
 ## Dev 
 
 ### Breaking changes
+- ecg_systole now uses t_waves_ends
 - `read_acqknowledge` returns sampling rate by default
 - Change name of `discrete_to_continuous` to `interpolate`
 - Remove "nonlinear" from `ecg_hrv_features` from `ecg_process` and `bio_process`
