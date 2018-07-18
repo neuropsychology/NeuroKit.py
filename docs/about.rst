@@ -17,6 +17,7 @@ Contributors
 - `Nate Vack <https://github.com/njvack>`_ (USA): Acqknowledge files reading.
 - `Vassilios Vonikakis <https://github.com/bbonik>`_ (USA): HRV.
 - `Anthony Gatti <https://github.com/gattia>`_ (Canada): Multi scale entropy.
+- `Nicolas Beaudoin-Gagnon <https://github.com/Fegalf>`_ (Canada): Bug corrections in EDA/ECG.
 
 Support
 ========

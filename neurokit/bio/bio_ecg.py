@@ -534,7 +534,7 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
     RRis = RRis*1000
     hrv["RR_Intervals"] = RRis  # Values of RRis
 
-    # Sanity check fater artifact removal
+    # Sanity check after artifact removal
     if len(RRis) <= 1:
         print("NeuroKit Warning: ecg_hrv(): Not enough normal R peaks to compute HRV :/")
         return(hrv)
@@ -577,8 +577,7 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
             print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute interpolation. Will skip many features.")
             return(hrv)
 
-        # Rescale to 1000Hz
-        RRi = RRi*1000
+
         hrv["df"] = RRi.to_frame("ECG_RR_Interval")  # Continuous (interpolated) signal of RRi
 
 

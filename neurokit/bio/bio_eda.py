@@ -238,8 +238,9 @@ def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-
     # Normalizing signal
     eda = z_score(eda)
     eda = np.array(eda)[:,0]
-
+    
     n = len(eda)
+    eda = eda.astype('double')
     eda = cv.matrix(eda)
 
     # bateman ARMA model
