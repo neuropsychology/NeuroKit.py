@@ -346,8 +346,6 @@ def ecg_wave_detector(ecg, rpeaks):
         except IndexError:
             pass
 
-pd.Series(nk.z_score(epoch_after[s_wave_index:t_wave_index])[0]).plot()
-pd.Series(nk.z_score(inter_st_derivative)[0]).plot()
 # pd.Series(epoch_after).plot()
 #    t_waves = []
 #    for index, rpeak in enumerate(rpeaks[0:-1]):
