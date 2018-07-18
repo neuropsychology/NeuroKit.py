@@ -5,6 +5,7 @@
 - Change name of `discrete_to_continuous` to `interpolate`
 - Remove "nonlinear" from `ecg_hrv_features` from `ecg_process` and `bio_process`
 ### New functions / parameters
+- Added "find_peaks"
 - Added "ecg_simulate"
 ### Major changes
 - Cleaned testing suite

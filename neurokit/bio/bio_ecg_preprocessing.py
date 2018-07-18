@@ -310,7 +310,7 @@ def ecg_wave_detector(ecg, rpeaks):
 
             inter_pq = epoch_before[q_wave_index:p_wave_index]
             inter_pq_derivative = np.gradient(inter_pq, 2)
-            q_start_index = np.max(find_peaks(inter_pq_derivative))
+            q_start_index = find_closest_in_list(len(inter_pq_derivative)/2, find_peaks(inter_pq_derivative))
             q_start = q_wave - q_start_index
 
             q_waves.append(p_wave)
@@ -332,8 +332,8 @@ def ecg_wave_detector(ecg, rpeaks):
 
             inter_st = epoch_after[s_wave_index:t_wave_index]
             inter_st_derivative = np.gradient(inter_st, 2)
-            t_start_index = np.max(find_peaks(inter_st_derivative))
-            t_start = s_wave_index + t_start_index
+            t_start_index = find_closest_in_list(len(inter_st_derivative)/2, find_peaks(inter_st_derivative))
+            t_start = s_wave + t_start_index
             t_end = np.min(find_peaks(epoch_after[t_wave_index:]))
             t_end = t_wave + t_end
 
@@ -346,8 +346,9 @@ def ecg_wave_detector(ecg, rpeaks):
         except IndexError:
             pass
 
-
-
+pd.Series(nk.z_score(epoch_after[s_wave_index:t_wave_index])[0]).plot()
+pd.Series(nk.z_score(inter_st_derivative)[0]).plot()
+# pd.Series(epoch_after).plot()
 #    t_waves = []
 #    for index, rpeak in enumerate(rpeaks[0:-1]):
 #
