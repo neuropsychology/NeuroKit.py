@@ -18,7 +18,7 @@ from ..miscellaneous import find_creation_date
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", resampling_method="pad", fill_interruptions=True, return_sampling_rate=False):
+def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", resampling_method="pad", fill_interruptions=True, return_sampling_rate=True):
     """
     Read and Format a BIOPAC's AcqKnowledge file into a pandas' dataframe.
 
@@ -175,7 +175,6 @@ def read_acqknowledge(filename, path="", index="datetime", sampling_rate="max", 
         df = df.fillna(method="backfill")
 
     if return_sampling_rate is False:
-        print("NeuroKit Warning: read_acqknowledge(): return_sampling_rate default will be changed to True in the future. We recommend that you change it explicitely to True from now on to avoid conflicts with future versions.")
         return(df)
     else:
         return(df, sampling_rate)

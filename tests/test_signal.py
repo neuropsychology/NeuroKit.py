@@ -1,44 +1,20 @@
-import pytest
-import doctest
-import os
-import numpy as np
-import pandas as pd
+import unittest
 import neurokit as nk
-import scipy
-import matplotlib
+import pandas as pd
 
 
+class TestComplexity(unittest.TestCase):
 
+    def setUp(self):
+        self.signal = nk.ecg_simulate(duration=10, sampling_rate=100, bpm=60, noise=0)
 
-#==============================================================================
-# signal
-#==============================================================================
-def test_discrete_to_continuous():
-    interpolated = nk.discrete_to_continuous([800, 900, 700, 500], [1000, 2000, 3000, 4000], 1000)
-    assert len(interpolated) == 3000
+    def test_complexity_entropy_shannon(self):
+        shannon = nk.complexity_entropy_shannon(self.signal)
+        self.assertAlmostEqual(shannon, 8.81, places=1)
 
-#==============================================================================
-# epochs
-#==============================================================================
-def test_create_epochs():
+    def test_entropy_multiscale(self):
+        mse = nk.complexity_entropy_multiscale(self.signal)
+        self.assertAlmostEqual(mse["MSE_AUC"], 6.83, places=1)
 
-    df = pd.DataFrame({"Trigger": pd.Series(scipy.signal.square(1 * np.pi * 5 * np.linspace(0, 1, 2000, endpoint=False))),
-                   "Signal": pd.Series(np.sin(20 * np.pi * np.linspace(0, 1, 2000, endpoint=False))) * np.random.normal(0,1,2000),
-                   "Signal2": pd.Series(np.sin(60 * np.pi * np.linspace(0, 1, 2000, endpoint=False))) * np.random.normal(0,2,2000)})
-
-    events = nk.find_events(df["Trigger"], cut="lower")
-    assert len(events) == 2
-
-#    fig = nk.plot_events_in_signal(df, events["onsets"])
-
-    epochs = nk.create_epochs(df, events["onsets"], duration=0.1)
-    assert len(epochs) == 2
-
-
-
-
-
-if __name__ == '__main__':
-    pytest.main()
-    doctest.testmod()
-
+    def tearDown(self):
+        pass

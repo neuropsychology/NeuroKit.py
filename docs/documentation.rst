@@ -32,6 +32,11 @@ ecg_rsa
 
 .. autofunction:: neurokit.ecg_rsa
 
+ecg_simulate
+-----------------
+
+.. autofunction:: neurokit.ecg_simulate
+
 
 rsp_process
 ---------------

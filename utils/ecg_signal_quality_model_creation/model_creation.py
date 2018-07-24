@@ -1,34 +1,40 @@
+"""
+Create the heartbeat evaluation model.
+"""
+
 import neurokit as nk
 import numpy as np
 import pandas as pd
+import biosppy
+import matplotlib.pyplot as plt
 import seaborn as sns
 import sklearn
-
+import sklearn.neural_network
 #==============================================================================
 # Create data
 #==============================================================================
-#data = nk.read_nk_object("PTB-Diagnostic_database-ECG.nk")
-#
-#All = []
-#for participant in data["Control"]:
-#    for signal_name in data["Control"][participant]["Signals"].columns:
-#        signal = data["Control"][participant]["Signals"][signal_name]
-#        CCs = dict(biosppy.ecg.ecg(signal, sampling_rate=data["Control"][participant]["sampling_rate"], show=False))["templates"]
-#        CCs = pd.DataFrame(CCs).T
-#
-#        CCs.index = pd.date_range(pd.datetime.today(), periods=600, freq="ms")
-#
-#        # 200 Hz
-#        CCs = CCs.rolling(20).mean().resample("3L").pad()
-#        CCs = CCs.reset_index(drop=True)[0:200]
-#        if list(CCs.index) == list(range(200)):
-#            if len(CCs) == 200:
-#                CCs = CCs.T
-#                CCs["Lead"] = signal_name
-#                All.append(CCs)
-#
-#df = pd.concat(All, axis=0, ignore_index=True)
-#df.to_csv("cardiac_cycles.csv", index=False)
+data = nk.read_nk_object("PTB-Diagnostic_database-ECG.nk")
+
+All = []
+for participant in data["Control"]:
+    for signal_name in data["Control"][participant]["Signals"].columns:
+        signal = data["Control"][participant]["Signals"][signal_name]
+        CCs = dict(biosppy.ecg.ecg(signal, sampling_rate=data["Control"][participant]["sampling_rate"], show=False))["templates"]
+        CCs = pd.DataFrame(CCs).T
+
+        CCs.index = pd.date_range(pd.datetime.today(), periods=600, freq="ms")
+
+        # 200 Hz
+        CCs = CCs.rolling(20).mean().resample("3L").pad()
+        CCs = CCs.reset_index(drop=True)[0:200]
+        if list(CCs.index) == list(range(200)):
+            if len(CCs) == 200:
+                CCs = CCs.T
+                CCs["Lead"] = signal_name
+                All.append(CCs)
+
+df = pd.concat(All, axis=0, ignore_index=True)
+df.to_csv("cardiac_cycles.csv", index=False)
 df = pd.DataFrame.from_csv("cardiac_cycles.csv")
 
 
@@ -54,15 +60,11 @@ X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(X, y
 ## Fit model
 ##==============================================================================
 model = sklearn.neural_network.MLPClassifier()
-#
-model.fit(X_train, y_train)
 
+model.fit(X_train, y_train)
 
 y_pred = model.predict(X_test)
 
-#
-#
-#
 ##==============================================================================
 ## Evaluation
 ##==============================================================================
@@ -98,5 +100,4 @@ sklearn.metrics.accuracy_score(y_test, y_pred)
 ##==============================================================================
 ## Save
 ##==============================================================================
-#
-#sklearn.externals.joblib.dump(model, 'heartbeat_evaluation.model')
+sklearn.externals.joblib.dump(model, 'heartbeat_classification.model')

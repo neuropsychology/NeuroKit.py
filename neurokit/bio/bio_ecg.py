@@ -8,6 +8,7 @@ import sklearn
 import nolds
 import mne
 import biosppy
+import scipy.signal
 
 from .bio_ecg_preprocessing import *
 from .bio_rsp import *
@@ -22,7 +23,7 @@ from ..statistics import *
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], segmenter="hamilton", quality_model="default", hrv_features=["time", "frequency", "nonlinear"], age=None, sex=None, position=None):
+def ecg_process(ecg, rsp=None, sampling_rate=1000, filter_type="FIR", filter_band="bandpass", filter_frequency=[3, 45], segmenter="hamilton", quality_model="default", hrv_features=["time", "frequency"], age=None, sex=None, position=None):
     """
     Automated processing of ECG and RSP signals.
 
@@ -256,7 +257,7 @@ def ecg_rsa(rpeaks, rsp, sampling_rate=1000):
     value_times=(np.array(rsp_cycle_center))
     value_times = np.delete(value_times, NaNs_indices)  # delete also the artifacts from times indices
 
-    rsa_interpolated = discrete_to_continuous(values=values, value_times=value_times, sampling_rate=sampling_rate)
+    rsa_interpolated = interpolate(values=values, value_times=value_times, sampling_rate=sampling_rate)
 
 
     # Continuous RSA - Steps
@@ -373,7 +374,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, rpeaks=None, quality_model
     # Interpolate to get a continuous signal
     if rpeaks is not None:
         signal = quality["Cardiac_Cycles_Signal_Quality"]
-        signal = discrete_to_continuous(signal, rpeaks, sampling_rate)  # Interpolation using 3rd order spline
+        signal = interpolate(signal, rpeaks, sampling_rate)  # Interpolation using 3rd order spline
         signal.name = "ECG_Signal_Quality"
         quality["ECG_Signal_Quality"] = signal
 
@@ -571,7 +572,7 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
         beats_times = np.delete(list(beats_times), artifacts_indices)  # delete also the artifact beat moments
 
         try:
-            RRi = discrete_to_continuous(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
+            RRi = interpolate(RRis, beats_times, sampling_rate)  # Interpolation using 3rd order spline
         except TypeError:
             print("NeuroKit Warning: ecg_hrv(): Sequence too short to compute interpolation. Will skip many features.")
             return(hrv)
@@ -950,9 +951,80 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
         ECG_Response = compute_features("ECG_HRV_VLF", "ECG_HRV_VLF", ECG_Response)
 
 
-
-
     return(ECG_Response)
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def ecg_simulate(duration=10, sampling_rate=1000, bpm=60, noise=0.01):
+    """
+    Simulates an ECG signal.
+
+    Parameters
+    ----------
+    duration : int
+        Desired recording length.
+    sampling_rate : int
+        Desired sampling rate.
+    bpm : int
+        Desired simulated heart rate.
+    noise : float
+        Desired noise level.
+
+
+    Returns
+    ----------
+    ECG_Response : dict
+        Event-related ECG response features.
+
+    Example
+    ----------
+    >>> import neurokit as nk
+    >>> import pandas as pd
+    >>>
+    >>> ecg = nk.ecg_simulate(duration=10, bpm=60, sampling_rate=1000, noise=0.01)
+    >>> pd.Series(ecg).plot()
+
+    Notes
+    ----------
+    *Authors*
+
+    - `Diarmaid O Cualain <https://github.com/diarmaidocualain>`_
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
+    - numpy
+    - scipy.signal
+
+    References
+    -----------
+    """
+    # The "Daubechies" wavelet is a rough approximation to a real, single, cardiac cycle
+    cardiac = scipy.signal.wavelets.daub(10)
+    # Add the gap after the pqrst when the heart is resting.
+    cardiac = np.concatenate([cardiac, np.zeros(10)])
+
+    # Caculate the number of beats in capture time period
+    num_heart_beats = int(duration * bpm / 60)
+
+    # Concatenate together the number of heart beats needed
+    ecg = np.tile(cardiac , num_heart_beats)
+
+    # Add random (gaussian distributed) noise
+    noise = np.random.normal(0, noise, len(ecg))
+    ecg = noise + ecg
+
+    # Resample
+    ecg = scipy.signal.resample(ecg, sampling_rate*duration)
+
+    return(ecg)
 
 
 

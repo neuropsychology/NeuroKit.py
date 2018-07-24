@@ -1,4 +1,19 @@
-## CURRENT : 0.2
+## Dev 
+
+### Breaking changes
+- ecg_systole now uses t_waves_ends
+- `read_acqknowledge` returns sampling rate by default
+- Change name of `discrete_to_continuous` to `interpolate`
+- Remove "nonlinear" from `ecg_hrv_features` from `ecg_process` and `bio_process`
+### New functions / parameters
+- Added "find_peaks"
+- Added "ecg_simulate"
+### Major changes
+- Cleaned testing suite
+
+
+
+## 0.2
 
 ### Breaking changes
 - Append "complexity_" to all complexity function names (e.g., `entropy_shannon` -> `complexity_entropy_shannon`) (**since 0.2.0**) [#32](https://github.com/neuropsychology/NeuroKit.py/pull/32)
@@ -25,7 +40,7 @@
 - Started documenting ECG signal quality in docs [#35](https://github.com/neuropsychology/NeuroKit.py/pull/35)
 - Fixed bug in `ecg_hrv`
 - Moved `find_closest_in_list` and `find_following_duplicates` from miscellaenous to statistics [#55](https://github.com/neuropsychology/NeuroKit.py/pull/55)
----------
+
 
 ## 0.1
 

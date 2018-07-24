@@ -1,16 +1,16 @@
-import pytest
+import unittest
 import doctest
 import numpy as np
 import pandas as pd
 import neurokit as nk
-import matplotlib
-import os
 
-run_tests_in_local = False
-
+from test_ecg import TestEcg
+from test_signal import TestComplexity
+from test_miscellaneous import TestMiscellaneous
+from test_statistics import TestStatistics
 
 if __name__ == '__main__':
-    pytest.main()
+    unittest.main()
     doctest.testmod()
 
 

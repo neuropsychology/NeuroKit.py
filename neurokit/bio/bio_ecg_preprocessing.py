@@ -158,7 +158,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
 
     # Heart Rate
     try:
-        heart_rate = discrete_to_continuous(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
+        heart_rate = interpolate(heart_rate, heart_rate_times, sampling_rate)  # Interpolation using 3rd order spline
         ecg_df["Heart_Rate"] = heart_rate
     except TypeError:
         print("NeuroKit Warning: ecg_process(): Sequence too short to compute heart rate.")
@@ -182,7 +182,7 @@ def ecg_preprocess(ecg, sampling_rate=1000, filter_type="FIR", filter_band="band
     processed_ecg["ECG"].update(waves)
 
     # Systole
-    processed_ecg["df"]["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves"])
+    processed_ecg["df"]["ECG_Systole"] = ecg_systole(ecg_df["ECG_Filtered"], rpeaks, waves["T_Waves_Ends"])
 
 
     return(processed_ecg)
@@ -272,8 +272,12 @@ def ecg_wave_detector(ecg, rpeaks):
     Example
     ----------
     >>> import neurokit as nk
-    >>> ecg_waves = nk.ecg_wave_detector(signal, rpeaks)
-    >>> nk.plot_events_in_signal(signal, [ecg_waves["P_Waves"], ecg_waves["Q_Waves"], list(rpeaks), ecg_waves["T_Waves"]], color=["green", "orange", "red", "blue"])
+    >>> ecg =  nk.ecg_simulate(duration=3, sampling_rate=1000)
+    >>> ecg = nk.ecg_preprocess(ecg=ecg, sampling_rate=1000)
+    >>> rpeaks = ecg["ECG"]["R_Peaks"]
+    >>> ecg = ecg["df"]["ECG_Filtered"]
+    >>> ecg_waves = nk.ecg_wave_detector(ecg=ecg, rpeaks=rpeaks)
+    >>> nk.plot_events_in_signal(ecg, [ecg_waves["P_Waves"], ecg_waves["Q_Waves_Onsets"], ecg_waves["Q_Waves"], list(rpeaks), ecg_waves["S_Waves"], ecg_waves["T_Waves_Onsets"], ecg_waves["T_Waves"], ecg_waves["T_Waves_Ends"]], color=["green", "yellow", "orange", "red", "black", "brown", "blue", "purple"])
 
     Notes
     ----------
@@ -285,52 +289,117 @@ def ecg_wave_detector(ecg, rpeaks):
 
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
     """
-    t_waves = []
-    for index, rpeak in enumerate(rpeaks[0:-1]):
-        # T wave
-        middle = (rpeaks[index+1] - rpeak) / 2
-        quarter = middle/2
-
-        epoch = np.array(ecg)
-        epoch = epoch[int(rpeak+quarter):int(rpeak+middle)]
-
-        try:
-            t_wave = int(rpeak+quarter) + np.argmax(epoch)
-            t_waves.append(t_wave)
-        except ValueError:
-            pass
-
-    p_waves = []
-    for index, rpeak in enumerate(rpeaks[1:]):
-        index += 1
-        # Q wave
-        middle = (rpeak - rpeaks[index-1]) / 2
-        quarter = middle/2
-
-        epoch = np.array(ecg)
-        epoch = epoch[int(rpeak-middle):int(rpeak-quarter)]
-
-        try:
-            p_wave = int(rpeak-quarter) + np.argmax(epoch)
-            p_waves.append(p_wave)
-        except ValueError:
-            pass
-
     q_waves = []
-    for index, p_wave in enumerate(p_waves):
-        epoch = np.array(ecg)
-        epoch = epoch[int(p_wave):int(rpeaks[rpeaks>p_wave][0])]
+    p_waves = []
+    q_waves_starts = []
+    s_waves = []
+    t_waves = []
+    t_waves_starts = []
+    t_waves_ends = []
+    for index, rpeak in enumerate(rpeaks[:-3]):
 
         try:
-            q_wave = p_wave + np.argmin(epoch)
+            epoch_before = np.array(ecg)[int(rpeaks[index-1]):int(rpeak)]
+            epoch_before = epoch_before[int(len(epoch_before)/2):len(epoch_before)]
+            epoch_before = list(reversed(epoch_before))
+
+            q_wave_index = np.min(find_peaks(epoch_before))
+            q_wave = rpeak - q_wave_index
+            p_wave_index = q_wave_index + np.argmax(epoch_before[q_wave_index:])
+            p_wave = rpeak - p_wave_index
+
+            inter_pq = epoch_before[q_wave_index:p_wave_index]
+            inter_pq_derivative = np.gradient(inter_pq, 2)
+            q_start_index = find_closest_in_list(len(inter_pq_derivative)/2, find_peaks(inter_pq_derivative))
+            q_start = q_wave - q_start_index
+
             q_waves.append(q_wave)
+            p_waves.append(p_wave)
+            q_waves_starts.append(q_start)
         except ValueError:
             pass
+        except IndexError:
+            pass
 
-    # TODO: manage to find the begininng of the Q and the end of the T wave so we can extract the QT interval
+        try:
+            epoch_after = np.array(ecg)[int(rpeak):int(rpeaks[index+1])]
+            epoch_after = epoch_after[0:int(len(epoch_after)/2)]
+
+            s_wave_index = np.min(find_peaks(epoch_after))
+            s_wave = rpeak + s_wave_index
+            t_wave_index = s_wave_index + np.argmax(epoch_after[s_wave_index:])
+            t_wave = rpeak + t_wave_index
+
+            inter_st = epoch_after[s_wave_index:t_wave_index]
+            inter_st_derivative = np.gradient(inter_st, 2)
+            t_start_index = find_closest_in_list(len(inter_st_derivative)/2, find_peaks(inter_st_derivative))
+            t_start = s_wave + t_start_index
+            t_end = np.min(find_peaks(epoch_after[t_wave_index:]))
+            t_end = t_wave + t_end
+
+            s_waves.append(s_wave)
+            t_waves.append(t_wave)
+            t_waves_starts.append(t_start)
+            t_waves_ends.append(t_end)
+        except ValueError:
+            pass
+        except IndexError:
+            pass
+
+# pd.Series(epoch_before).plot()
+#    t_waves = []
+#    for index, rpeak in enumerate(rpeaks[0:-1]):
+#
+#        epoch = np.array(ecg)[int(rpeak):int(rpeaks[index+1])]
+#        pd.Series(epoch).plot()
+#
+#        # T wave
+#        middle = (rpeaks[index+1] - rpeak) / 2
+#        quarter = middle/2
+#
+#        epoch = np.array(ecg)[int(rpeak+quarter):int(rpeak+middle)]
+#
+#        try:
+#            t_wave = int(rpeak+quarter) + np.argmax(epoch)
+#            t_waves.append(t_wave)
+#        except ValueError:
+#            pass
+#
+#    p_waves = []
+#    for index, rpeak in enumerate(rpeaks[1:]):
+#        index += 1
+#        # Q wave
+#        middle = (rpeak - rpeaks[index-1]) / 2
+#        quarter = middle/2
+#
+#        epoch = np.array(ecg)[int(rpeak-middle):int(rpeak-quarter)]
+#
+#        try:
+#            p_wave = int(rpeak-quarter) + np.argmax(epoch)
+#            p_waves.append(p_wave)
+#        except ValueError:
+#            pass
+#
+#    q_waves = []
+#    for index, p_wave in enumerate(p_waves):
+#        epoch = np.array(ecg)[int(p_wave):int(rpeaks[rpeaks>p_wave][0])]
+#
+#        try:
+#            q_wave = p_wave + np.argmin(epoch)
+#            q_waves.append(q_wave)
+#        except ValueError:
+#            pass
+#
+#    # TODO: manage to find the begininng of the Q and the end of the T wave so we can extract the QT interval
 
 
-    ecg_waves = {"T_Waves": t_waves, "P_Waves": p_waves, "Q_Waves": q_waves}
+    ecg_waves = {"T_Waves": t_waves,
+                 "P_Waves": p_waves,
+                 "Q_Waves": q_waves,
+                 "S_Waves": s_waves,
+                 "Q_Waves_Onsets": q_waves_starts,
+                 "T_Waves_Onsets": t_waves_starts,
+                 "T_Waves_Ends": t_waves_ends}
     return(ecg_waves)
 
 
@@ -345,7 +414,7 @@ def ecg_wave_detector(ecg, rpeaks):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_systole(ecg, rpeaks, t_waves):
+def ecg_systole(ecg, rpeaks, t_waves_ends):
     """
     Returns the localization of systoles and diastoles.
 
@@ -355,7 +424,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
         ECG signal (preferably filtered).
     rpeaks : list or ndarray
         R peaks localization.
-    t_waves : list or ndarray
+    t_waves_ends : list or ndarray
         T waves localization.
 
     Returns
@@ -366,7 +435,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
     Example
     ----------
     >>> import neurokit as nk
-    >>> systole = nk.ecg_systole(ecg, rpeaks, t_waves)
+    >>> systole = nk.ecg_systole(ecg, rpeaks, t_waves_ends)
 
     Notes
     ----------
@@ -386,7 +455,7 @@ def ecg_systole(ecg, rpeaks, t_waves):
     """
     waves = np.array([""]*len(ecg))
     waves[rpeaks] = "R"
-    waves[t_waves] = "T"
+    waves[t_waves_ends] = "T"
 
     systole = [0]
     current = 0

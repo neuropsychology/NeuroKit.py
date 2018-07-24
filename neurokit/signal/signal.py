@@ -18,7 +18,7 @@ import scipy
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def discrete_to_continuous(values, value_times, sampling_rate=1000):
+def interpolate(values, value_times, sampling_rate=1000):
     """
     3rd order spline interpolation.
 
@@ -39,7 +39,7 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     Example
     ----------
     >>> import neurokit as nk
-    >>> signal = discrete_to_continuous([800, 900, 700, 500], [1000, 2000, 3000, 4000], sampling_rate=1000)
+    >>> signal = interpolate([800, 900, 700, 500], [1000, 2000, 3000, 4000], sampling_rate=1000)
     >>> pd.Series(signal).plot()
 
     Notes
@@ -69,3 +69,48 @@ def discrete_to_continuous(values, value_times, sampling_rate=1000):
     signal.index = np.array(np.arange(initial_index, initial_index+len(signal), 1))
 
     return(signal)
+
+
+
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+# ==============================================================================
+def find_peaks(signal):
+    """
+    Locate peaks based on derivative.
+
+    Parameters
+    ----------
+    signal : list or array
+        Signal.
+
+    Returns
+    ----------
+    peaks : array
+        An array containing the peak indices.
+
+    Example
+    ----------
+    >>> signal = np.sin(np.arange(0, np.pi*10, 0.05))
+    >>> peaks = nk.find_peaks(signal)
+    >>> nk.plot_events_in_signal(signal, peaks)
+
+    Notes
+    ----------
+    *Authors*
+
+    - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+
+    *Dependencies*
+
+    - scipy
+    - pandas
+    """
+    derivative = np.gradient(signal, 2)
+    peaks = np.where(np.diff(np.sign(derivative)))[0]
+    return(peaks)
