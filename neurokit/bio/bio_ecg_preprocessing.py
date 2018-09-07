@@ -272,7 +272,7 @@ def ecg_wave_detector(ecg, rpeaks):
     Example
     ----------
     >>> import neurokit as nk
-    >>> ecg =  nk.ecg_simulate(duration=3, sampling_rate=1000)
+    >>> ecg =  nk.ecg_simulate(duration=5, sampling_rate=1000)
     >>> ecg = nk.ecg_preprocess(ecg=ecg, sampling_rate=1000)
     >>> rpeaks = ecg["ECG"]["R_Peaks"]
     >>> ecg = ecg["df"]["ECG_Filtered"]

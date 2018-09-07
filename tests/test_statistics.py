@@ -33,7 +33,7 @@ class TestStatistics(unittest.TestCase):
     #==============================================================================
     def test_compute_dprime(self):
         parameters = nk.compute_dprime(n_Hit=7, n_Miss=4, n_FA=6, n_CR=6)
-        self.assertEqual(np.round(parameters["bppd"], 2), -0.5)
+        self.assertEqual(np.round(parameters["bppd"], 2), -0.27)
 
     def test_compute_BMI(self):
         self.assertEqual(round(nk.compute_BMI(182, 70, 27, "m")['BMI_old'], 2), 21.13)
