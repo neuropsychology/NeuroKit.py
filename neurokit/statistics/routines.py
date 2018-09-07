@@ -90,7 +90,7 @@ def compute_dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
 
 
     # dprime
-    dprime = scipy.stats.norm.ppf(hit_rate_adjusted) - scipy.stats.norm.ppf(hit_rate_adjusted)
+    dprime = scipy.stats.norm.ppf(hit_rate_adjusted) - scipy.stats.norm.ppf(fa_rate_adjusted)
 
     # beta
     zhr = scipy.stats.norm.ppf(hit_rate_adjusted)
