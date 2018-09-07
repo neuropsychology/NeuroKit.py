@@ -78,10 +78,6 @@ def compute_dprime(n_Hit=None, n_Miss=None, n_FA=None, n_CR=None):
     - `neuropsychology <https://www.rdocumentation.org/packages/neuropsychology/topics/dprime>`_
     - http://lindeloev.net/calculating-d-in-python-and-php/
     """
-    n_Hit = 9
-    n_Miss = 2
-    n_FA = 4
-    n_CR = 6
 
     # Ratios
     hit_rate = n_Hit/(n_Hit + n_Miss)
