@@ -13,7 +13,7 @@
 [![License](https://img.shields.io/pypi/l/neurokit.svg)](https://github.com/neuropsychology/NeuroKit.py/blob/master/LICENSE) 
 [![Build status](https://ci.appveyor.com/api/projects/status/9w4qw55143xu1gei?svg=true)](https://ci.appveyor.com/project/DominiqueMakowski/neurokit-py) 
 [![Code Health](https://landscape.io/github/neuropsychology/NeuroKit.py/master/landscape.svg?style=flat)](https://landscape.io/github/neuropsychology/NeuroKit.py/master)
-
+[![HitCount](http://hits.dwyl.io/neuropsychology/neuropsychology/neurokit.py.svg)](http://hits.dwyl.io/neuropsychology/neuropsychology/neurokit.py)
 
 A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, EDA, ECG, EMG...).
 
