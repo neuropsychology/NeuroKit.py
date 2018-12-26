@@ -247,7 +247,7 @@ def find_following_duplicates(array):
 
     - numpy
     """
-    array = array.copy()
+    array = array[:]
 
 
     uniques = []

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import division
 from .statistics import normal_range
 from .statistics import find_following_duplicates
 from .statistics import find_closest_in_list
