@@ -3,15 +3,15 @@
 <h2 align="center">Neuroscience made easy!</h2>
 
 
-# NeuroKit.py 
-[![pypi](https://img.shields.io/pypi/pyversions/neurokit.svg)](https://pypi.python.org/pypi/neurokit) 
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d5248bd8c8574e90b5c8fe0bf2030201)](https://www.codacy.com/app/DominiqueMakowski/NeuroKit.py?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neuropsychology/NeuroKit.py&amp;utm_campaign=Badge_Grade) 
-[![pypi](https://img.shields.io/pypi/v/neurokit.svg)](https://pypi.python.org/pypi/neurokit) 
+# NeuroKit.py
+[![pypi](https://img.shields.io/pypi/pyversions/neurokit.svg)](https://pypi.python.org/pypi/neurokit)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/d5248bd8c8574e90b5c8fe0bf2030201)](https://www.codacy.com/app/DominiqueMakowski/NeuroKit.py?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=neuropsychology/NeuroKit.py&amp;utm_campaign=Badge_Grade)
+[![pypi](https://img.shields.io/pypi/v/neurokit.svg)](https://pypi.python.org/pypi/neurokit)
 [![travis](https://travis-ci.org/neuropsychology/NeuroKit.py.svg?branch=master)](https://travis-ci.org/neuropsychology/NeuroKit.py)
-[![codecov](https://codecov.io/gh/neuropsychology/NeuroKit.py/branch/master/graph/badge.svg)](https://codecov.io/gh/neuropsychology/NeuroKit.py) 
-[![Dependency Status](https://dependencyci.com/github/neuropsychology/NeuroKit.py/badge)](https://dependencyci.com/github/neuropsychology/NeuroKit.py) 
-[![License](https://img.shields.io/pypi/l/neurokit.svg)](https://github.com/neuropsychology/NeuroKit.py/blob/master/LICENSE) 
-[![Build status](https://ci.appveyor.com/api/projects/status/9w4qw55143xu1gei?svg=true)](https://ci.appveyor.com/project/DominiqueMakowski/neurokit-py) 
+[![codecov](https://codecov.io/gh/neuropsychology/NeuroKit.py/branch/master/graph/badge.svg)](https://codecov.io/gh/neuropsychology/NeuroKit.py)
+[![Dependency Status](https://dependencyci.com/github/neuropsychology/NeuroKit.py/badge)](https://dependencyci.com/github/neuropsychology/NeuroKit.py)
+[![License](https://img.shields.io/pypi/l/neurokit.svg)](https://github.com/neuropsychology/NeuroKit.py/blob/master/LICENSE)
+[![Build status](https://ci.appveyor.com/api/projects/status/9w4qw55143xu1gei?svg=true)](https://ci.appveyor.com/project/DominiqueMakowski/neurokit-py)
 [![Code Health](https://landscape.io/github/neuropsychology/NeuroKit.py/master/landscape.svg?style=flat)](https://landscape.io/github/neuropsychology/NeuroKit.py/master)
 [![HitCount](http://hits.dwyl.io/neuropsychology/neuropsychology/neurokit.py.svg)](http://hits.dwyl.io/neuropsychology/neuropsychology/neurokit.py)
 
@@ -45,7 +45,7 @@ Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials
 
 Want to get involved in the developpment of an open-source software and improve neuroscience practice? **Join us!**
 
-- You need some help? You found a bug? You would like to request a new feature? 
+- You need some help? You found a bug? You would like to request a new feature?
   Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
 - Want to add a feature? Correct a bug? You're more than welcome to contribute!
   Check [this page](https://github.com/neuropsychology/NeuroKit.py/blob/master/CONTRIBUTING.md) to see how to submit your changes on github.
@@ -63,10 +63,10 @@ Want to get involved in the developpment of an open-source software and improve 
 This package provides a high level integration of complex statistical routines for researchers and clinicians with not much experience in programming, statistics or signal theory.
 
 - **[M/EEG](http://neurokit.readthedocs.io/en/latest/tutorials/EEG.html)** *(under developpment)*
-  - **[`eeg_erp()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eeg_erp)**: Extract event-related potentials 
+  - **[`eeg_erp()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eeg_erp)**: Extract event-related potentials
   - **[`eeg_complexity()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eeg_complexity)**: Compute entropy, fractal dimension, and complexity indices
-  - Time/Frequency: **SOON™**
-  - Microstates: **SOON™**
+  - Time/Frequency: **SOON**
+  - Microstates: **SOON**
 - **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
   - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a dataframe
   - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG features
