@@ -232,7 +232,7 @@ def find_events(events_channel, treshold="auto", cut="higher", time_index=None, 
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def plot_events_in_signal(signal, events_onsets, color="red"):
+def plot_events_in_signal(signal, events_onsets, color="red", marker=None):
     """
     Plot events in signal.
 
@@ -244,41 +244,52 @@ def plot_events_in_signal(signal, events_onsets, color="red"):
         Events location.
     color : int or list
         Marker color.
+    marker : marker or list of markers (for possible marker values, see: https://matplotlib.org/api/markers_api.html)
+        Marker type.
 
     Example
     ----------
     >>> import neurokit as nk
-    >>> df = nk.bio_process(ecg=signal, sampling_rate=1000)
-    >>> events = df["ECG"]["R_Peaks"]
-    >>> plot_events_in_signal(signal, events_onsets)
+    >>> bio = nk.bio_process(ecg=signal, sampling_rate=1000)
+    >>> events_onsets = bio["ECG"]["R_Peaks"]
+    >>> plot_events_in_signal(bio["df"]["ECG_Filtered"], events_onsets)
+    >>> plot_events_in_signal(bio["df"]["ECG_Filtered"], events_onsets, color="red", marker="o")
+    >>> plot_events_in_signal(bio["df"]["ECG_Filtered"], [bio["ECG"]["P_Waves"], bio["ECG"]["R_Peaks"]], color=["blue", "red"], marker=["d","o"])
 
     Notes
     ----------
     *Authors*
 
     - `Dominique Makowski <https://dominiquemakowski.github.io/>`_
+    - `Renatosc <https://github.com/renatosc/>`_
 
     *Dependencies*
 
     - matplotlib
     - pandas
     """
-    signal = pd.DataFrame(signal)
-    signal.plot()
+
+    df = pd.DataFrame(signal)
+    df.plot()
+
+    def plotOnSignal(x, color, marker=None):
+        if (marker is None):
+            plt.axvline(x=event, color=color)
+        else:
+            plt.plot(x, signal[x], marker, color=color)
+
 
     events_onsets = np.array(events_onsets)
     try:
         len(events_onsets[0])
         for index, dim in enumerate(events_onsets):
             for event in dim:
-                if isinstance(color, list):
-                    plt.axvline(x=event, color=color[index])
-                else:
-                    plt.axvline(x=event, color=color)
+                plotOnSignal(x=event,
+                             color=color[index] if isinstance(color, list) else color,
+                             marker=marker[index] if isinstance(marker, list) else marker)
     except TypeError:
         for event in events_onsets:
-            if isinstance(color, list):
-                plt.axvline(x=event, color=color[0])
-            else:
-                plt.axvline(x=event, color=color)
+            plotOnSignal(x=event,
+                         color=color[0] if isinstance(color, list) else color,
+                         marker=marker[0] if isinstance(marker, list) else marker)
 
