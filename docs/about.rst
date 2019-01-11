@@ -18,6 +18,7 @@ Contributors
 - `Vassilios Vonikakis <https://github.com/bbonik>`_ (USA): HRV.
 - `Anthony Gatti <https://github.com/gattia>`_ (Canada): Multi scale entropy.
 - `Nicolas Beaudoin-Gagnon <https://github.com/Fegalf>`_ (Canada): Bug corrections in EDA/ECG.
+- `Renato Cordeiro <https://github.com/renatosc>`_ (USA/Brazil): ECG.
 
 Support
 ========
