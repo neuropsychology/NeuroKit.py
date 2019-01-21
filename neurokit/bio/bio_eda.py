@@ -396,11 +396,12 @@ def eda_scr(signal, sampling_rate=1000, treshold=0.1, method="fast"):
                 onsets.append(i)
             else:
                 peaks.append(i)
+        peaks = np.array(peaks)
+        onsets = np.array(onsets)
     else:
         # find extrema
         peaks, _ = biosppy.tools.find_extrema(signal=signal, mode='max')
         onsets, _ = biosppy.tools.find_extrema(signal=signal, mode='min')
-
 
     # Keep only pairs
     peaks = peaks[peaks > onsets[0]]
