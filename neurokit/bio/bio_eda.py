@@ -239,7 +239,7 @@ def cvxEDA(eda, sampling_rate=1000, tau0=2., tau1=0.7, delta_knot=10., alpha=8e-
     # Normalizing signal
     eda = z_score(eda)
     eda = np.array(eda)[:,0]
-    
+
     n = len(eda)
     eda = eda.astype('double')
     eda = cv.matrix(eda)
@@ -553,7 +553,11 @@ def eda_EventRelated(epoch, event_length, window_post=4):
                 strength = magnitude/risetime
             else:
                 strength = np.nan
-            recovery = epoch["SCR_Recoveries"][peak_time:window_end].idxmax() - peak_time
+
+            if pd.isnull(peak_time) is False:
+                recovery = epoch["SCR_Recoveries"][peak_time:window_end].idxmax() - peak_time
+            else:
+                recovery = np.nan
 
         else:
             amplitude = np.nan

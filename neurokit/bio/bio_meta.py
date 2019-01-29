@@ -165,7 +165,7 @@ def bio_process(ecg=None, rsp=None, eda=None, emg=None, add=None, sampling_rate=
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def bio_EventRelated(epoch, event_length, window_post_ecg=0, window_post_rsp=4, window_post_eda=4):
+def bio_EventRelated(epoch, event_length, window_post_ecg=0, window_post_rsp=4, window_post_eda=4, ecg_features=["Heart_Rate", "Cardiac_Phase", "RR_Interval", "RSA", "HRV"]):
     """
     Extract event-related bio (EDA, ECG and RSP) changes.
 
@@ -183,6 +183,8 @@ def bio_EventRelated(epoch, event_length, window_post_ecg=0, window_post_rsp=4, 
         Post-stimulus window size (in seconds) for RSP.
     window_post_eda : float
         Post-stimulus window size (in seconds) for EDA.
+    ecg_features : list
+        List of ECG features to compute, can contain "Heart_Rate", "Cardiac_Phase", "RR_Interval", "RSA", "HRV".
 
     Returns
     ----------
@@ -268,7 +270,7 @@ def bio_EventRelated(epoch, event_length, window_post_ecg=0, window_post_rsp=4, 
     """
     bio_response = {}
 
-    ECG_Response = ecg_EventRelated(epoch, event_length, window_post=window_post_ecg)
+    ECG_Response = ecg_EventRelated(epoch, event_length, window_post=window_post_ecg, features=ecg_features)
     bio_response.update(ECG_Response)
 
     RSP_Response = rsp_EventRelated(epoch, event_length, window_post=window_post_rsp)

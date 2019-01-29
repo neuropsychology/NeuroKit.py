@@ -368,7 +368,7 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, rpeaks=None, quality_model
 
     predict = pd.DataFrame(model.predict_proba(cardiac_cycles))
     predict.columns = model.classes_
-    quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].as_matrix()
+    quality["Cardiac_Cycles_Signal_Quality"] = predict[lead].values
     quality["Average_Signal_Quality"] = predict[lead].mean()
 
     # Interpolate to get a continuous signal
@@ -787,7 +787,7 @@ def ecg_hrv_assessment(hrv, age=None, sex=None, position=None):
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def ecg_EventRelated(epoch, event_length=1, window_post=0):
+def ecg_EventRelated(epoch, event_length=1, window_post=0, features=["Heart_Rate", "Cardiac_Phase", "RR_Interval", "RSA", "HRV"]):
     """
     Extract event-related ECG changes.
 
@@ -799,6 +799,8 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
         Event length in seconds.
     window_post : float
         Post-stimulus window size (in seconds) to include late responses (usually 3 or 4).
+    features : list
+        List of ECG features to compute, can contain "Heart_Rate", "Cardiac_Phase", "RR_Interval", "RSA", "HRV".
 
     Returns
     ----------
@@ -869,86 +871,91 @@ def ecg_EventRelated(epoch, event_length=1, window_post=0):
 
     # Heart Rate
     # =============
-    if "Heart_Rate" in epoch.columns:
-        ECG_Response = compute_features("Heart_Rate", "ECG_Heart_Rate", ECG_Response)
-#
+    if "Heart_Rate" in features:
+        if "Heart_Rate" in epoch.columns:
+            ECG_Response = compute_features("Heart_Rate", "ECG_Heart_Rate", ECG_Response)
+    #
     # Cardiac Phase
     # =============
-    if "ECG_Systole" in epoch.columns:
-        ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"][0]
+    if "Cardiac_Phase" in features:
+        if "ECG_Systole" in epoch.columns:
+            ECG_Response["ECG_Phase_Systole"] = epoch["ECG_Systole"][0]
 
-        # Identify beginning and end
-        systole_beg = np.nan
-        systole_end = np.nan
-        for i in epoch[0:window_end].index:
-            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
-                systole_end = i
-                break
-        for i in epoch[:0].index[::-1]:
-            if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
-                systole_beg = i
-                break
+            # Identify beginning and end
+            systole_beg = np.nan
+            systole_end = np.nan
+            for i in epoch[0:window_end].index:
+                if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
+                    systole_end = i
+                    break
+            for i in epoch[:0].index[::-1]:
+                if epoch["ECG_Systole"][i] != ECG_Response["ECG_Phase_Systole"]:
+                    systole_beg = i
+                    break
 
-        # Compute percentage
-        ECG_Response["ECG_Phase_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
+            # Compute percentage
+            ECG_Response["ECG_Phase_Systole_Completion"] = -1*systole_beg/(systole_end - systole_beg)*100
 
 
     # RR Interval
     # ==================
-    if "ECG_RR_Interval" in epoch.columns:
-        ECG_Response = compute_features("ECG_RR_Interval", "ECG_RRi", ECG_Response)
+    if "RR_Interval" in features:
+        if "ECG_RR_Interval" in epoch.columns:
+            ECG_Response = compute_features("ECG_RR_Interval", "ECG_RRi", ECG_Response)
 
 
     # RSA
     # ==========
-    if "RSA" in epoch.columns:
-        ECG_Response = compute_features("RSA", "ECG_RSA", ECG_Response)
+    if "RSA" in features:
+        if "RSA" in epoch.columns:
+            ECG_Response = compute_features("RSA", "ECG_RSA", ECG_Response)
 
     # HRV
     # ====
-    if "ECG_R_Peaks" in epoch.columns:
-        rpeaks = epoch[epoch["ECG_R_Peaks"]==1][0:event_length].index*1000
-        hrv = ecg_hrv(rpeaks=rpeaks, sampling_rate=1000, hrv_features=["time"])
-
-        # HRV time domain feature computation
-        for key in hrv:
-            if isinstance(hrv[key], float):  # Avoid storing series or dataframes
-                ECG_Response["ECG_HRV_" + key] = hrv[key]
-
-        # Computation for baseline
-        if epoch.index[0] > -4:  # Sanity check
-            print("NeuroKit Warning: ecg_EventRelated(): your epoch starts less than 4 seconds before stimulus onset. That's too short to compute HRV baseline features.")
-        else:
-            rpeaks = epoch[epoch["ECG_R_Peaks"]==1][:0].index*1000
+    if "HRV" in features:
+        if "ECG_R_Peaks" in epoch.columns:
+            rpeaks = epoch[epoch["ECG_R_Peaks"]==1][0:event_length].index*1000
             hrv = ecg_hrv(rpeaks=rpeaks, sampling_rate=1000, hrv_features=["time"])
 
+            # HRV time domain feature computation
             for key in hrv:
                 if isinstance(hrv[key], float):  # Avoid storing series or dataframes
-                    ECG_Response["ECG_HRV_" + key + "_Baseline"] = hrv[key]
+                    ECG_Response["ECG_HRV_" + key] = hrv[key]
 
-            # Compute differences between features and baseline
-            keys = [key for key in ECG_Response.keys() if '_Baseline' in key]  # Find keys
-            keys = [key for key in keys if 'ECG_HRV_' in key]
-            keys = [s.replace('_Baseline', '') for s in keys]  # Remove baseline part
-            for key in keys:
-                try:
-                    ECG_Response[key + "_Diff"] = ECG_Response[key] - ECG_Response[key + "_Baseline"]
-                except KeyError:
-                    ECG_Response[key + "_Diff"] = np.nan
+            # Computation for baseline
+            if epoch.index[0] > -4:  # Sanity check
+                print("NeuroKit Warning: ecg_EventRelated(): your epoch starts less than 4 seconds before stimulus onset. That's too short to compute HRV baseline features.")
+            else:
+                rpeaks = epoch[epoch["ECG_R_Peaks"]==1][:0].index*1000
+                hrv = ecg_hrv(rpeaks=rpeaks, sampling_rate=1000, hrv_features=["time"])
+
+                for key in hrv:
+                    if isinstance(hrv[key], float):  # Avoid storing series or dataframes
+                        ECG_Response["ECG_HRV_" + key + "_Baseline"] = hrv[key]
+
+                # Compute differences between features and baseline
+                keys = [key for key in ECG_Response.keys() if '_Baseline' in key]  # Find keys
+                keys = [key for key in keys if 'ECG_HRV_' in key]
+                keys = [s.replace('_Baseline', '') for s in keys]  # Remove baseline part
+                for key in keys:
+                    try:
+                        ECG_Response[key + "_Diff"] = ECG_Response[key] - ECG_Response[key + "_Baseline"]
+                    except KeyError:
+                        ECG_Response[key + "_Diff"] = np.nan
 
 
 
-    if "ECG_HRV_VHF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_VHF", "ECG_HRV_VHF", ECG_Response)
+        if "ECG_HRV_VHF" in epoch.columns:
+            ECG_Response = compute_features("ECG_HRV_VHF", "ECG_HRV_VHF", ECG_Response)
 
-    if "ECG_HRV_HF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_HF", "ECG_HRV_HF", ECG_Response)
+        if "ECG_HRV_HF" in epoch.columns:
+            ECG_Response = compute_features("ECG_HRV_HF", "ECG_HRV_HF", ECG_Response)
 
-    if "ECG_HRV_LF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_LF", "ECG_HRV_LF", ECG_Response)
+        if "ECG_HRV_LF" in epoch.columns:
+            ECG_Response = compute_features("ECG_HRV_LF", "ECG_HRV_LF", ECG_Response)
 
-    if "ECG_HRV_VLF" in epoch.columns:
-        ECG_Response = compute_features("ECG_HRV_VLF", "ECG_HRV_VLF", ECG_Response)
+        if "ECG_HRV_VLF" in epoch.columns:
+            ECG_Response = compute_features("ECG_HRV_VLF", "ECG_HRV_VLF", ECG_Response)
 
 
     return(ECG_Response)
