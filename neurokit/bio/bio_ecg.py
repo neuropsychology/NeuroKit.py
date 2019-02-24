@@ -482,7 +482,7 @@ def ecg_hrv(rpeaks=None, rri=None, sampling_rate=1000, hrv_features=["time", "fr
     """
     # Check arguments: exactly one of rpeaks or rri has to be given as input
     if rpeaks is None and rri is None:
-        raise ValueError("Eiher rpeaks or RRIs needs to be given.")
+        raise ValueError("Either rpeaks or RRIs needs to be given.")
 
     if rpeaks is not None and rri is not None:
         raise ValueError("Either rpeaks or RRIs should be given but not both.")
