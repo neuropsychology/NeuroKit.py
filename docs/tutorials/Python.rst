@@ -43,6 +43,8 @@ Windows
     - Run :code:`pip install cvxopt --no-index --trusted-host=None --find-links=./`
     - Run :code:`pip install kiwisolver --no-index --trusted-host=None --find-links=./`
     - Run :code:`pip install cycler --no-index --trusted-host=None --find-links=./`
+	- Run :code:`pip install dateutils`
+	- Run :code:`pip install pyparsing`
     - Run :code:`pip install matplotlib --no-index --trusted-host=None --find-links=./`
     - Run :code:`pip install PyQt5`
     - Run :code:`pip install pylint`

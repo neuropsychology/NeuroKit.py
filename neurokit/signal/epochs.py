@@ -61,6 +61,9 @@ def create_epochs(data, events_onsets, sampling_rate=1000, duration=1, onset=0, 
     else:
         onset = np.array([onset]*len(events_onsets))
 
+    if isinstance(data, list) or isinstance(data, np.ndarray) or isinstance(data, pd.Series):
+        data = pd.DataFrame({"Signal": list(data)})
+
     # Store durations
     duration_in_s = duration.copy()
     onset_in_s = onset.copy()

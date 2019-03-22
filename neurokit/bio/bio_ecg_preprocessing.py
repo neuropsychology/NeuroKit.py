@@ -236,8 +236,8 @@ def ecg_find_peaks(signal, sampling_rate=1000):
     - BioSPPY: https://github.com/PIA-Group/BioSPPy
 
     """
-    rpeaks, = biosppy.ecg.hamilton_segmenter(signal, sampling_rate=sampling_rate)
-    rpeaks, = biosppy.ecg.correct_rpeaks(signal=signal, rpeaks=rpeaks, sampling_rate=sampling_rate, tol=0.05)
+    rpeaks, = biosppy.ecg.hamilton_segmenter(np.array(signal), sampling_rate=sampling_rate)
+    rpeaks, = biosppy.ecg.correct_rpeaks(signal=np.array(signal), rpeaks=rpeaks, sampling_rate=sampling_rate, tol=0.05)
     return(rpeaks)
 
 
