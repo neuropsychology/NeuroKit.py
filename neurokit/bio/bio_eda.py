@@ -22,7 +22,7 @@ from ..statistics import find_closest_in_list
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method="makowski", scr_treshold=0.1):
+def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, filter_type = "butter", scr_method="makowski", scr_treshold=0.1):
     """
     Automated processing of EDA signal using convex optimization (CVXEDA; Greco et al., 2015).
 
@@ -36,6 +36,8 @@ def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method="mak
         cvxEDA penalization for the sparse SMNA driver.
     gamma : float
         cvxEDA penalization for the tonic spline coefficients.
+    filter_type : str or None
+        Can be Butterworth filter ("butter"), Finite Impulse Response filter ("FIR"), Chebyshev filters ("cheby1" and "cheby2"), Elliptic filter ("ellip") or Bessel filter ("bessel"). Set to None to skip filtering.
     scr_method : str
         SCR extraction algorithm. "makowski" (default), "kim" (biosPPy's default; See Kim et al., 2004) or "gamboa" (Gamboa, 2004).
     scr_treshold : float
@@ -95,19 +97,20 @@ def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, scr_method="mak
     # Preprocessing
     # ===================
     # Filtering
-    filtered, _, _ = biosppy.tools.filter_signal(signal=eda,
-                                 ftype='butter',
-                                 band='lowpass',
-                                 order=4,
-                                 frequency=5,
-                                 sampling_rate=sampling_rate)
+    if filter_type is not None:
+        filtered, _, _ = biosppy.tools.filter_signal(signal=eda,
+                                     ftype=filter_type,
+                                     band='lowpass',
+                                     order=4,
+                                     frequency=5,
+                                     sampling_rate=sampling_rate)
 
-    # Smoothing
-    filtered, _ = biosppy.tools.smoother(signal=filtered,
-                              kernel='boxzen',
-                              size=int(0.75 * sampling_rate),
-                              mirror=True)
-    eda_df["EDA_Filtered"] = filtered
+        # Smoothing
+        filtered, _ = biosppy.tools.smoother(signal=filtered,
+                                  kernel='boxzen',
+                                  size=int(0.75 * sampling_rate),
+                                  mirror=True)
+        eda_df["EDA_Filtered"] = filtered
 
     # Derive Phasic and Tonic
     try:
