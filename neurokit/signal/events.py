@@ -270,7 +270,7 @@ def plot_events_in_signal(signal, events_onsets, color="red", marker=None):
     """
 
     df = pd.DataFrame(signal)
-    df.plot()
+    ax = df.plot()
 
     def plotOnSignal(x, color, marker=None):
         if (marker is None):
@@ -292,4 +292,5 @@ def plot_events_in_signal(signal, events_onsets, color="red", marker=None):
             plotOnSignal(x=event,
                          color=color[0] if isinstance(color, list) else color,
                          marker=marker[0] if isinstance(marker, list) else marker)
+    return ax
 
