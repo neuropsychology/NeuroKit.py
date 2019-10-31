@@ -1,3 +1,5 @@
+:warning:**The [NeuroKit2 project](https://github.com/neuropsychology/NeuroKit) has just started!** Better, stronger, faster, feel free to join in the community [here](https://github.com/neuropsychology/NeuroKit/issues/3) :warning:
+
 <p align="center"><a href=http://neurokit.readthedocs.io/><img src="https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/neurokit.png" width="400" align="center" alt="neurokit python eeg biosignals meg electrophysiology logo"></a></p>
 
 <h2 align="center">Neuroscience made easy!</h2>
