@@ -1,4 +1,12 @@
-:warning:**The [NeuroKit2 project](https://github.com/neuropsychology/NeuroKit) has just started!** Better, stronger, faster, feel free to join in the community [here](https://github.com/neuropsychology/NeuroKit/issues/3) :warning:
+:warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning:
+:warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning:
+
+**<p align="center">This package has been replaced by its successor: [NeuroKit2](https://github.com/neuropsychology/NeuroKit).</p>**
+
+:warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning:
+:warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning:
+
+
 
 <p align="center"><a href=http://neurokit.readthedocs.io/><img src="https://github.com/neuropsychology/NeuroKit.py/blob/master/docs/img/neurokit.png" width="400" align="center" alt="neurokit python eeg biosignals meg electrophysiology logo"></a></p>
 
@@ -33,80 +41,23 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 
 ## Installation
 
-Run the following:
-
-```bash
-pip install https://github.com/neuropsychology/NeuroKit.py/zipball/master
-```
-
-Not working? [Check this out](http://neurokit.readthedocs.io/en/latest/tutorials/Python.html)!
-
+You should install **NeuroKit2**, see [**here**](https://github.com/neuropsychology/NeuroKit#installation).
 
 ## Contribute
 [![Maintainability](https://api.codeclimate.com/v1/badges/e4ac002d93a655bf61c1/maintainability)](https://codeclimate.com/github/neuropsychology/NeuroKit.py/maintainability)
 
-Want to get involved in the developpment of an open-source software and improve neuroscience practice? **Join us!**
-
-- You need some help? You found a bug? You would like to request a new feature?
-  Just open an [issue](https://github.com/neuropsychology/NeuroKit.py/issues) :relaxed:
-- Want to add a feature? Correct a bug? You're more than welcome to contribute!
-  Check [this page](https://github.com/neuropsychology/NeuroKit.py/blob/master/CONTRIBUTING.md) to see how to submit your changes on github.
+You should contribute to **NeuroKit2**, see [**here**](https://github.com/neuropsychology/NeuroKit#contribution).
 
 ## Documentation
 
-- [Tutorials](http://neurokit.readthedocs.io/en/latest/tutorials/index.html)
-  - [x] Biosignals processing
-  - [ ] M/EEG processing
-- [API Documentation](http://neurokit.readthedocs.io/en/latest/documentation.html)
-
-
-## Features
-
-This package provides a high level integration of complex statistical routines for researchers and clinicians with not much experience in programming, statistics or signal theory.
-
-- **[M/EEG](http://neurokit.readthedocs.io/en/latest/tutorials/EEG.html)** *(under developpment)*
-  - **[`eeg_erp()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eeg_erp)**: Extract event-related potentials
-  - **[`eeg_complexity()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eeg_complexity)**: Compute entropy, fractal dimension, and complexity indices
-  - Time/Frequency: **SOON**
-  - Microstates: **SOON**
-- **[Biosignals](http://neurokit.readthedocs.io/en/latest/tutorials/Bio.html)**
-  - **[`read_acqknowledge()`](http://neurokit.readthedocs.io/en/latest/documentation.html#read-acqknowledge)**: Load and convert Biopac:copyright:'s AcqKnowledge files to a dataframe
-  - **[`ecg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract ECG features
-    - *Heart Rate*
-    - *Heart rate variability (HRV) - time, frequency and nonlinear domains*
-    - *Cardiac Cycles - R peaks, RR intervals, P, Q, T Waves, ...*
-    - *Cardiac Phase (systole/diastole)*
-    - *Signal quality evaluation*
-    - *Respiratory sinus arrhythmia (RSA) - P2T method*
-    - *Complexity (multiscale entropy, fractal dimensions, ...)*
-  - **[`rsp_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#ecg-process)**: Extract Respiratory features
-    - *Respiratory rate and variability*
-    - *Respiratory phase (inspiration/expiration)*
-    - *Respiratory cycles characteristics (onsets, length, ...)*
-  - **[`eda_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#eda-process)**: Extract Electrodermal Activity (EDA)
-    - *Tonic and phasic components using the new cvxEDA algorithm ([Greco, 2016](https://www.ncbi.nlm.nih.gov/pubmed/26336110))*
-    - *Skin Conductance Responses (SCR) onsets, peaks, amplitudes, latencies, recovery times, ...*
-  - **[`emg_process()`](http://neurokit.readthedocs.io/en/latest/documentation.html#emg-process)**: Extract EMG features
-    - *Pulse onsets*
-    - *Linear envelope, muscle activation*
-- **Signal**
-    - **[`complexity()`](http://neurokit.readthedocs.io/en/latest/documentation.html#complexity)**: Extract complexity/chaos indices, such as values of entropy (Shannon's, Sample and Multiscale), fractal dimension, Hurst and Lyapunov exponents and more
-- **Statistics**
-  - **[`z_score()`](http://neurokit.readthedocs.io/en/latest/documentation.html#z-score)**: Normalize (scale and reduce) variables
-  - **[`find_outliers()`](http://neurokit.readthedocs.io/en/latest/documentation.html#find_outliers)**: Identify outliers
-- **Miscellaneous**
-  - **[`compute_dprime()`](http://neurokit.readthedocs.io/en/latest/documentation.html#compute_dprime)**: Computes Signal Detection Theory (SDT) parameters (d', c, beta, a', b''d)
-  - **[`compute_BMI()`](http://neurokit.readthedocs.io/en/latest/documentation.html#compute_bmi)**: Compute the traditional body mass index (BMI), the new BMI, the Body Fat Percentage (BFP) and their interpretation
-  - **[`compute_interoceptive_accuracy()`](http://neurokit.readthedocs.io/en/latest/documentation.html#compute_interoceptive_accuracy)**: Compute interoception accuracy according to Garfinkel et al., (2015).
+You should check the documentation of **NeuroKit2**, see [**here**](https://github.com/neuropsychology/NeuroKit#documentation).
 
 
 ## Citation
-You can cite NeuroKit with the following:
-```
-Makowski, D. (2016). NeuroKit: A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, EDA, ECG, EMG...).
-Memory and Cognition Lab' Day, 01 November, Paris, France
-```
-*Note: The authors do not give any warranty. If this software causes your keyboard to blow up, your brain to liquefy, your toilet to clog or a zombie plague to leak, the authors CANNOT IN ANY WAY be held responsible.*
+
+You should install **NeuroKit2**, see [**here**](https://github.com/neuropsychology/NeuroKit#citation).
+
+
 
 ## Credits
 Note that important credits go to the developpers of the many packages upon which NeuroKit is built. Those include [mne](http://mne-tools.github.io/stable/index.html), [bioSPPy](https://github.com/PIA-Group/BioSPPy), [hrv](https://github.com/rhenanbartels/hrv), [bioread](https://github.com/njvack/bioread)... Make sure you cite them!
