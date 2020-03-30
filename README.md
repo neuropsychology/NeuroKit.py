@@ -1,6 +1,9 @@
 :warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning:
 :warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning:
 
+**<p align="center">NeuroKit 1 is dead, long live NeuroKit 2</p>**
+  
+  
 **<p align="center">This package has been replaced by its successor: [NeuroKit2](https://github.com/neuropsychology/NeuroKit).</p>**
 
 :warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning::warning:
@@ -31,9 +34,9 @@ A Python Toolbox for Statistics and Neurophysiological Signal Processing (EEG, E
 
 |Name|NeuroKit|
 |----------------|---|
-|Documentation|[![Documentation Status](https://readthedocs.org/projects/neurokit/badge/?version=latest)](http://neurokit.readthedocs.io/en/latest/?badge=latest)|
-|Discussion|[![Join the chat at https://gitter.im/NeuroKit-py/Lobby](https://img.shields.io/gitter/room/neuropsychology/NeuroKit.py.js.svg)](https://gitter.im/NeuroKit-py/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)|
-|Questions|[![](https://img.shields.io/badge/issue-create-purple.svg?colorB=FF9800)](https://github.com/neuropsychology/NeuroKit.py/issues)|
+|Documentation|[![Documentation Status](https://readthedocs.org/projects/neurokit/badge/?version=latest)](https://github.com/neuropsychology/NeuroKit#documentation)|
+|Discussion|[![Join the chat at https://gitter.im/NeuroKit-py/Lobby](https://img.shields.io/gitter/room/neuropsychology/NeuroKit.py.js.svg)](https://gitter.im/NeuroKit/Community)|
+|Questions|[![](https://img.shields.io/badge/issue-create-purple.svg?colorB=FF9800)](https://github.com/neuropsychology/NeuroKit/issues)|
 |Authors|[![](https://img.shields.io/badge/CV-D._Makowski-purple.svg?colorB=9C27B0)](https://dominiquemakowski.github.io/)|
 
 ---
@@ -55,9 +58,5 @@ You should check the documentation of **NeuroKit2**, see [**here**](https://gith
 
 ## Citation
 
-You should install **NeuroKit2**, see [**here**](https://github.com/neuropsychology/NeuroKit#citation).
+You should cite **NeuroKit2**, see [**here**](https://github.com/neuropsychology/NeuroKit#citation).
 
-
-
-## Credits
-Note that important credits go to the developpers of the many packages upon which NeuroKit is built. Those include [mne](http://mne-tools.github.io/stable/index.html), [bioSPPy](https://github.com/PIA-Group/BioSPPy), [hrv](https://github.com/rhenanbartels/hrv), [bioread](https://github.com/njvack/bioread)... Make sure you cite them!
