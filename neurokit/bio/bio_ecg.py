@@ -9,6 +9,7 @@ import nolds
 import mne
 import biosppy
 import scipy.signal
+import joblib
 
 from .bio_ecg_preprocessing import *
 from .bio_rsp import *
@@ -354,9 +355,8 @@ def ecg_signal_quality(cardiac_cycles, sampling_rate, rpeaks=None, quality_model
     cardiac_cycles = np.array(cardiac_cycles)
 
     if quality_model == "default":
-        model = sklearn.externals.joblib.load(Path.materials() + 'heartbeat_classification.model')
-    else:
-        model = sklearn.externals.joblib.load(quality_model)
+        quality_model = Path.materials() + 'heartbeat_classification.model'
+    model = joblib.load(quality_model)
 
     # Initialize empty dict
     quality = {}

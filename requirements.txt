@@ -12,3 +12,4 @@ cvxopt
 nose
 coverage
 pytest
+joblib
