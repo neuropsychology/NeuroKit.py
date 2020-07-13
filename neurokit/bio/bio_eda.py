@@ -22,7 +22,9 @@ from ..statistics import find_closest_in_list
 # ==============================================================================
 # ==============================================================================
 # ==============================================================================
-def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, filter_type = "butter", scr_method="makowski", scr_treshold=0.1):
+def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, 
+                filter_type="butter", scr_method="makowski", scr_treshold=0.1,
+                band='lowpass', order=4, frequency=5):
     """
     Automated processing of EDA signal using convex optimization (CVXEDA; Greco et al., 2015).
 
@@ -100,9 +102,9 @@ def eda_process(eda, sampling_rate=1000, alpha=8e-4, gamma=1e-2, filter_type = "
     if filter_type is not None:
         filtered, _, _ = biosppy.tools.filter_signal(signal=eda,
                                      ftype=filter_type,
-                                     band='lowpass',
-                                     order=4,
-                                     frequency=5,
+                                     band=band,
+                                     order=order,
+                                     frequency=frequency,
                                      sampling_rate=sampling_rate)
 
         # Smoothing
